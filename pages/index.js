@@ -4,10 +4,11 @@ import { ethers } from "ethers";
 const CONTRACT_ADDRESS = "0xCA30Cbe4D511Dd283e0FDe62d2215c42C358Ba4c";
 
 /*
-  IMPORTANT:
-  Replace this ABI with your real ABI when you have it.
-  This example assumes:
+  IMPORTANT
+  This assumes your contract has:
   function buyTokens() external payable
+
+  If your actual function is different, replace the ABI and the call in buyTokens().
 */
 const CONTRACT_ABI = [
   {
@@ -16,6 +17,113 @@ const CONTRACT_ABI = [
     outputs: [],
     stateMutability: "payable",
     type: "function",
+  },
+];
+
+/*
+  EDIT THESE DETAILS TO MATCH YOUR FINAL TOKEN INFORMATION
+*/
+const TOKEN_CONFIG = {
+  name: "CrossLedger",
+  symbol: "CLX",
+  network: "Ethereum",
+  launchTag: "CrossLedger Token Presale",
+  headline: "The next-generation trade ecosystem token",
+  subheadline:
+    "CLX is designed to power a modern digital ecosystem focused on international trade, transparency, access, and scalable blockchain utility.",
+  contractAddress: CONTRACT_ADDRESS,
+  tokenPrice: "TBA",
+  listingPrice: "TBA",
+  softCap: "TBA",
+  hardCap: "TBA",
+  minBuy: "0.01 ETH",
+  maxBuy: "TBA",
+  totalSupply: "TBA",
+  presaleAllocation: "TBA",
+  liquidityAllocation: "TBA",
+  ecosystemAllocation: "TBA",
+  teamAllocation: "TBA",
+  treasuryAllocation: "TBA",
+  vestingNote: "Subject to final launch structure and smart contract settings.",
+  acceptedCurrency: "ETH",
+};
+
+const PRESALE_PHASES = [
+  {
+    phase: "Phase 1",
+    price: "TBA",
+    allocation: "TBA",
+    status: "Current",
+    description:
+      "Initial allocation for early participants entering the CrossLedger ecosystem at the foundation stage.",
+  },
+  {
+    phase: "Phase 2",
+    price: "TBA",
+    allocation: "TBA",
+    status: "Upcoming",
+    description:
+      "Expanded access phase with revised pricing and continued ecosystem participation.",
+  },
+  {
+    phase: "Phase 3",
+    price: "TBA",
+    allocation: "TBA",
+    status: "Upcoming",
+    description:
+      "Final presale release prior to broader market rollout and ecosystem expansion.",
+  },
+];
+
+const TOKEN_FEATURES = [
+  {
+    title: "Trade Utility",
+    text: "Designed to support a blockchain-driven ecosystem tailored to international trade workflows and value transfer.",
+  },
+  {
+    title: "Transparent Access",
+    text: "Smart contract-based transactions reduce friction and improve clarity for participants entering the ecosystem.",
+  },
+  {
+    title: "Scalable Architecture",
+    text: "Positioned for future expansion across services, integrations, and broader digital trade infrastructure.",
+  },
+];
+
+const ROADMAP = [
+  {
+    stage: "Stage 1",
+    title: "Presale Launch",
+    text: "Launch CLX presale page, wallet connectivity, initial smart contract integration, and early community access.",
+  },
+  {
+    stage: "Stage 2",
+    title: "Ecosystem Buildout",
+    text: "Expand token utility, community presence, strategic positioning, and infrastructure readiness.",
+  },
+  {
+    stage: "Stage 3",
+    title: "Broader Rollout",
+    text: "Move into wider market activation, platform integration, and longer-term ecosystem growth.",
+  },
+];
+
+const FAQS = [
+  {
+    q: "How do I buy CLX?",
+    a: "Connect your wallet, enter the amount of ETH you want to use, and confirm the transaction in MetaMask.",
+  },
+  {
+    q: "Where do purchased tokens go?",
+    a: "If the contract is configured for direct delivery, tokens are sent to the connected wallet after the transaction confirms.",
+  },
+  {
+    q: "What wallet should I use?",
+    a: "A browser wallet such as MetaMask is recommended for the current purchase flow.",
+  },
+  {
+    q: "What network is this on?",
+    a: `This page is currently configured for ${TOKEN_CONFIG.network}. Always confirm the correct network before purchasing.`,
   },
 ];
 
@@ -28,13 +136,6 @@ export default function Home() {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isBuying, setIsBuying] = useState(false);
   const [isCheckingWallet, setIsCheckingWallet] = useState(true);
-
-  const [timeLeft, setTimeLeft] = useState({
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-  });
 
   const fallbackActivity = [
     { buyer: "0x71...9ab4", amount: "12,500 CLX", status: "Preview" },
@@ -49,6 +150,13 @@ export default function Home() {
     start.setHours(0, 0, 0, 0);
     return start;
   }, []);
+
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -69,13 +177,9 @@ export default function Home() {
   useEffect(() => {
     async function checkExistingWallet() {
       try {
-        if (!window.ethereum) {
-          return;
-        }
-
+        if (!window.ethereum) return;
         const provider = new ethers.BrowserProvider(window.ethereum);
         const accounts = await provider.send("eth_accounts", []);
-
         if (accounts && accounts.length > 0) {
           setWalletAddress(accounts[0]);
         }
@@ -143,11 +247,7 @@ export default function Home() {
 
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
-      const contract = new ethers.Contract(
-        CONTRACT_ADDRESS,
-        CONTRACT_ABI,
-        signer
-      );
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
 
       const tx = await contract.buyTokens({
         value: ethers.parseEther(ethAmount),
@@ -159,7 +259,7 @@ export default function Home() {
       const receipt = await tx.wait();
 
       if (receipt.status === 1) {
-        setSuccess("Purchase successful. Tokens should arrive in your wallet.");
+        setSuccess(`Purchase successful. ${TOKEN_CONFIG.symbol} should arrive in your wallet.`);
       } else {
         setError("Transaction failed");
       }
@@ -182,9 +282,27 @@ export default function Home() {
     }
   }
 
-  function formatWallet(address) {
+  function shortAddress(address) {
     if (!address) return "";
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  }
+
+  function StatCard({ label, value }) {
+    return (
+      <div
+        style={{
+          background: "rgba(255,255,255,0.05)",
+          border: "1px solid rgba(255,255,255,0.08)",
+          borderRadius: "18px",
+          padding: "18px",
+        }}
+      >
+        <div style={{ color: "#94a3b8", fontSize: "13px", marginBottom: "6px" }}>
+          {label}
+        </div>
+        <div style={{ fontSize: "22px", fontWeight: 800 }}>{value}</div>
+      </div>
+    );
   }
 
   return (
@@ -192,41 +310,34 @@ export default function Home() {
       style={{
         minHeight: "100vh",
         background:
-          "radial-gradient(circle at top, #1f2937 0%, #0f172a 35%, #020617 100%)",
-        color: "#ffffff",
+          "radial-gradient(circle at top, #1e293b 0%, #0f172a 40%, #020617 100%)",
+        color: "#fff",
         fontFamily: "Arial, sans-serif",
       }}
     >
       <div
         style={{
-          maxWidth: "1200px",
+          maxWidth: "1240px",
           margin: "0 auto",
-          padding: "32px 20px 60px",
+          padding: "28px 18px 70px",
         }}
       >
-        {/* Header */}
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "center",
             gap: "16px",
-            marginBottom: "30px",
+            alignItems: "center",
             flexWrap: "wrap",
+            marginBottom: "24px",
           }}
         >
           <div>
-            <div
-              style={{
-                fontSize: "30px",
-                fontWeight: 800,
-                letterSpacing: "0.5px",
-              }}
-            >
-              CLX Presale
+            <div style={{ fontSize: "32px", fontWeight: 900 }}>
+              {TOKEN_CONFIG.symbol} Presale
             </div>
             <div style={{ color: "#94a3b8", marginTop: "6px" }}>
-              Secure wallet connection and direct token purchase
+              {TOKEN_CONFIG.name} • {TOKEN_CONFIG.network}
             </div>
           </div>
 
@@ -234,15 +345,14 @@ export default function Home() {
             onClick={connectWallet}
             disabled={isConnecting || isCheckingWallet}
             style={{
-              padding: "14px 22px",
+              padding: "14px 20px",
               borderRadius: "12px",
               border: "1px solid rgba(255,255,255,0.15)",
               background: walletAddress ? "#14532d" : "#2563eb",
               color: "#fff",
-              fontWeight: 700,
-              fontSize: "15px",
+              fontWeight: 800,
               cursor: "pointer",
-              minWidth: "180px",
+              minWidth: "185px",
             }}
           >
             {isCheckingWallet
@@ -250,75 +360,72 @@ export default function Home() {
               : isConnecting
               ? "Connecting..."
               : walletAddress
-              ? `Connected: ${formatWallet(walletAddress)}`
+              ? `Connected: ${shortAddress(walletAddress)}`
               : "Connect Wallet"}
           </button>
         </div>
 
-        {/* Hero */}
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "1.2fr 0.8fr",
+            gridTemplateColumns: "1.4fr 0.8fr",
             gap: "24px",
-            alignItems: "stretch",
           }}
         >
           <div
             style={{
               background: "rgba(255,255,255,0.05)",
               border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: "24px",
+              borderRadius: "26px",
               padding: "28px",
-              backdropFilter: "blur(12px)",
+              backdropFilter: "blur(8px)",
             }}
           >
             <div
               style={{
                 display: "inline-block",
-                padding: "8px 14px",
-                borderRadius: "999px",
-                background: "rgba(59,130,246,0.16)",
+                background: "rgba(59,130,246,0.18)",
                 color: "#93c5fd",
-                fontWeight: 700,
+                fontWeight: 800,
                 fontSize: "13px",
+                borderRadius: "999px",
+                padding: "8px 14px",
                 marginBottom: "16px",
               }}
             >
-              CrossLedger Token Launch
+              {TOKEN_CONFIG.launchTag}
             </div>
 
             <h1
               style={{
-                fontSize: "48px",
-                lineHeight: 1.05,
+                fontSize: "54px",
+                lineHeight: 1.02,
                 margin: "0 0 14px",
-                fontWeight: 800,
+                fontWeight: 900,
+                maxWidth: "860px",
               }}
             >
-              Buy CLX in the presale
+              {TOKEN_CONFIG.headline}
             </h1>
 
             <p
               style={{
                 color: "#cbd5e1",
                 fontSize: "18px",
-                lineHeight: 1.6,
-                maxWidth: "700px",
-                marginBottom: "28px",
+                lineHeight: 1.65,
+                marginBottom: "24px",
+                maxWidth: "860px",
               }}
             >
-              Connect your wallet, enter your ETH amount, and purchase CLX
-              directly through the smart contract.
+              {TOKEN_CONFIG.subheadline}
             </p>
 
-            {/* Countdown */}
             <div
               style={{
                 display: "grid",
                 gridTemplateColumns: "repeat(4, minmax(80px, 1fr))",
                 gap: "12px",
-                marginBottom: "28px",
+                marginBottom: "24px",
               }}
             >
               {[
@@ -337,105 +444,63 @@ export default function Home() {
                     textAlign: "center",
                   }}
                 >
-                  <div style={{ fontSize: "30px", fontWeight: 800 }}>
+                  <div style={{ fontSize: "30px", fontWeight: 900 }}>
                     {String(item.value).padStart(2, "0")}
                   </div>
-                  <div style={{ color: "#94a3b8", fontSize: "13px" }}>
-                    {item.label}
-                  </div>
+                  <div style={{ color: "#94a3b8", fontSize: "13px" }}>{item.label}</div>
                 </div>
               ))}
             </div>
 
-            {/* Stats */}
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(3, 1fr)",
+                gridTemplateColumns: "repeat(4, 1fr)",
                 gap: "14px",
               }}
             >
-              <div
-                style={{
-                  background: "rgba(255,255,255,0.04)",
-                  borderRadius: "18px",
-                  padding: "18px",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                }}
-              >
-                <div style={{ color: "#94a3b8", fontSize: "13px" }}>
-                  Token Price
-                </div>
-                <div style={{ fontSize: "22px", fontWeight: 800 }}>
-                  TBA
-                </div>
-              </div>
-
-              <div
-                style={{
-                  background: "rgba(255,255,255,0.04)",
-                  borderRadius: "18px",
-                  padding: "18px",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                }}
-              >
-                <div style={{ color: "#94a3b8", fontSize: "13px" }}>
-                  Network
-                </div>
-                <div style={{ fontSize: "22px", fontWeight: 800 }}>
-                  Ethereum
-                </div>
-              </div>
-
-              <div
-                style={{
-                  background: "rgba(255,255,255,0.04)",
-                  borderRadius: "18px",
-                  padding: "18px",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                }}
-              >
-                <div style={{ color: "#94a3b8", fontSize: "13px" }}>
-                  Contract
-                </div>
-                <div style={{ fontSize: "16px", fontWeight: 800 }}>
-                  {formatWallet(CONTRACT_ADDRESS)}
-                </div>
-              </div>
+              <StatCard label="Token Price" value={TOKEN_CONFIG.tokenPrice} />
+              <StatCard label="Listing Price" value={TOKEN_CONFIG.listingPrice} />
+              <StatCard label="Soft Cap" value={TOKEN_CONFIG.softCap} />
+              <StatCard label="Hard Cap" value={TOKEN_CONFIG.hardCap} />
             </div>
           </div>
 
-          {/* Buy Card */}
           <div
             style={{
-              background: "#ffffff",
+              background: "#fff",
               color: "#0f172a",
-              borderRadius: "24px",
+              borderRadius: "26px",
               padding: "28px",
-              boxShadow: "0 20px 60px rgba(0,0,0,0.30)",
+              boxShadow: "0 20px 60px rgba(0,0,0,0.28)",
             }}
           >
+            <div style={{ fontSize: "28px", fontWeight: 900, marginBottom: "8px" }}>
+              Buy {TOKEN_CONFIG.symbol}
+            </div>
+            <div style={{ color: "#475569", lineHeight: 1.6, marginBottom: "18px" }}>
+              Connect your wallet and purchase directly with {TOKEN_CONFIG.acceptedCurrency}.
+            </div>
+
             <div
               style={{
-                fontSize: "26px",
-                fontWeight: 800,
-                marginBottom: "8px",
+                background: "#f8fafc",
+                border: "1px solid #e2e8f0",
+                borderRadius: "14px",
+                padding: "14px",
+                marginBottom: "16px",
               }}
             >
-              Buy CLX
-            </div>
-            <div style={{ color: "#475569", marginBottom: "20px" }}>
-              Enter the amount of ETH you want to use.
+              <div style={{ color: "#64748b", fontSize: "13px" }}>Contract</div>
+              <div style={{ fontWeight: 800, wordBreak: "break-all", marginTop: "5px" }}>
+                {TOKEN_CONFIG.contractAddress}
+              </div>
             </div>
 
             <label
-              style={{
-                display: "block",
-                fontWeight: 700,
-                marginBottom: "8px",
-              }}
+              style={{ display: "block", fontWeight: 800, marginBottom: "8px" }}
             >
-              ETH Amount
+              Amount in ETH
             </label>
 
             <input
@@ -457,6 +522,32 @@ export default function Home() {
               }}
             />
 
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(2, 1fr)",
+                gap: "10px",
+                marginBottom: "16px",
+              }}
+            >
+              {["0.05", "0.10", "0.25", "0.50"].map((value) => (
+                <button
+                  key={value}
+                  onClick={() => setEthAmount(value)}
+                  style={{
+                    padding: "10px 12px",
+                    borderRadius: "12px",
+                    border: "1px solid #cbd5e1",
+                    background: "#fff",
+                    cursor: "pointer",
+                    fontWeight: 700,
+                  }}
+                >
+                  {value} ETH
+                </button>
+              ))}
+            </div>
+
             <button
               onClick={buyTokens}
               disabled={isBuying}
@@ -467,22 +558,22 @@ export default function Home() {
                 border: "none",
                 background: "#111827",
                 color: "#fff",
-                fontWeight: 800,
+                fontWeight: 900,
                 fontSize: "16px",
                 cursor: "pointer",
               }}
             >
-              {isBuying ? "Processing..." : "Buy CLX"}
+              {isBuying ? "Processing..." : `Buy ${TOKEN_CONFIG.symbol}`}
             </button>
 
             {walletAddress && (
               <div
                 style={{
                   marginTop: "16px",
-                  padding: "12px",
-                  borderRadius: "12px",
                   background: "#f8fafc",
                   border: "1px solid #e2e8f0",
+                  borderRadius: "12px",
+                  padding: "12px",
                   fontSize: "14px",
                   wordBreak: "break-all",
                 }}
@@ -495,11 +586,10 @@ export default function Home() {
               <div
                 style={{
                   marginTop: "16px",
-                  padding: "14px",
-                  borderRadius: "12px",
                   background: "#dcfce7",
                   color: "#166534",
-                  fontSize: "14px",
+                  borderRadius: "12px",
+                  padding: "14px",
                   lineHeight: 1.5,
                 }}
               >
@@ -511,11 +601,10 @@ export default function Home() {
               <div
                 style={{
                   marginTop: "16px",
-                  padding: "14px",
-                  borderRadius: "12px",
                   background: "#fee2e2",
                   color: "#991b1b",
-                  fontSize: "14px",
+                  borderRadius: "12px",
+                  padding: "14px",
                   lineHeight: 1.5,
                 }}
               >
@@ -527,11 +616,10 @@ export default function Home() {
               <div
                 style={{
                   marginTop: "16px",
-                  padding: "14px",
-                  borderRadius: "12px",
                   background: "#eff6ff",
-                  color: "#1e3a8a",
-                  fontSize: "14px",
+                  color: "#1d4ed8",
+                  borderRadius: "12px",
+                  padding: "14px",
                   lineHeight: 1.5,
                   wordBreak: "break-all",
                 }}
@@ -544,22 +632,49 @@ export default function Home() {
 
             <div
               style={{
-                marginTop: "22px",
-                paddingTop: "18px",
+                marginTop: "18px",
                 borderTop: "1px solid #e2e8f0",
+                paddingTop: "16px",
                 color: "#64748b",
                 fontSize: "13px",
                 lineHeight: 1.6,
               }}
             >
-              Ensure you are using the correct wallet and network before
-              confirming any transaction.
+              Minimum buy: {TOKEN_CONFIG.minBuy}
+              <br />
+              Maximum buy: {TOKEN_CONFIG.maxBuy}
             </div>
           </div>
         </div>
 
-        {/* Activity */}
-        <div style={{ marginTop: "28px" }}>
+        <div style={{ marginTop: "26px" }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: "18px",
+            }}
+          >
+            {TOKEN_FEATURES.map((item) => (
+              <div
+                key={item.title}
+                style={{
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  borderRadius: "22px",
+                  padding: "22px",
+                }}
+              >
+                <div style={{ fontSize: "20px", fontWeight: 900, marginBottom: "10px" }}>
+                  {item.title}
+                </div>
+                <div style={{ color: "#cbd5e1", lineHeight: 1.7 }}>{item.text}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ marginTop: "26px" }}>
           <div
             style={{
               background: "rgba(255,255,255,0.05)",
@@ -568,22 +683,164 @@ export default function Home() {
               padding: "24px",
             }}
           >
-            <div
-              style={{
-                fontSize: "22px",
-                fontWeight: 800,
-                marginBottom: "16px",
-              }}
-            >
-              Recent Activity
+            <div style={{ fontSize: "28px", fontWeight: 900, marginBottom: "18px" }}>
+              Presale Phases
             </div>
 
             <div
               style={{
                 display: "grid",
-                gap: "12px",
+                gridTemplateColumns: "repeat(3, 1fr)",
+                gap: "16px",
               }}
             >
+              {PRESALE_PHASES.map((phase) => (
+                <div
+                  key={phase.phase}
+                  style={{
+                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    borderRadius: "20px",
+                    padding: "20px",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "inline-block",
+                      padding: "7px 12px",
+                      borderRadius: "999px",
+                      background:
+                        phase.status === "Current"
+                          ? "rgba(34,197,94,0.18)"
+                          : "rgba(59,130,246,0.18)",
+                      color: phase.status === "Current" ? "#86efac" : "#93c5fd",
+                      fontWeight: 800,
+                      fontSize: "12px",
+                      marginBottom: "12px",
+                    }}
+                  >
+                    {phase.status}
+                  </div>
+
+                  <div style={{ fontSize: "24px", fontWeight: 900, marginBottom: "8px" }}>
+                    {phase.phase}
+                  </div>
+                  <div style={{ color: "#94a3b8", marginBottom: "6px" }}>
+                    Price: <strong style={{ color: "#fff" }}>{phase.price}</strong>
+                  </div>
+                  <div style={{ color: "#94a3b8", marginBottom: "12px" }}>
+                    Allocation: <strong style={{ color: "#fff" }}>{phase.allocation}</strong>
+                  </div>
+                  <div style={{ color: "#cbd5e1", lineHeight: 1.65 }}>
+                    {phase.description}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ marginTop: "26px" }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "20px",
+            }}
+          >
+            <div
+              style={{
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                borderRadius: "24px",
+                padding: "24px",
+              }}
+            >
+              <div style={{ fontSize: "28px", fontWeight: 900, marginBottom: "18px" }}>
+                Tokenomics
+              </div>
+
+              <div style={{ display: "grid", gap: "12px" }}>
+                {[
+                  ["Total Supply", TOKEN_CONFIG.totalSupply],
+                  ["Presale Allocation", TOKEN_CONFIG.presaleAllocation],
+                  ["Liquidity Allocation", TOKEN_CONFIG.liquidityAllocation],
+                  ["Ecosystem Allocation", TOKEN_CONFIG.ecosystemAllocation],
+                  ["Team Allocation", TOKEN_CONFIG.teamAllocation],
+                  ["Treasury Allocation", TOKEN_CONFIG.treasuryAllocation],
+                ].map(([label, value]) => (
+                  <div
+                    key={label}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      gap: "10px",
+                      background: "rgba(255,255,255,0.04)",
+                      borderRadius: "14px",
+                      padding: "14px 16px",
+                    }}
+                  >
+                    <span style={{ color: "#cbd5e1" }}>{label}</span>
+                    <strong>{value}</strong>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ color: "#94a3b8", marginTop: "14px", lineHeight: 1.6 }}>
+                {TOKEN_CONFIG.vestingNote}
+              </div>
+            </div>
+
+            <div
+              style={{
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                borderRadius: "24px",
+                padding: "24px",
+              }}
+            >
+              <div style={{ fontSize: "28px", fontWeight: 900, marginBottom: "18px" }}>
+                Roadmap
+              </div>
+
+              <div style={{ display: "grid", gap: "16px" }}>
+                {ROADMAP.map((item) => (
+                  <div
+                    key={item.stage}
+                    style={{
+                      background: "rgba(255,255,255,0.04)",
+                      borderRadius: "16px",
+                      padding: "16px",
+                    }}
+                  >
+                    <div style={{ color: "#93c5fd", fontWeight: 800, marginBottom: "6px" }}>
+                      {item.stage}
+                    </div>
+                    <div style={{ fontSize: "20px", fontWeight: 900, marginBottom: "8px" }}>
+                      {item.title}
+                    </div>
+                    <div style={{ color: "#cbd5e1", lineHeight: 1.65 }}>{item.text}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ marginTop: "26px" }}>
+          <div
+            style={{
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              borderRadius: "24px",
+              padding: "24px",
+            }}
+          >
+            <div style={{ fontSize: "28px", fontWeight: 900, marginBottom: "18px" }}>
+              Recent Activity
+            </div>
+
+            <div style={{ display: "grid", gap: "12px" }}>
               {fallbackActivity.map((item, index) => (
                 <div
                   key={`${item.buyer}-${index}`}
@@ -599,17 +856,13 @@ export default function Home() {
                   }}
                 >
                   <div>
-                    <div style={{ color: "#94a3b8", fontSize: "12px" }}>
-                      Buyer
-                    </div>
-                    <div style={{ fontWeight: 700 }}>{item.buyer}</div>
+                    <div style={{ color: "#94a3b8", fontSize: "12px" }}>Buyer</div>
+                    <div style={{ fontWeight: 800 }}>{item.buyer}</div>
                   </div>
 
                   <div>
-                    <div style={{ color: "#94a3b8", fontSize: "12px" }}>
-                      Amount
-                    </div>
-                    <div style={{ fontWeight: 700 }}>{item.amount}</div>
+                    <div style={{ color: "#94a3b8", fontSize: "12px" }}>Amount</div>
+                    <div style={{ fontWeight: 800 }}>{item.amount}</div>
                   </div>
 
                   <div
@@ -618,7 +871,7 @@ export default function Home() {
                       borderRadius: "999px",
                       background: "rgba(59,130,246,0.18)",
                       color: "#93c5fd",
-                      fontWeight: 700,
+                      fontWeight: 800,
                       fontSize: "12px",
                     }}
                   >
@@ -628,6 +881,53 @@ export default function Home() {
               ))}
             </div>
           </div>
+        </div>
+
+        <div style={{ marginTop: "26px" }}>
+          <div
+            style={{
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              borderRadius: "24px",
+              padding: "24px",
+            }}
+          >
+            <div style={{ fontSize: "28px", fontWeight: 900, marginBottom: "18px" }}>
+              Frequently Asked Questions
+            </div>
+
+            <div style={{ display: "grid", gap: "14px" }}>
+              {FAQS.map((item) => (
+                <div
+                  key={item.q}
+                  style={{
+                    background: "rgba(255,255,255,0.04)",
+                    borderRadius: "16px",
+                    padding: "18px",
+                  }}
+                >
+                  <div style={{ fontWeight: 900, fontSize: "18px", marginBottom: "8px" }}>
+                    {item.q}
+                  </div>
+                  <div style={{ color: "#cbd5e1", lineHeight: 1.65 }}>{item.a}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div
+          style={{
+            marginTop: "30px",
+            color: "#94a3b8",
+            textAlign: "center",
+            lineHeight: 1.7,
+            fontSize: "14px",
+          }}
+        >
+          Always verify the contract address and network before confirming a transaction.
+          <br />
+          Contract: {TOKEN_CONFIG.contractAddress}
         </div>
       </div>
     </div>
