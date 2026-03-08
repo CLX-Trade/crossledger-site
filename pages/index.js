@@ -1,3 +1,5 @@
+import { useMemo, useState } from 'react';
+
 export default function Home() {
   const now = new Date();
   const presaleStart = new Date(now);
@@ -8,6 +10,20 @@ export default function Home() {
   const days = Math.floor(countdownMs / (1000 * 60 * 60 * 24));
   const hours = Math.floor((countdownMs / (1000 * 60 * 60)) % 24);
   const minutes = Math.floor((countdownMs / (1000 * 60)) % 60);
+
+  const walletAddress = '0x7A92fe17ec50e705C28FB93BB201A8317fdC39A7';
+  const stagePriceUsd = 0.1;
+  const minimumUsd = 300;
+
+  const [ethPrice, setEthPrice] = useState('3500');
+  const [usdAmount, setUsdAmount] = useState('1000');
+  const [copied, setCopied] = useState(false);
+  const [walletConnected, setWalletConnected] = useState(false);
+  const [buyerWallet, setBuyerWallet] = useState('');
+  const [email, setEmail] = useState('');
+  const [amountSent, setAmountSent] = useState('');
+  const [txHash, setTxHash] = useState('');
+  const [submitted, setSubmitted] = useState(false);
 
   const fallbackActivity = [
     { buyer: '0x71...9ab4', amount: '12,500 USDT', status: 'Fallback preview' },
@@ -40,17 +56,62 @@ export default function Home() {
     ['Campaign Total', '22,000,000 CLX', 'Weighted', `$${campaignRaise.toLocaleString()}`],
   ];
 
+  const calc = useMemo(() => {
+    const usd = Number(usdAmount) || 0;
+    const eth = Number(ethPrice) || 0;
+    const clx = usd > 0 ? usd / stagePriceUsd : 0;
+    const ethNeeded = eth > 0 ? usd / eth : 0;
+    return { usd, eth, clx, ethNeeded };
+  }, [usdAmount, ethPrice]);
+
+  const copyWallet = async () => {
+    try {
+      await navigator.clipboard.writeText(walletAddress);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const connectWallet = async () => {
+    if (!window.ethereum) {
+      alert('No Ethereum wallet detected. Please open with MetaMask or another Ethereum wallet.');
+      return;
+    }
+
+    try {
+      const accounts = await window.ethereum.request({
+        method: 'eth_requestAccounts',
+      });
+
+      if (accounts?.[0]) {
+        setWalletConnected(true);
+        setBuyerWallet(accounts[0]);
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Wallet connection was not completed.');
+    }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setSubmitted(true);
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <section className="relative overflow-hidden border-b border-white/10">
         <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-blue-500/10 to-slate-950" />
         <div className="absolute -top-24 right-0 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl" />
         <div className="absolute bottom-0 left-0 h-72 w-72 rounded-full bg-blue-500/10 blur-3xl" />
+
         <div className="relative mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-28">
           <div className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
             <div className="max-w-3xl">
               <div className="mb-5 inline-flex items-center rounded-full border border-cyan-400/30 bg-cyan-400/10 px-4 py-1 text-sm text-cyan-200">
-                CrossLedger Presale • Starts Tomorrow
+                CrossLedger Presale • Stage 1 Manual Allocation
               </div>
 
               <div className="mb-6 flex flex-wrap items-center gap-4">
@@ -67,15 +128,15 @@ export default function Home() {
               </h1>
 
               <p className="mt-6 text-lg leading-8 text-slate-300">
-                CrossLedger is built to modernise cross-border commodity trading by replacing paper-heavy workflows with smart escrow, verified digital documentation, immutable audit trails, and real-time transaction visibility. CLX powers transaction fees, escrow deposits, service payments, and selected premium platform functions.
+                CrossLedger is built to modernise cross-border commodity trading by replacing paper-heavy workflows with smart escrow, verified digital documentation, immutable audit trails, and real-time transaction visibility. Stage 1 is currently being processed manually while the full contract-based presale and claim flow are finalised.
               </p>
 
               <div className="mt-8 flex flex-wrap gap-4">
                 <a
-                  href="#presale"
+                  href="#presale-panel"
                   className="rounded-2xl bg-cyan-400 px-6 py-3 font-medium text-slate-950 shadow-lg shadow-cyan-500/20 transition hover:scale-[1.02]"
                 >
-                  Join Presale
+                  Continue to Presale
                 </a>
                 <a
                   href="#tokenomics"
@@ -171,46 +232,6 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
-        <div className="grid gap-8 lg:grid-cols-2">
-          <div className="rounded-[2rem] border border-white/10 bg-white/5 p-8 lg:p-12">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-300">Real Use of CLX</p>
-            <h2 className="mt-3 text-3xl font-semibold sm:text-4xl">Token utility tied to trade execution.</h2>
-            <div className="mt-8 space-y-4">
-              {[
-                ['Escrow Deposits', 'CLX can be used inside smart escrow structures so trade funds stay locked until agreed milestones are validated.'],
-                ['Transaction Fees', 'Participants can use CLX for platform fees and selected processing costs linked to digital trade execution.'],
-                ['Document Validation', 'Digitised invoices, bills of lading, certificates, and compliance files can be hashed and referenced against blockchain records.'],
-                ['Service Payments', 'Premium workflows, enterprise support, API modules, and future marketplace services can be paid for inside the ecosystem.'],
-                ['Compliance Trail', 'Each completed transaction leaves an immutable ledger record that can support audit, financing, and dispute review.'],
-              ].map(([title, text]) => (
-                <div key={title} className="rounded-2xl border border-white/10 bg-slate-900/70 p-5">
-                  <div className="text-lg font-semibold text-white">{title}</div>
-                  <div className="mt-2 text-sm leading-7 text-slate-300">{text}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-[2rem] border border-white/10 bg-white/5 p-8 lg:p-12">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-300">Trade Flow</p>
-            <h2 className="mt-3 text-3xl font-semibold sm:text-4xl">How CrossLedger works in practice.</h2>
-            <div className="mt-8 space-y-4">
-              {[
-                '1. Buyer and seller agree the trade on-platform.',
-                '2. Smart escrow is opened using CLX or supported settlement rails.',
-                '3. Trade documents are uploaded, digitally signed, and verified.',
-                '4. Shipment tracking updates are pulled into the trade dashboard.',
-                '5. Delivery, customs, and document milestones are validated.',
-                '6. Smart contract releases payment and records final settlement.',
-              ].map((step) => (
-                <div key={step} className="rounded-2xl border border-white/10 bg-slate-900/70 p-4 text-slate-200">{step}</div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
       <section id="tokenomics" className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
         <div className="rounded-[2rem] border border-white/10 bg-white/5 p-8 lg:p-12">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-300">Tokenomics</p>
@@ -269,20 +290,20 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="presale" className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
-        <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
+      <section id="presale-panel" className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
+        <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="rounded-[2rem] border border-cyan-400/20 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 p-8 lg:p-10">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-300">Presale</p>
-            <h2 className="mt-3 text-3xl font-semibold sm:text-4xl">Direct access to the CrossLedger presale starts tomorrow.</h2>
+            <h2 className="mt-3 text-3xl font-semibold sm:text-4xl">Direct access to the CrossLedger presale.</h2>
             <p className="mt-5 text-slate-300">
-              Minimum participation is 300 USDT. The current campaign is structured in two stages: 20,000,000 CLX at $0.10 for fourteen days, followed by 2,000,000 CLX at $0.50. Always verify the wallet address and terms before sending any funds.
+              Stage 1 is currently processed manually using Ethereum. Connect your wallet, review the ETH send instructions, estimate your CLX allocation, and then submit your transaction details for verification.
             </p>
 
             <div className="mt-8 grid gap-4 sm:grid-cols-3">
               {[
                 ['Stage', 'Stage 1'],
-                ['Minimum', '300 USDT'],
-                ['Accepted', 'USDT Wallet Transfer'],
+                ['Minimum', '$300 Equivalent'],
+                ['Accepted', 'ETH on Ethereum'],
               ].map(([label, value]) => (
                 <div key={label} className="rounded-2xl border border-white/10 bg-white/5 p-5">
                   <div className="text-sm text-slate-400">{label}</div>
@@ -291,29 +312,110 @@ export default function Home() {
               ))}
             </div>
 
+            <div className="mt-6 rounded-2xl border border-white/10 bg-slate-900/80 p-5">
+              <div className="text-sm text-slate-400">Official ETH Wallet</div>
+              <div className="mt-3 break-all font-mono text-cyan-300">{walletAddress}</div>
+              <button
+                type="button"
+                onClick={copyWallet}
+                className="mt-4 rounded-xl border border-cyan-400/30 bg-cyan-400/10 px-4 py-2 text-sm font-medium text-cyan-200 transition hover:bg-cyan-400/20"
+              >
+                {copied ? 'Wallet Copied' : 'Copy Wallet Address'}
+              </button>
+            </div>
+
             <div className="mt-6 rounded-2xl border border-amber-400/20 bg-amber-400/10 p-4 text-sm leading-6 text-amber-100">
-              A real wallet-connect sale flow, automatic token delivery, and public payment handling should only go live after smart contract development, independent security audit, jurisdiction checks, risk disclosures, and full legal review are complete.
+              Stage 1 allocations are recorded manually. Token claim and automated contract flow will follow after the formal smart contract rollout is finalised.
             </div>
           </div>
 
           <div className="rounded-[2rem] border border-white/10 bg-white/5 p-8">
             <h3 className="text-2xl font-semibold">Presale Checkout</h3>
-            <div className="mt-4 rounded-2xl border border-cyan-400/30 bg-slate-900 p-4">
-              <div className="text-sm text-slate-400">Official Presale Wallet</div>
-              <div className="mt-2 break-all font-mono text-cyan-300">0x264c542adc1447e3a75af2b8e2c758d73e562571</div>
-              <div className="mt-2 text-xs text-slate-400">Send a minimum of 300 USDT to participate in the presale. Always confirm the wallet address before sending funds.</div>
+
+            <button
+              type="button"
+              onClick={connectWallet}
+              className="mt-4 w-full rounded-2xl bg-cyan-400 px-5 py-3 font-medium text-slate-950 transition hover:scale-[1.01]"
+            >
+              {walletConnected ? 'Wallet Connected' : 'Connect Wallet'}
+            </button>
+
+            <p className="mt-3 text-sm text-slate-400">
+              {buyerWallet
+                ? `Connected: ${buyerWallet}`
+                : 'Connect your Ethereum wallet before submitting your details.'}
+            </p>
+
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              <input
+                value={ethPrice}
+                onChange={(e) => setEthPrice(e.target.value)}
+                className="w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 outline-none placeholder:text-slate-500"
+                placeholder="ETH price in USD"
+              />
+              <input
+                value={usdAmount}
+                onChange={(e) => setUsdAmount(e.target.value)}
+                className="w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 outline-none placeholder:text-slate-500"
+                placeholder="USD purchase amount"
+              />
             </div>
 
-            <form className="mt-6 space-y-4">
-              <input className="w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 outline-none placeholder:text-slate-500" placeholder="Full name / entity name" />
-              <input className="w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 outline-none placeholder:text-slate-500" placeholder="Email address" />
-              <input className="w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 outline-none placeholder:text-slate-500" placeholder="Country / jurisdiction" />
-              <input className="w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 outline-none placeholder:text-slate-500" placeholder="Trust Wallet address" />
-              <input className="w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 outline-none placeholder:text-slate-500" placeholder="Intended purchase amount" />
-              <button type="button" className="w-full rounded-2xl bg-cyan-400 px-5 py-3 font-medium text-slate-950 transition hover:scale-[1.01]">
-                Continue to Presale
+            <div className="mt-6 grid gap-4 sm:grid-cols-3">
+              <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-4">
+                <div className="text-sm text-slate-400">Estimated ETH</div>
+                <div className="mt-2 text-xl font-semibold">{calc.ethNeeded.toFixed(6)} ETH</div>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-4">
+                <div className="text-sm text-slate-400">Estimated CLX</div>
+                <div className="mt-2 text-xl font-semibold">
+                  {calc.clx.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                </div>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-4">
+                <div className="text-sm text-slate-400">Minimum Buy</div>
+                <div className="mt-2 text-xl font-semibold">${minimumUsd}</div>
+              </div>
+            </div>
+
+            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+              <input
+                value={buyerWallet}
+                onChange={(e) => setBuyerWallet(e.target.value)}
+                className="w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 outline-none placeholder:text-slate-500"
+                placeholder="Your Ethereum wallet address"
+              />
+              <input
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 outline-none placeholder:text-slate-500"
+                placeholder="Email address"
+              />
+              <input
+                value={amountSent}
+                onChange={(e) => setAmountSent(e.target.value)}
+                className="w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 outline-none placeholder:text-slate-500"
+                placeholder="ETH amount sent"
+              />
+              <input
+                value={txHash}
+                onChange={(e) => setTxHash(e.target.value)}
+                className="w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 outline-none placeholder:text-slate-500"
+                placeholder="Transaction hash"
+              />
+              <button
+                type="submit"
+                className="w-full rounded-2xl bg-cyan-400 px-5 py-3 font-medium text-slate-950 transition hover:scale-[1.01]"
+              >
+                Submit Presale Details
               </button>
             </form>
+
+            {submitted && (
+              <div className="mt-4 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-4 text-sm leading-6 text-emerald-100">
+                Submission captured on-page. The next step is to connect this form to Formspree, Tally, Zapier, Airtable, or your own API so buyer details are saved automatically.
+              </div>
+            )}
 
             <p className="mt-4 text-xs leading-6 text-slate-400">
               By submitting a checkout request, the applicant acknowledges that eligibility may depend on jurisdiction, identity verification, source-of-funds review, sanctions screening, and other applicable compliance requirements.
@@ -326,17 +428,19 @@ export default function Home() {
         <div className="grid gap-8 lg:grid-cols-2">
           <div className="rounded-[2rem] border border-white/10 bg-white/5 p-8">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-300">How to Participate</p>
-            <h2 className="mt-3 text-3xl font-semibold">Step-by-step with Trust Wallet.</h2>
+            <h2 className="mt-3 text-3xl font-semibold">Step-by-step with Ethereum wallet.</h2>
             <div className="mt-6 space-y-4">
               {[
-                'Download Trust Wallet and complete wallet setup securely.',
-                'Buy or transfer USDT into your Trust Wallet.',
-                'Copy the official CrossLedger presale wallet address exactly as shown.',
-                'Send at least 300 USDT and keep the transaction hash for reference.',
-                'Submit your details so your participation can be matched and confirmed.',
+                'Connect your Ethereum wallet using the button in the presale section.',
+                'Copy the official ETH wallet shown on this page.',
+                'Send enough ETH to meet at least the minimum USD equivalent.',
+                'Keep your transaction hash for reference.',
+                'Submit your wallet, amount sent, email, and transaction hash for allocation review.',
               ].map((step, index) => (
                 <div key={step} className="flex gap-4 rounded-2xl border border-white/10 bg-slate-900/70 p-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cyan-400 font-semibold text-slate-950">{index + 1}</div>
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cyan-400 font-semibold text-slate-950">
+                    {index + 1}
+                  </div>
                   <div className="pt-2 text-slate-200">{step}</div>
                 </div>
               ))}
@@ -346,9 +450,11 @@ export default function Home() {
           <div className="rounded-[2rem] border border-white/10 bg-white/5 p-8">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-300">Recent Activity</p>
             <h2 className="mt-3 text-3xl font-semibold">Blockchain-linked transaction feed.</h2>
-            <p className="mt-3 text-sm text-slate-400">Use a block explorer API or indexer endpoint to replace fallback preview rows with real on-chain transfers for the presale wallet.</p>
+            <p className="mt-3 text-sm text-slate-400">
+              Use a block explorer API or indexer endpoint to replace fallback preview rows with real on-chain transfers for the presale wallet.
+            </p>
             <div className="mt-4 rounded-2xl border border-white/10 bg-slate-900/70 p-4 text-xs text-slate-400">
-              Suggested data source: Etherscan-compatible token transfer API or a blockchain indexer service. Endpoint to wire later: <span className="font-mono text-cyan-300">/api/presale-activity</span>
+              Suggested data source: Etherscan-compatible API. Endpoint to wire later: <span className="font-mono text-cyan-300">/api/presale-activity</span>
             </div>
 
             <div className="mt-6 space-y-4">
@@ -406,28 +512,6 @@ export default function Home() {
                 </div>
               ))}
             </div>
-
-            <div className="mt-6 overflow-hidden rounded-3xl border border-white/10 bg-slate-900/70 p-6">
-              <div className="text-sm text-slate-400">Illustrative traction bars</div>
-              <div className="mt-5 space-y-4">
-                {[
-                  ['Digital documents and verification', '88%'],
-                  ['Escrow and settlement workflows', '76%'],
-                  ['Regional corridor activation', '62%'],
-                  ['Enterprise wallet and API expansion', '48%'],
-                ].map(([label, width]) => (
-                  <div key={label}>
-                    <div className="mb-2 flex items-center justify-between text-sm">
-                      <span className="text-slate-200">{label}</span>
-                      <span className="text-slate-400">{width}</span>
-                    </div>
-                    <div className="h-3 overflow-hidden rounded-full bg-slate-800">
-                      <div className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-blue-500" style={{ width }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -436,7 +520,7 @@ export default function Home() {
         <div className="rounded-[2rem] border border-white/10 bg-slate-900/80 p-8 lg:p-12">
           <h2 className="text-3xl font-semibold">Important Notice</h2>
           <p className="mt-5 max-w-4xl text-sm leading-7 text-slate-300">
-            Any live transaction feed must reflect actual blockchain data only. A real wallet-connect sale flow, public payment handling, and automatic token delivery should be implemented only after smart contract development, independent audit, legal review, jurisdiction screening, terms, privacy, and full compliance controls are complete. Nothing on this page should promise price appreciation, future returns, or performance.
+            Stage 1 is currently handled as a manual allocation round. Any future automated wallet-connect sale flow, public payment handling, or token claim system should only go live after smart contract development, testing, legal review, jurisdiction screening, terms, privacy, and full compliance controls are complete. Nothing on this page should promise price appreciation, future returns, or performance.
           </p>
         </div>
       </section>
