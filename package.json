@@ -8,6 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@coinbase/wallet-sdk": "^4.3.7",
     "@metamask/sdk": "^0.33.1",
     "@reown/appkit": "^1.8.19",
     "@reown/appkit-adapter-wagmi": "^1.8.19",
