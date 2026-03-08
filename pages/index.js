@@ -1,9 +1,6 @@
 import { useMemo, useState } from "react";
-import { useAppKit } from "@reown/appkit/react";
 
 export default function Home() {
-  const { open } = useAppKit();
-
   const now = new Date();
   const presaleStart = new Date(now);
   presaleStart.setDate(now.getDate() + 1);
@@ -113,17 +110,9 @@ export default function Home() {
               </p>
 
               <div className="mt-8 flex flex-wrap gap-4">
-                <button
-                  type="button"
-                  onClick={() => open()}
-                  className="rounded-2xl bg-cyan-400 px-6 py-3 font-medium text-slate-950 shadow-lg shadow-cyan-500/20 transition hover:scale-[1.02]"
-                >
-                  Connect Wallet
-                </button>
-
                 <a
                   href="#presale-panel"
-                  className="rounded-2xl border border-white/15 px-6 py-3 font-medium text-white transition hover:bg-white/5"
+                  className="rounded-2xl bg-cyan-400 px-6 py-3 font-medium text-slate-950 shadow-lg shadow-cyan-500/20 transition hover:scale-[1.02]"
                 >
                   Continue to Presale
                 </a>
@@ -286,7 +275,7 @@ export default function Home() {
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-300">Presale</p>
             <h2 className="mt-3 text-3xl font-semibold sm:text-4xl">Direct access to the CrossLedger presale.</h2>
             <p className="mt-5 text-slate-300">
-              Stage 1 is currently processed manually using Ethereum. Connect your wallet, review the ETH send instructions, estimate your CLX allocation, and then submit your transaction details for verification.
+              Stage 1 is currently processed manually using Ethereum. Review the ETH send instructions, estimate your CLX allocation, and then submit your transaction details for verification.
             </p>
 
             <div className="mt-8 grid gap-4 sm:grid-cols-3">
@@ -315,24 +304,16 @@ export default function Home() {
             </div>
 
             <div className="mt-6 rounded-2xl border border-amber-400/20 bg-amber-400/10 p-4 text-sm leading-6 text-amber-100">
-              Stage 1 allocations are recorded manually. Token claim and automated contract flow will follow after the formal smart contract rollout is finalised.
+              Stage 1 allocations are recorded manually. Wallet connection will be enabled in a later release after the smart contract flow is fully tested.
             </div>
           </div>
 
           <div className="rounded-[2rem] border border-white/10 bg-white/5 p-8">
             <h3 className="text-2xl font-semibold">Presale Checkout</h3>
 
-            <button
-              type="button"
-              onClick={() => open()}
-              className="mt-4 w-full rounded-2xl bg-cyan-400 px-5 py-3 font-medium text-slate-950 transition hover:scale-[1.01]"
-            >
-              Connect Wallet
-            </button>
-
-            <p className="mt-3 text-sm text-slate-400">
-              Use the wallet modal above to connect MetaMask, Trust Wallet, Coinbase Wallet, or another supported wallet.
-            </p>
+            <div className="mt-4 rounded-2xl border border-white/10 bg-slate-900/70 p-4 text-sm leading-6 text-slate-300">
+              For Stage 1, please send ETH to the official wallet below and submit your transaction details for manual allocation review.
+            </div>
 
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               <input
@@ -419,11 +400,11 @@ export default function Home() {
             <h2 className="mt-3 text-3xl font-semibold">Step-by-step with Ethereum wallet.</h2>
             <div className="mt-6 space-y-4">
               {[
-                "Connect your Ethereum wallet using the button in the presale section.",
                 "Copy the official ETH wallet shown on this page.",
                 "Send enough ETH to meet at least the minimum USD equivalent.",
                 "Keep your transaction hash for reference.",
                 "Submit your wallet, amount sent, email, and transaction hash for allocation review.",
+                "Await manual confirmation for your Stage 1 allocation.",
               ].map((step, index) => (
                 <div key={step} className="flex gap-4 rounded-2xl border border-white/10 bg-slate-900/70 p-4">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cyan-400 font-semibold text-slate-950">
