@@ -1,6 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState } from "react";
+import { useAppKit } from "@reown/appkit/react";
 
 export default function Home() {
+  const { open } = useAppKit();
+
   const now = new Date();
   const presaleStart = new Date(now);
   presaleStart.setDate(now.getDate() + 1);
@@ -11,24 +14,23 @@ export default function Home() {
   const hours = Math.floor((countdownMs / (1000 * 60 * 60)) % 24);
   const minutes = Math.floor((countdownMs / (1000 * 60)) % 60);
 
-  const walletAddress = '0x7A92fe17ec50e705C28FB93BB201A8317fdC39A7';
+  const walletAddress = "0x7A92fe17ec50e705C28FB93BB201A8317fdC39A7";
   const stagePriceUsd = 0.1;
   const minimumUsd = 300;
 
-  const [ethPrice, setEthPrice] = useState('3500');
-  const [usdAmount, setUsdAmount] = useState('1000');
+  const [ethPrice, setEthPrice] = useState("3500");
+  const [usdAmount, setUsdAmount] = useState("1000");
   const [copied, setCopied] = useState(false);
-  const [walletConnected, setWalletConnected] = useState(false);
-  const [buyerWallet, setBuyerWallet] = useState('');
-  const [email, setEmail] = useState('');
-  const [amountSent, setAmountSent] = useState('');
-  const [txHash, setTxHash] = useState('');
+  const [buyerWallet, setBuyerWallet] = useState("");
+  const [email, setEmail] = useState("");
+  const [amountSent, setAmountSent] = useState("");
+  const [txHash, setTxHash] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
   const fallbackActivity = [
-    { buyer: '0x71...9ab4', amount: '12,500 USDT', status: 'Fallback preview' },
-    { buyer: '0x93...1fd2', amount: '4,800 USDT', status: 'Fallback preview' },
-    { buyer: '0x28...7ce1', amount: '18,200 USDT', status: 'Fallback preview' },
+    { buyer: "0x71...9ab4", amount: "12,500 USDT", status: "Fallback preview" },
+    { buyer: "0x93...1fd2", amount: "4,800 USDT", status: "Fallback preview" },
+    { buyer: "0x28...7ce1", amount: "18,200 USDT", status: "Fallback preview" },
   ];
 
   const totalSupply = 1000000000;
@@ -42,18 +44,18 @@ export default function Home() {
   const campaignRaise = stage1Raise + stage2Raise;
 
   const allocationCards = [
-    ['Presale & Launch Reserve', '22%', '220,000,000 CLX'],
-    ['Ecosystem & Utility', '28%', '280,000,000 CLX'],
-    ['Treasury', '18%', '180,000,000 CLX'],
-    ['Liquidity', '12%', '120,000,000 CLX'],
-    ['Team & Advisors', '10%', '100,000,000 CLX'],
-    ['Marketing & Partnerships', '10%', '100,000,000 CLX'],
+    ["Presale & Launch Reserve", "22%", "220,000,000 CLX"],
+    ["Ecosystem & Utility", "28%", "280,000,000 CLX"],
+    ["Treasury", "18%", "180,000,000 CLX"],
+    ["Liquidity", "12%", "120,000,000 CLX"],
+    ["Team & Advisors", "10%", "100,000,000 CLX"],
+    ["Marketing & Partnerships", "10%", "100,000,000 CLX"],
   ];
 
   const campaignMath = [
-    ['Stage 1', '20,000,000 CLX', '$0.10', `$${stage1Raise.toLocaleString()}`],
-    ['Stage 2', '2,000,000 CLX', '$0.50', `$${stage2Raise.toLocaleString()}`],
-    ['Campaign Total', '22,000,000 CLX', 'Weighted', `$${campaignRaise.toLocaleString()}`],
+    ["Stage 1", "20,000,000 CLX", "$0.10", `$${stage1Raise.toLocaleString()}`],
+    ["Stage 2", "2,000,000 CLX", "$0.50", `$${stage2Raise.toLocaleString()}`],
+    ["Campaign Total", "22,000,000 CLX", "Weighted", `$${campaignRaise.toLocaleString()}`],
   ];
 
   const calc = useMemo(() => {
@@ -71,27 +73,6 @@ export default function Home() {
       setTimeout(() => setCopied(false), 2000);
     } catch (e) {
       console.error(e);
-    }
-  };
-
-  const connectWallet = async () => {
-    if (!window.ethereum) {
-      alert('No Ethereum wallet detected. Please open with MetaMask or another Ethereum wallet.');
-      return;
-    }
-
-    try {
-      const accounts = await window.ethereum.request({
-        method: 'eth_requestAccounts',
-      });
-
-      if (accounts?.[0]) {
-        setWalletConnected(true);
-        setBuyerWallet(accounts[0]);
-      }
-    } catch (error) {
-      console.error(error);
-      alert('Wallet connection was not completed.');
     }
   };
 
@@ -132,12 +113,21 @@ export default function Home() {
               </p>
 
               <div className="mt-8 flex flex-wrap gap-4">
+                <button
+                  type="button"
+                  onClick={() => open()}
+                  className="rounded-2xl bg-cyan-400 px-6 py-3 font-medium text-slate-950 shadow-lg shadow-cyan-500/20 transition hover:scale-[1.02]"
+                >
+                  Connect Wallet
+                </button>
+
                 <a
                   href="#presale-panel"
-                  className="rounded-2xl bg-cyan-400 px-6 py-3 font-medium text-slate-950 shadow-lg shadow-cyan-500/20 transition hover:scale-[1.02]"
+                  className="rounded-2xl border border-white/15 px-6 py-3 font-medium text-white transition hover:bg-white/5"
                 >
                   Continue to Presale
                 </a>
+
                 <a
                   href="#tokenomics"
                   className="rounded-2xl border border-white/15 px-6 py-3 font-medium text-white transition hover:bg-white/5"
@@ -155,9 +145,9 @@ export default function Home() {
               <div className="text-sm uppercase tracking-[0.2em] text-cyan-300">Countdown to Presale</div>
               <div className="mt-5 grid grid-cols-3 gap-4 text-center">
                 {[
-                  ['Days', String(days)],
-                  ['Hours', String(hours)],
-                  ['Minutes', String(minutes)],
+                  ["Days", String(days)],
+                  ["Hours", String(hours)],
+                  ["Minutes", String(minutes)],
                 ].map(([label, value]) => (
                   <div key={label} className="rounded-3xl border border-white/10 bg-slate-900/80 p-5">
                     <div className="text-3xl font-semibold sm:text-4xl">{value}</div>
@@ -191,10 +181,10 @@ export default function Home() {
       <section className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
         <div className="grid gap-6 md:grid-cols-4">
           {[
-            ['Utility', 'Transaction fees, escrow deposits, service payments'],
-            ['Validation', 'Digital documents, KYC/AML checks, audit trails'],
-            ['Use Case', 'Commodity trades, SME finance workflows, smart settlement'],
-            ['Launch Focus', 'Presale conversion, ecosystem traction, platform rollout'],
+            ["Utility", "Transaction fees, escrow deposits, service payments"],
+            ["Validation", "Digital documents, KYC/AML checks, audit trails"],
+            ["Use Case", "Commodity trades, SME finance workflows, smart settlement"],
+            ["Launch Focus", "Presale conversion, ecosystem traction, platform rollout"],
           ].map(([title, text]) => (
             <div key={title} className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/20">
               <div className="text-sm font-medium text-cyan-300">{title}</div>
@@ -217,10 +207,10 @@ export default function Home() {
           <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-8">
             <div className="space-y-5">
               {[
-                'Smart escrow holds funds until pre-set trade conditions are met',
-                'Trade documents are digitised, hashed, and verified on-chain',
-                'Shipment status can be linked through API or logistics integrations',
-                'Completed trades create an immutable record for audits and finance partners',
+                "Smart escrow holds funds until pre-set trade conditions are met",
+                "Trade documents are digitised, hashed, and verified on-chain",
+                "Shipment status can be linked through API or logistics integrations",
+                "Completed trades create an immutable record for audits and finance partners",
               ].map((item) => (
                 <div key={item} className="flex items-start gap-3">
                   <div className="mt-1 h-2.5 w-2.5 rounded-full bg-cyan-300" />
@@ -301,9 +291,9 @@ export default function Home() {
 
             <div className="mt-8 grid gap-4 sm:grid-cols-3">
               {[
-                ['Stage', 'Stage 1'],
-                ['Minimum', '$300 Equivalent'],
-                ['Accepted', 'ETH on Ethereum'],
+                ["Stage", "Stage 1"],
+                ["Minimum", "$300 Equivalent"],
+                ["Accepted", "ETH on Ethereum"],
               ].map(([label, value]) => (
                 <div key={label} className="rounded-2xl border border-white/10 bg-white/5 p-5">
                   <div className="text-sm text-slate-400">{label}</div>
@@ -320,7 +310,7 @@ export default function Home() {
                 onClick={copyWallet}
                 className="mt-4 rounded-xl border border-cyan-400/30 bg-cyan-400/10 px-4 py-2 text-sm font-medium text-cyan-200 transition hover:bg-cyan-400/20"
               >
-                {copied ? 'Wallet Copied' : 'Copy Wallet Address'}
+                {copied ? "Wallet Copied" : "Copy Wallet Address"}
               </button>
             </div>
 
@@ -334,16 +324,14 @@ export default function Home() {
 
             <button
               type="button"
-              onClick={connectWallet}
+              onClick={() => open()}
               className="mt-4 w-full rounded-2xl bg-cyan-400 px-5 py-3 font-medium text-slate-950 transition hover:scale-[1.01]"
             >
-              {walletConnected ? 'Wallet Connected' : 'Connect Wallet'}
+              Connect Wallet
             </button>
 
             <p className="mt-3 text-sm text-slate-400">
-              {buyerWallet
-                ? `Connected: ${buyerWallet}`
-                : 'Connect your Ethereum wallet before submitting your details.'}
+              Use the wallet modal above to connect MetaMask, Trust Wallet, Coinbase Wallet, or another supported wallet.
             </p>
 
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
@@ -431,11 +419,11 @@ export default function Home() {
             <h2 className="mt-3 text-3xl font-semibold">Step-by-step with Ethereum wallet.</h2>
             <div className="mt-6 space-y-4">
               {[
-                'Connect your Ethereum wallet using the button in the presale section.',
-                'Copy the official ETH wallet shown on this page.',
-                'Send enough ETH to meet at least the minimum USD equivalent.',
-                'Keep your transaction hash for reference.',
-                'Submit your wallet, amount sent, email, and transaction hash for allocation review.',
+                "Connect your Ethereum wallet using the button in the presale section.",
+                "Copy the official ETH wallet shown on this page.",
+                "Send enough ETH to meet at least the minimum USD equivalent.",
+                "Keep your transaction hash for reference.",
+                "Submit your wallet, amount sent, email, and transaction hash for allocation review.",
               ].map((step, index) => (
                 <div key={step} className="flex gap-4 rounded-2xl border border-white/10 bg-slate-900/70 p-4">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cyan-400 font-semibold text-slate-950">
@@ -484,9 +472,9 @@ export default function Home() {
             <h2 className="mt-3 text-3xl font-semibold">Three phases of platform rollout.</h2>
             <div className="mt-6 space-y-4">
               {[
-                ['Phase 1 • Presale & Core Build', 'Launch the CLX presale, finalise the wallet architecture, deploy the first CrossLedger trade dashboard, and prepare smart escrow plus verified digital documentation modules for pilot users.'],
-                ['Phase 2 • Pilot Trade Corridors', 'Run pilot transactions across priority trade corridors such as Brazil, UAE, and Asia-focused routes, connect shipment tracking feeds, and validate KYC/AML-linked trade workflows with early counterparties.'],
-                ['Phase 3 • Scale Network Effects', 'Expand into enterprise wallet tiers, API integrations, compliance tooling, service marketplace layers, and broader transaction volumes across commodity and SME trade flows.'],
+                ["Phase 1 • Presale & Core Build", "Launch the CLX presale, finalise the wallet architecture, deploy the first CrossLedger trade dashboard, and prepare smart escrow plus verified digital documentation modules for pilot users."],
+                ["Phase 2 • Pilot Trade Corridors", "Run pilot transactions across priority trade corridors such as Brazil, UAE, and Asia-focused routes, connect shipment tracking feeds, and validate KYC/AML-linked trade workflows with early counterparties."],
+                ["Phase 3 • Scale Network Effects", "Expand into enterprise wallet tiers, API integrations, compliance tooling, service marketplace layers, and broader transaction volumes across commodity and SME trade flows."],
               ].map(([title, text]) => (
                 <div key={title} className="rounded-2xl border border-white/10 bg-slate-900/70 p-5">
                   <div className="text-lg font-semibold text-white">{title}</div>
@@ -501,10 +489,10 @@ export default function Home() {
             <h2 className="mt-3 text-3xl font-semibold">A digital layer for a massive trade market.</h2>
             <div className="mt-6 grid gap-4 md:grid-cols-2">
               {[
-                ['Global trade opportunity', '$32T'],
-                ['Trade finance gap', '$2.5T'],
-                ['Target model', '$50M–$500M GMV'],
-                ['Core regions', 'APAC, Middle East, LATAM'],
+                ["Global trade opportunity", "$32T"],
+                ["Trade finance gap", "$2.5T"],
+                ["Target model", "$50M–$500M GMV"],
+                ["Core regions", "APAC, Middle East, LATAM"],
               ].map(([label, value]) => (
                 <div key={label} className="rounded-2xl border border-white/10 bg-slate-900/70 p-5">
                   <div className="text-sm text-slate-400">{label}</div>
