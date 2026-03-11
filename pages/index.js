@@ -2,6 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { ethers } from "ethers";
 
 const CONTRACT_ADDRESS = "0xCA30Cbe4D511Dd283e0FDe62d2215c42C358Ba4c";
+const MIN_BUY_USD = 200;
+const ASSUMED_ETH_USD = 2500;
+const MIN_BUY_ETH = (MIN_BUY_USD / ASSUMED_ETH_USD).toFixed(4);
 
 /*
   IMPORTANT:
@@ -39,7 +42,7 @@ const TOKEN_CONFIG = {
   prelaunchTokens: "7,500,000 CLX",
   stageTwoTokens: "2,500,000 CLX",
   totalDefinedRoundTokens: "10,000,000 CLX",
-  minBuy: "0.01 ETH",
+  minBuy: `US$${MIN_BUY_USD}`,
   maxBuy: "TBA",
   acceptedCurrency: "ETH",
   vestingNote:
@@ -174,6 +177,13 @@ export default function Home() {
   const [isBuying, setIsBuying] = useState(false);
   const [isCheckingWallet, setIsCheckingWallet] = useState(true);
 
+  const [contactName, setContactName] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactQuestion, setContactQuestion] = useState("");
+  const [contactLoading, setContactLoading] = useState(false);
+  const [contactSuccess, setContactSuccess] = useState("");
+  const [contactError, setContactError] = useState("");
+
   const fallbackActivity = [
     { buyer: "0x71...9ab4", amount: "12,500 CLX", status: "Preview" },
     { buyer: "0x93...1fd2", amount: "4,800 CLX", status: "Preview" },
@@ -280,6 +290,13 @@ export default function Home() {
         return;
       }
 
+      if (Number(ethAmount) < Number(MIN_BUY_ETH)) {
+        setError(
+          `Minimum purchase is US$${MIN_BUY_USD} (approximately ${MIN_BUY_ETH} ETH based on ETH at US$${ASSUMED_ETH_USD}).`
+        );
+        return;
+      }
+
       setIsBuying(true);
 
       const provider = new ethers.BrowserProvider(window.ethereum);
@@ -318,6 +335,49 @@ export default function Home() {
       }
     } finally {
       setIsBuying(false);
+    }
+  }
+
+  async function submitContactForm(e) {
+    e.preventDefault();
+    setContactSuccess("");
+    setContactError("");
+
+    if (!contactName.trim() || !contactEmail.trim() || !contactQuestion.trim()) {
+      setContactError("Please complete all contact form fields.");
+      return;
+    }
+
+    try {
+      setContactLoading(true);
+
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: contactName,
+          email: contactEmail,
+          question: contactQuestion,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.message || "Failed to send message.");
+      }
+
+      setContactSuccess("Thank you. Your message has been sent successfully.");
+      setContactName("");
+      setContactEmail("");
+      setContactQuestion("");
+    } catch (err) {
+      console.error(err);
+      setContactError(err.message || "Failed to send message.");
+    } finally {
+      setContactLoading(false);
     }
   }
 
@@ -536,7 +596,8 @@ export default function Home() {
               </div>
 
               <div style={{ color: "#cbd5e1", lineHeight: 1.7, fontSize: "14px" }}>
-                Current progress: <strong>{alreadyRaisedPct}%</strong> of total raise target.
+                Current progress: <strong>{alreadyRaisedPct}%</strong> of total raise
+                target.
                 <br />
                 If the current pre-launch round completes, progress would move to{" "}
                 <strong>{afterCurrentRoundPct}%</strong>.
@@ -623,7 +684,7 @@ export default function Home() {
 
             <input
               type="number"
-              placeholder="0.10"
+              placeholder={MIN_BUY_ETH}
               value={ethAmount}
               onChange={(e) => setEthAmount(e.target.value)}
               step="0.0001"
@@ -648,7 +709,7 @@ export default function Home() {
                 marginBottom: "16px",
               }}
             >
-              {["0.05", "0.10", "0.25", "0.50"].map((value) => (
+              {[MIN_BUY_ETH, "0.10", "0.25", "0.50"].map((value) => (
                 <button
                   key={value}
                   onClick={() => setEthAmount(value)}
@@ -758,7 +819,9 @@ export default function Home() {
                 lineHeight: 1.6,
               }}
             >
-              Minimum buy: {TOKEN_CONFIG.minBuy}
+              Minimum buy: US${MIN_BUY_USD}
+              <br />
+              Approximate minimum in ETH: {MIN_BUY_ETH} ETH
               <br />
               Maximum buy: {TOKEN_CONFIG.maxBuy}
             </div>
@@ -970,6 +1033,135 @@ export default function Home() {
             }}
           >
             <div style={{ fontSize: "28px", fontWeight: 900, marginBottom: "18px" }}>
+              Contact Us
+            </div>
+
+            <form onSubmit={submitContactForm}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "14px",
+                  marginBottom: "14px",
+                }}
+              >
+                <input
+                  type="text"
+                  placeholder="Your name"
+                  value={contactName}
+                  onChange={(e) => setContactName(e.target.value)}
+                  style={{
+                    width: "100%",
+                    boxSizing: "border-box",
+                    padding: "15px 16px",
+                    borderRadius: "14px",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    background: "rgba(255,255,255,0.04)",
+                    color: "#fff",
+                    fontSize: "16px",
+                    outline: "none",
+                  }}
+                />
+
+                <input
+                  type="email"
+                  placeholder="Your email"
+                  value={contactEmail}
+                  onChange={(e) => setContactEmail(e.target.value)}
+                  style={{
+                    width: "100%",
+                    boxSizing: "border-box",
+                    padding: "15px 16px",
+                    borderRadius: "14px",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    background: "rgba(255,255,255,0.04)",
+                    color: "#fff",
+                    fontSize: "16px",
+                    outline: "none",
+                  }}
+                />
+              </div>
+
+              <textarea
+                placeholder="Your question"
+                value={contactQuestion}
+                onChange={(e) => setContactQuestion(e.target.value)}
+                rows={6}
+                style={{
+                  width: "100%",
+                  boxSizing: "border-box",
+                  padding: "15px 16px",
+                  borderRadius: "14px",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  background: "rgba(255,255,255,0.04)",
+                  color: "#fff",
+                  fontSize: "16px",
+                  outline: "none",
+                  resize: "vertical",
+                }}
+              />
+
+              <button
+                type="submit"
+                disabled={contactLoading}
+                style={{
+                  marginTop: "16px",
+                  padding: "15px 22px",
+                  borderRadius: "14px",
+                  border: "none",
+                  background: "#ffffff",
+                  color: "#0f172a",
+                  fontWeight: 900,
+                  fontSize: "16px",
+                  cursor: "pointer",
+                }}
+              >
+                {contactLoading ? "Sending..." : "Send Message"}
+              </button>
+
+              {contactSuccess && (
+                <div
+                  style={{
+                    marginTop: "16px",
+                    background: "rgba(34,197,94,0.18)",
+                    color: "#86efac",
+                    borderRadius: "12px",
+                    padding: "14px",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {contactSuccess}
+                </div>
+              )}
+
+              {contactError && (
+                <div
+                  style={{
+                    marginTop: "16px",
+                    background: "rgba(239,68,68,0.18)",
+                    color: "#fca5a5",
+                    borderRadius: "12px",
+                    padding: "14px",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {contactError}
+                </div>
+              )}
+            </form>
+          </div>
+        </div>
+
+        <div style={{ marginTop: "26px" }}>
+          <div
+            style={{
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              borderRadius: "24px",
+              padding: "24px",
+            }}
+          >
+            <div style={{ fontSize: "28px", fontWeight: 900, marginBottom: "18px" }}>
               Recent Activity
             </div>
 
@@ -1065,4 +1257,63 @@ export default function Home() {
       </div>
     </div>
   );
+}
+What is this?
+2) Create a new file: pages/api/contact.js
+import nodemailer from "nodemailer";
+
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ message: "Method not allowed" });
+  }
+
+  try {
+    const { name, email, question } = req.body || {};
+
+    if (!name || !email || !question) {
+      return res.status(400).json({ message: "All fields are required." });
+    }
+
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT || 587),
+      secure: String(process.env.SMTP_SECURE) === "true",
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
+
+    const recipient = process.env.CONTACT_TO_EMAIL;
+
+    await transporter.sendMail({
+      from: process.env.CONTACT_FROM_EMAIL,
+      to: recipient,
+      replyTo: email,
+      subject: `CrossLedger Contact Form - ${name}`,
+      text: `
+New CrossLedger contact form submission
+
+Name: ${name}
+Email: ${email}
+
+Question:
+${question}
+      `,
+      html: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+          <h2>New CrossLedger contact form submission</h2>
+          <p><strong>Name:</strong> ${name}</p>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Question:</strong></p>
+          <p>${question.replace(/\n/g, "<br />")}</p>
+        </div>
+      `,
+    });
+
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.error("Contact API error:", error);
+    return res.status(500).json({ message: "Failed to send message." });
+  }
 }
