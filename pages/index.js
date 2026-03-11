@@ -4,7 +4,7 @@ import { ethers } from "ethers";
 const CONTRACT_ADDRESS = "0xCA30Cbe4D511Dd283e0FDe62d2215c42C358Ba4c";
 
 /*
-  IMPORTANT
+  IMPORTANT:
   This assumes your contract has:
   function buyTokens() external payable
 
@@ -20,112 +20,149 @@ const CONTRACT_ABI = [
   },
 ];
 
-/*
-  EDIT THESE DETAILS TO MATCH YOUR FINAL TOKEN INFORMATION
-*/
 const TOKEN_CONFIG = {
   name: "CrossLedger",
   symbol: "CLX",
   network: "Ethereum",
-  launchTag: "CrossLedger Token Presale",
-  headline: "The next-generation trade ecosystem token",
+  launchTag: "CrossLedger Pre-Launch & Presale",
+  headline: "Blockchain infrastructure for the future of international trade",
   subheadline:
-    "CLX is designed to power a modern digital ecosystem focused on international trade, transparency, access, and scalable blockchain utility.",
+    "CrossLedger is being developed to support smart-contract-based international trade infrastructure. The current capital raise is structured toward a US$3,000,000 objective, with US$1,000,000 already secured, a live pre-launch round of US$750,000 at US$0.10 per token, and a second-stage presale balance of US$1,250,000 at US$0.50 per token.",
   contractAddress: CONTRACT_ADDRESS,
-  tokenPrice: "TBA",
-  listingPrice: "TBA",
-  softCap: "TBA",
-  hardCap: "TBA",
+  currentPrice: "US$0.10",
+  stageTwoPrice: "US$0.50",
+  projectedLaunchPrice: "US$13.50",
+  overallRaiseTarget: "US$3,000,000",
+  alreadyRaised: "US$1,000,000",
+  prelaunchTarget: "US$750,000",
+  stageTwoTarget: "US$1,250,000",
+  prelaunchTokens: "7,500,000 CLX",
+  stageTwoTokens: "2,500,000 CLX",
+  totalDefinedRoundTokens: "10,000,000 CLX",
   minBuy: "0.01 ETH",
   maxBuy: "TBA",
-  totalSupply: "TBA",
-  presaleAllocation: "TBA",
-  liquidityAllocation: "TBA",
-  ecosystemAllocation: "TBA",
-  teamAllocation: "TBA",
-  treasuryAllocation: "TBA",
-  vestingNote: "Subject to final launch structure and smart contract settings.",
   acceptedCurrency: "ETH",
+  vestingNote:
+    "Current raise targets and active round pricing are defined. Broader tokenomics allocations and final vesting structure remain subject to final release settings.",
 };
+
+const RAISE_PROGRESS = {
+  totalTarget: 3000000,
+  alreadyRaised: 1000000,
+  currentRoundTarget: 750000,
+  nextStageTarget: 1250000,
+};
+
+const alreadyRaisedPct = (
+  (RAISE_PROGRESS.alreadyRaised / RAISE_PROGRESS.totalTarget) *
+  100
+).toFixed(2);
+
+const afterCurrentRoundPct = (
+  ((RAISE_PROGRESS.alreadyRaised + RAISE_PROGRESS.currentRoundTarget) /
+    RAISE_PROGRESS.totalTarget) *
+  100
+).toFixed(2);
 
 const PRESALE_PHASES = [
   {
-    phase: "Phase 1",
-    price: "TBA",
-    allocation: "TBA",
+    phase: "Pre-Launch",
+    price: "US$0.10",
+    allocation: "7,500,000 CLX",
+    raiseTarget: "US$750,000",
     status: "Current",
     description:
-      "Initial allocation for early participants entering the CrossLedger ecosystem at the foundation stage.",
+      "The current pre-launch round is structured to raise US$750,000 at US$0.10 per token, positioning early participants ahead of the wider presale.",
   },
   {
-    phase: "Phase 2",
-    price: "TBA",
-    allocation: "TBA",
+    phase: "Presale Stage 2",
+    price: "US$0.50",
+    allocation: "2,500,000 CLX",
+    raiseTarget: "US$1,250,000",
     status: "Upcoming",
     description:
-      "Expanded access phase with revised pricing and continued ecosystem participation.",
+      "The second stage is designed to complete the remaining balance toward the US$3,000,000 raise target at US$0.50 per token.",
   },
   {
-    phase: "Phase 3",
-    price: "TBA",
-    allocation: "TBA",
-    status: "Upcoming",
+    phase: "Projected Launch",
+    price: "US$13.50",
+    allocation: "Market Release",
+    raiseTarget: "N/A",
+    status: "Projected",
     description:
-      "Final presale release prior to broader market rollout and ecosystem expansion.",
+      "The projected post-launch price is US$13.50 per token as the CrossLedger ecosystem expands through smart contract infrastructure built for international trade.",
   },
 ];
 
 const TOKEN_FEATURES = [
   {
-    title: "Trade Utility",
-    text: "Designed to support a blockchain-driven ecosystem tailored to international trade workflows and value transfer.",
+    title: "International Trade Utility",
+    text: "CLX is intended to support a blockchain ecosystem where smart contracts can strengthen trust, execution, and transactional efficiency across international trade flows.",
   },
   {
-    title: "Transparent Access",
-    text: "Smart contract-based transactions reduce friction and improve clarity for participants entering the ecosystem.",
+    title: "Growth Through Smart Contracts",
+    text: "The long-term value thesis for CLX is tied to the rollout of smart-contract infrastructure that supports real trade activity, settlement logic, and scalable commercial use cases.",
   },
   {
-    title: "Scalable Architecture",
-    text: "Positioned for future expansion across services, integrations, and broader digital trade infrastructure.",
+    title: "Structured Early Entry",
+    text: "The pre-launch and staged presale model is designed to progressively fund ecosystem development while providing structured market entry ahead of broader launch.",
   },
 ];
 
 const ROADMAP = [
   {
     stage: "Stage 1",
-    title: "Presale Launch",
-    text: "Launch CLX presale page, wallet connectivity, initial smart contract integration, and early community access.",
+    title: "Pre-Launch Capital Raise",
+    text: "Complete the current US$750,000 pre-launch round at US$0.10 per token while strengthening market confidence and ecosystem positioning.",
   },
   {
     stage: "Stage 2",
-    title: "Ecosystem Buildout",
-    text: "Expand token utility, community presence, strategic positioning, and infrastructure readiness.",
+    title: "Presale Expansion",
+    text: "Open the second-stage presale at US$0.50 per token to complete the remaining US$1,250,000 toward the US$3,000,000 raise objective.",
   },
   {
     stage: "Stage 3",
-    title: "Broader Rollout",
-    text: "Move into wider market activation, platform integration, and longer-term ecosystem growth.",
+    title: "Launch and Utility Growth",
+    text: "Support broader market rollout and expand smart contract functionality for international trade applications, with a projected launch reference of US$13.50 per token.",
   },
 ];
 
 const FAQS = [
   {
-    q: "How do I buy CLX?",
-    a: "Connect your wallet, enter the amount of ETH you want to use, and confirm the transaction in MetaMask.",
+    q: "How much is the current pre-launch price?",
+    a: "The current pre-launch price is US$0.10 per CLX token.",
   },
   {
-    q: "Where do purchased tokens go?",
-    a: "If the contract is configured for direct delivery, tokens are sent to the connected wallet after the transaction confirms.",
+    q: "How much has already been raised?",
+    a: "US$1,000,000 has already been raised toward the overall US$3,000,000 objective.",
   },
   {
-    q: "What wallet should I use?",
-    a: "A browser wallet such as MetaMask is recommended for the current purchase flow.",
+    q: "What is the next presale stage price?",
+    a: "The second presale stage is structured at US$0.50 per token.",
   },
   {
-    q: "What network is this on?",
-    a: `This page is currently configured for ${TOKEN_CONFIG.network}. Always confirm the correct network before purchasing.`,
+    q: "What is the projected launch price?",
+    a: "The projected post-launch price referenced for CLX is US$13.50 per token.",
   },
 ];
+
+function StatCard({ label, value }) {
+  return (
+    <div
+      style={{
+        background: "rgba(255,255,255,0.05)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        borderRadius: "18px",
+        padding: "18px",
+      }}
+    >
+      <div style={{ color: "#94a3b8", fontSize: "13px", marginBottom: "6px" }}>
+        {label}
+      </div>
+      <div style={{ fontSize: "22px", fontWeight: 800 }}>{value}</div>
+    </div>
+  );
+}
 
 export default function Home() {
   const [walletAddress, setWalletAddress] = useState("");
@@ -259,7 +296,9 @@ export default function Home() {
       const receipt = await tx.wait();
 
       if (receipt.status === 1) {
-        setSuccess(`Purchase successful. ${TOKEN_CONFIG.symbol} should arrive in your wallet.`);
+        setSuccess(
+          `Purchase successful. ${TOKEN_CONFIG.symbol} should arrive in your wallet.`
+        );
       } else {
         setError("Transaction failed");
       }
@@ -285,24 +324,6 @@ export default function Home() {
   function shortAddress(address) {
     if (!address) return "";
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
-  }
-
-  function StatCard({ label, value }) {
-    return (
-      <div
-        style={{
-          background: "rgba(255,255,255,0.05)",
-          border: "1px solid rgba(255,255,255,0.08)",
-          borderRadius: "18px",
-          padding: "18px",
-        }}
-      >
-        <div style={{ color: "#94a3b8", fontSize: "13px", marginBottom: "6px" }}>
-          {label}
-        </div>
-        <div style={{ fontSize: "22px", fontWeight: 800 }}>{value}</div>
-      </div>
-    );
   }
 
   return (
@@ -447,7 +468,9 @@ export default function Home() {
                   <div style={{ fontSize: "30px", fontWeight: 900 }}>
                     {String(item.value).padStart(2, "0")}
                   </div>
-                  <div style={{ color: "#94a3b8", fontSize: "13px" }}>{item.label}</div>
+                  <div style={{ color: "#94a3b8", fontSize: "13px" }}>
+                    {item.label}
+                  </div>
                 </div>
               ))}
             </div>
@@ -457,12 +480,67 @@ export default function Home() {
                 display: "grid",
                 gridTemplateColumns: "repeat(4, 1fr)",
                 gap: "14px",
+                marginBottom: "24px",
               }}
             >
-              <StatCard label="Token Price" value={TOKEN_CONFIG.tokenPrice} />
-              <StatCard label="Listing Price" value={TOKEN_CONFIG.listingPrice} />
-              <StatCard label="Soft Cap" value={TOKEN_CONFIG.softCap} />
-              <StatCard label="Hard Cap" value={TOKEN_CONFIG.hardCap} />
+              <StatCard label="Already Raised" value={TOKEN_CONFIG.alreadyRaised} />
+              <StatCard label="Current Round" value={TOKEN_CONFIG.prelaunchTarget} />
+              <StatCard label="Next Stage" value={TOKEN_CONFIG.stageTwoTarget} />
+              <StatCard
+                label="Projected Launch"
+                value={TOKEN_CONFIG.projectedLaunchPrice}
+              />
+            </div>
+
+            <div
+              style={{
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                borderRadius: "20px",
+                padding: "18px",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: "12px",
+                  marginBottom: "10px",
+                  flexWrap: "wrap",
+                }}
+              >
+                <div style={{ fontWeight: 800 }}>Raise Progress</div>
+                <div style={{ color: "#93c5fd", fontWeight: 800 }}>
+                  {TOKEN_CONFIG.alreadyRaised} of {TOKEN_CONFIG.overallRaiseTarget}
+                </div>
+              </div>
+
+              <div
+                style={{
+                  width: "100%",
+                  height: "14px",
+                  background: "rgba(255,255,255,0.08)",
+                  borderRadius: "999px",
+                  overflow: "hidden",
+                  marginBottom: "10px",
+                }}
+              >
+                <div
+                  style={{
+                    width: `${alreadyRaisedPct}%`,
+                    height: "100%",
+                    background: "linear-gradient(90deg, #2563eb 0%, #22c55e 100%)",
+                    borderRadius: "999px",
+                  }}
+                />
+              </div>
+
+              <div style={{ color: "#cbd5e1", lineHeight: 1.7, fontSize: "14px" }}>
+                Current progress: <strong>{alreadyRaisedPct}%</strong> of total raise target.
+                <br />
+                If the current pre-launch round completes, progress would move to{" "}
+                <strong>{afterCurrentRoundPct}%</strong>.
+              </div>
             </div>
           </div>
 
@@ -479,7 +557,8 @@ export default function Home() {
               Buy {TOKEN_CONFIG.symbol}
             </div>
             <div style={{ color: "#475569", lineHeight: 1.6, marginBottom: "18px" }}>
-              Connect your wallet and purchase directly with {TOKEN_CONFIG.acceptedCurrency}.
+              Connect your wallet and purchase directly with{" "}
+              {TOKEN_CONFIG.acceptedCurrency}.
             </div>
 
             <div
@@ -494,6 +573,45 @@ export default function Home() {
               <div style={{ color: "#64748b", fontSize: "13px" }}>Contract</div>
               <div style={{ fontWeight: 800, wordBreak: "break-all", marginTop: "5px" }}>
                 {TOKEN_CONFIG.contractAddress}
+              </div>
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "12px",
+                marginBottom: "16px",
+              }}
+            >
+              <div
+                style={{
+                  background: "#f8fafc",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: "14px",
+                  padding: "12px",
+                }}
+              >
+                <div style={{ color: "#64748b", fontSize: "12px" }}>Current Price</div>
+                <div style={{ fontWeight: 900, marginTop: "4px" }}>
+                  {TOKEN_CONFIG.currentPrice}
+                </div>
+              </div>
+
+              <div
+                style={{
+                  background: "#f8fafc",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: "14px",
+                  padding: "12px",
+                }}
+              >
+                <div style={{ color: "#64748b", fontSize: "12px" }}>
+                  Projected Launch
+                </div>
+                <div style={{ fontWeight: 900, marginTop: "4px" }}>
+                  {TOKEN_CONFIG.projectedLaunchPrice}
+                </div>
               </div>
             </div>
 
@@ -712,8 +830,15 @@ export default function Home() {
                       background:
                         phase.status === "Current"
                           ? "rgba(34,197,94,0.18)"
+                          : phase.status === "Projected"
+                          ? "rgba(168,85,247,0.18)"
                           : "rgba(59,130,246,0.18)",
-                      color: phase.status === "Current" ? "#86efac" : "#93c5fd",
+                      color:
+                        phase.status === "Current"
+                          ? "#86efac"
+                          : phase.status === "Projected"
+                          ? "#d8b4fe"
+                          : "#93c5fd",
                       fontWeight: 800,
                       fontSize: "12px",
                       marginBottom: "12px",
@@ -728,8 +853,12 @@ export default function Home() {
                   <div style={{ color: "#94a3b8", marginBottom: "6px" }}>
                     Price: <strong style={{ color: "#fff" }}>{phase.price}</strong>
                   </div>
-                  <div style={{ color: "#94a3b8", marginBottom: "12px" }}>
+                  <div style={{ color: "#94a3b8", marginBottom: "6px" }}>
                     Allocation: <strong style={{ color: "#fff" }}>{phase.allocation}</strong>
+                  </div>
+                  <div style={{ color: "#94a3b8", marginBottom: "12px" }}>
+                    Raise Target:{" "}
+                    <strong style={{ color: "#fff" }}>{phase.raiseTarget}</strong>
                   </div>
                   <div style={{ color: "#cbd5e1", lineHeight: 1.65 }}>
                     {phase.description}
@@ -757,17 +886,21 @@ export default function Home() {
               }}
             >
               <div style={{ fontSize: "28px", fontWeight: 900, marginBottom: "18px" }}>
-                Tokenomics
+                Tokenomics & Raise Structure
               </div>
 
               <div style={{ display: "grid", gap: "12px" }}>
                 {[
-                  ["Total Supply", TOKEN_CONFIG.totalSupply],
-                  ["Presale Allocation", TOKEN_CONFIG.presaleAllocation],
-                  ["Liquidity Allocation", TOKEN_CONFIG.liquidityAllocation],
-                  ["Ecosystem Allocation", TOKEN_CONFIG.ecosystemAllocation],
-                  ["Team Allocation", TOKEN_CONFIG.teamAllocation],
-                  ["Treasury Allocation", TOKEN_CONFIG.treasuryAllocation],
+                  ["Overall Raise Target", "US$3,000,000"],
+                  ["Already Raised", "US$1,000,000"],
+                  ["Pre-Launch Raise", "US$750,000"],
+                  ["Pre-Launch Price", "US$0.10"],
+                  ["Pre-Launch Allocation", "7,500,000 CLX"],
+                  ["Stage 2 Raise", "US$1,250,000"],
+                  ["Stage 2 Price", "US$0.50"],
+                  ["Stage 2 Allocation", "2,500,000 CLX"],
+                  ["Defined Active Round Tokens", "10,000,000 CLX"],
+                  ["Projected Launch Price", "US$13.50"],
                 ].map(([label, value]) => (
                   <div
                     key={label}
