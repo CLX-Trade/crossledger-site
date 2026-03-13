@@ -141,20 +141,44 @@ const FAQS = [
   },
 ];
 
-function StatCard({ label, value }) {
+function StatCard({ label, value, isMobile }) {
   return (
     <div
       style={{
-        background: "rgba(255,255,255,0.05)",
+        background: "linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04))",
         border: "1px solid rgba(255,255,255,0.08)",
         borderRadius: "18px",
-        padding: "18px",
+        padding: isMobile ? "16px" : "18px",
+        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)",
       }}
     >
-      <div style={{ color: "#94a3b8", fontSize: "13px", marginBottom: "6px" }}>
+      <div
+        style={{
+          color: "#94a3b8",
+          fontSize: isMobile ? "12px" : "13px",
+          marginBottom: "6px",
+        }}
+      >
         {label}
       </div>
-      <div style={{ fontSize: "22px", fontWeight: 800 }}>{value}</div>
+      <div style={{ fontSize: isMobile ? "18px" : "22px", fontWeight: 800 }}>
+        {value}
+      </div>
+    </div>
+  );
+}
+
+function SectionTitle({ children, isMobile }) {
+  return (
+    <div
+      style={{
+        fontSize: isMobile ? "24px" : "30px",
+        fontWeight: 900,
+        marginBottom: "18px",
+        letterSpacing: "-0.02em",
+      }}
+    >
+      {children}
     </div>
   );
 }
@@ -176,7 +200,7 @@ export default function Home() {
   const [contactSuccess, setContactSuccess] = useState("");
   const [contactError, setContactError] = useState("");
 
-  const [screenWidth, setScreenWidth] = useState(1200);
+  const [screenWidth, setScreenWidth] = useState(1280);
 
   const fallbackActivity = [
     { buyer: "0x71...9ab4", amount: "12,500 CLX", status: "Preview" },
@@ -191,12 +215,11 @@ export default function Home() {
 
     handleResize();
     window.addEventListener("resize", handleResize);
-
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const isMobile = screenWidth < 768;
-  const isTablet = screenWidth >= 768 && screenWidth < 1024;
+  const isTablet = screenWidth >= 768 && screenWidth < 1100;
 
   const presaleStart = useMemo(() => {
     const now = new Date();
@@ -398,40 +421,71 @@ export default function Home() {
       style={{
         minHeight: "100vh",
         background:
-          "radial-gradient(circle at top, #1e293b 0%, #0f172a 40%, #020617 100%)",
+          "radial-gradient(circle at top, #173055 0%, #0c1730 35%, #060b16 100%)",
         color: "#fff",
-        fontFamily: "Arial, sans-serif",
+        fontFamily:
+          'Inter, Arial, Helvetica, sans-serif',
       }}
     >
       <div
         style={{
-          maxWidth: "1240px",
+          maxWidth: "1280px",
           margin: "0 auto",
-          padding: isMobile ? "20px 14px 50px" : "28px 18px 70px",
+          padding: isMobile ? "18px 14px 48px" : "26px 20px 70px",
         }}
       >
         <div
           style={{
             display: "flex",
+            flexDirection: isMobile ? "column" : "row",
             justifyContent: "space-between",
-            gap: "16px",
-            alignItems: "center",
-            flexWrap: "wrap",
-            marginBottom: "24px",
+            alignItems: isMobile ? "stretch" : "center",
+            gap: "18px",
+            marginBottom: isMobile ? "18px" : "28px",
           }}
         >
-          <div style={{ width: isMobile ? "100%" : "auto" }}>
-            <div style={{ fontSize: isMobile ? "28px" : "32px", fontWeight: 900 }}>
-              {TOKEN_CONFIG.symbol} Presale
-            </div>
-            <div
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: isMobile ? "12px" : "16px",
+              minWidth: 0,
+            }}
+          >
+            <img
+              src="/clx-logo.png"
+              alt="CLX Logo"
               style={{
-                color: "#94a3b8",
-                marginTop: "6px",
-                fontSize: isMobile ? "14px" : "16px",
+                width: isMobile ? "54px" : "72px",
+                height: isMobile ? "54px" : "72px",
+                objectFit: "contain",
+                borderRadius: "14px",
+                boxShadow: "0 10px 30px rgba(0,0,0,0.35)",
+                background: "rgba(255,255,255,0.03)",
+                padding: "4px",
+                flexShrink: 0,
               }}
-            >
-              {TOKEN_CONFIG.name} • {TOKEN_CONFIG.network}
+            />
+
+            <div style={{ minWidth: 0 }}>
+              <div
+                style={{
+                  fontSize: isMobile ? "26px" : "34px",
+                  fontWeight: 900,
+                  letterSpacing: "-0.03em",
+                }}
+              >
+                {TOKEN_CONFIG.symbol} Presale
+              </div>
+              <div
+                style={{
+                  color: "#94a3b8",
+                  marginTop: "4px",
+                  fontSize: isMobile ? "13px" : "15px",
+                }}
+              >
+                {TOKEN_CONFIG.name} • {TOKEN_CONFIG.network}
+              </div>
             </div>
           </div>
 
@@ -439,15 +493,16 @@ export default function Home() {
             onClick={connectWallet}
             disabled={isConnecting || isCheckingWallet}
             style={{
-              padding: "14px 20px",
-              borderRadius: "12px",
-              border: "1px solid rgba(255,255,255,0.15)",
-              background: walletAddress ? "#14532d" : "#2563eb",
+              padding: isMobile ? "14px 16px" : "14px 20px",
+              borderRadius: "14px",
+              border: "1px solid rgba(255,255,255,0.12)",
+              background: walletAddress ? "#14532d" : "linear-gradient(135deg, #2563eb, #1d4ed8)",
               color: "#fff",
               fontWeight: 800,
               cursor: "pointer",
-              minWidth: isMobile ? "100%" : "185px",
+              minWidth: isMobile ? "100%" : "210px",
               width: isMobile ? "100%" : "auto",
+              boxShadow: "0 12px 24px rgba(0,0,0,0.2)",
             }}
           >
             {isCheckingWallet
@@ -463,17 +518,22 @@ export default function Home() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: isMobile ? "1fr" : "1.4fr 0.8fr",
+            gridTemplateColumns: isMobile
+              ? "1fr"
+              : isTablet
+              ? "1fr"
+              : "1.35fr 0.82fr",
             gap: "24px",
           }}
         >
           <div
             style={{
-              background: "rgba(255,255,255,0.05)",
+              background: "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))",
               border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: "26px",
-              padding: isMobile ? "20px" : "28px",
-              backdropFilter: "blur(8px)",
+              borderRadius: isMobile ? "22px" : "28px",
+              padding: isMobile ? "20px" : "30px",
+              backdropFilter: "blur(10px)",
+              boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
             }}
           >
             <div
@@ -482,10 +542,11 @@ export default function Home() {
                 background: "rgba(59,130,246,0.18)",
                 color: "#93c5fd",
                 fontWeight: 800,
-                fontSize: "13px",
+                fontSize: "12px",
                 borderRadius: "999px",
                 padding: "8px 14px",
                 marginBottom: "16px",
+                letterSpacing: "0.03em",
               }}
             >
               {TOKEN_CONFIG.launchTag}
@@ -493,11 +554,12 @@ export default function Home() {
 
             <h1
               style={{
-                fontSize: isMobile ? "34px" : isTablet ? "44px" : "54px",
+                fontSize: isMobile ? "32px" : isTablet ? "42px" : "58px",
                 lineHeight: 1.02,
                 margin: "0 0 14px",
                 fontWeight: 900,
                 maxWidth: "860px",
+                letterSpacing: "-0.04em",
               }}
             >
               {TOKEN_CONFIG.headline}
@@ -506,8 +568,8 @@ export default function Home() {
             <p
               style={{
                 color: "#cbd5e1",
-                fontSize: isMobile ? "16px" : "18px",
-                lineHeight: 1.65,
+                fontSize: isMobile ? "15px" : "18px",
+                lineHeight: 1.7,
                 marginBottom: "24px",
                 maxWidth: "860px",
               }}
@@ -518,9 +580,7 @@ export default function Home() {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: isMobile
-                  ? "repeat(2, 1fr)"
-                  : "repeat(4, minmax(80px, 1fr))",
+                gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(4, 1fr)",
                 gap: "12px",
                 marginBottom: "24px",
               }}
@@ -537,14 +597,19 @@ export default function Home() {
                     background: "rgba(255,255,255,0.04)",
                     border: "1px solid rgba(255,255,255,0.08)",
                     borderRadius: "18px",
-                    padding: "18px 14px",
+                    padding: isMobile ? "14px 10px" : "18px 14px",
                     textAlign: "center",
                   }}
                 >
-                  <div style={{ fontSize: isMobile ? "24px" : "30px", fontWeight: 900 }}>
+                  <div
+                    style={{
+                      fontSize: isMobile ? "22px" : "30px",
+                      fontWeight: 900,
+                    }}
+                  >
                     {String(item.value).padStart(2, "0")}
                   </div>
-                  <div style={{ color: "#94a3b8", fontSize: "13px" }}>
+                  <div style={{ color: "#94a3b8", fontSize: "12px" }}>
                     {item.label}
                   </div>
                 </div>
@@ -559,12 +624,25 @@ export default function Home() {
                 marginBottom: "24px",
               }}
             >
-              <StatCard label="Already Raised" value={TOKEN_CONFIG.alreadyRaised} />
-              <StatCard label="Current Round" value={TOKEN_CONFIG.prelaunchTarget} />
-              <StatCard label="Next Stage" value={TOKEN_CONFIG.stageTwoTarget} />
+              <StatCard
+                label="Already Raised"
+                value={TOKEN_CONFIG.alreadyRaised}
+                isMobile={isMobile}
+              />
+              <StatCard
+                label="Current Round"
+                value={TOKEN_CONFIG.prelaunchTarget}
+                isMobile={isMobile}
+              />
+              <StatCard
+                label="Next Stage"
+                value={TOKEN_CONFIG.stageTwoTarget}
+                isMobile={isMobile}
+              />
               <StatCard
                 label="Projected Launch"
                 value={TOKEN_CONFIG.projectedLaunchPrice}
+                isMobile={isMobile}
               />
             </div>
 
@@ -573,7 +651,7 @@ export default function Home() {
                 background: "rgba(255,255,255,0.04)",
                 border: "1px solid rgba(255,255,255,0.08)",
                 borderRadius: "20px",
-                padding: "18px",
+                padding: isMobile ? "16px" : "18px",
               }}
             >
               <div
@@ -623,22 +701,25 @@ export default function Home() {
 
           <div
             style={{
-              background: "#fff",
+              background: "linear-gradient(180deg, #ffffff, #f5f8fc)",
               color: "#0f172a",
-              borderRadius: "26px",
+              borderRadius: isMobile ? "22px" : "28px",
               padding: isMobile ? "20px" : "28px",
-              boxShadow: "0 20px 60px rgba(0,0,0,0.28)",
+              boxShadow: "0 22px 60px rgba(0,0,0,0.28)",
+              alignSelf: "start",
             }}
           >
             <div
               style={{
-                fontSize: isMobile ? "24px" : "28px",
+                fontSize: isMobile ? "24px" : "30px",
                 fontWeight: 900,
                 marginBottom: "8px",
+                letterSpacing: "-0.02em",
               }}
             >
               Buy {TOKEN_CONFIG.symbol}
             </div>
+
             <div style={{ color: "#475569", lineHeight: 1.6, marginBottom: "18px" }}>
               Connect your wallet and purchase directly with{" "}
               {TOKEN_CONFIG.acceptedCurrency}.
@@ -647,7 +728,7 @@ export default function Home() {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+                gridTemplateColumns: "1fr 1fr",
                 gap: "12px",
                 marginBottom: "16px",
               }}
@@ -684,7 +765,11 @@ export default function Home() {
             </div>
 
             <label
-              style={{ display: "block", fontWeight: 800, marginBottom: "8px" }}
+              style={{
+                display: "block",
+                fontWeight: 800,
+                marginBottom: "8px",
+              }}
             >
               Amount in ETH
             </label>
@@ -719,8 +804,8 @@ export default function Home() {
               {[MIN_BUY_ETH, "0.10", "0.25", "0.50"].map((value) => (
                 <button
                   key={value}
-                  onClick={() => setEthAmount(value)}
                   type="button"
+                  onClick={() => setEthAmount(value)}
                   style={{
                     padding: "10px 12px",
                     borderRadius: "12px",
@@ -743,11 +828,12 @@ export default function Home() {
                 padding: "15px 18px",
                 borderRadius: "14px",
                 border: "none",
-                background: "#111827",
+                background: "linear-gradient(135deg, #111827, #1f2937)",
                 color: "#fff",
                 fontWeight: 900,
                 fontSize: "16px",
                 cursor: "pointer",
+                boxShadow: "0 10px 25px rgba(17,24,39,0.25)",
               }}
             >
               {isBuying ? "Processing..." : `Buy ${TOKEN_CONFIG.symbol}`}
@@ -848,13 +934,19 @@ export default function Home() {
               <div
                 key={item.title}
                 style={{
-                  background: "rgba(255,255,255,0.05)",
+                  background: "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))",
                   border: "1px solid rgba(255,255,255,0.08)",
                   borderRadius: "22px",
-                  padding: "22px",
+                  padding: isMobile ? "18px" : "22px",
                 }}
               >
-                <div style={{ fontSize: "20px", fontWeight: 900, marginBottom: "10px" }}>
+                <div
+                  style={{
+                    fontSize: isMobile ? "18px" : "20px",
+                    fontWeight: 900,
+                    marginBottom: "10px",
+                  }}
+                >
                   {item.title}
                 </div>
                 <div style={{ color: "#cbd5e1", lineHeight: 1.7 }}>{item.text}</div>
@@ -866,21 +958,13 @@ export default function Home() {
         <div style={{ marginTop: "26px" }}>
           <div
             style={{
-              background: "rgba(255,255,255,0.05)",
+              background: "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))",
               border: "1px solid rgba(255,255,255,0.08)",
               borderRadius: "24px",
               padding: isMobile ? "20px" : "24px",
             }}
           >
-            <div
-              style={{
-                fontSize: isMobile ? "24px" : "28px",
-                fontWeight: 900,
-                marginBottom: "18px",
-              }}
-            >
-              Presale Phases
-            </div>
+            <SectionTitle isMobile={isMobile}>Presale Phases</SectionTitle>
 
             <div
               style={{
@@ -956,21 +1040,13 @@ export default function Home() {
           >
             <div
               style={{
-                background: "rgba(255,255,255,0.05)",
+                background: "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))",
                 border: "1px solid rgba(255,255,255,0.08)",
                 borderRadius: "24px",
                 padding: isMobile ? "20px" : "24px",
               }}
             >
-              <div
-                style={{
-                  fontSize: isMobile ? "24px" : "28px",
-                  fontWeight: 900,
-                  marginBottom: "18px",
-                }}
-              >
-                Tokenomics & Raise Structure
-              </div>
+              <SectionTitle isMobile={isMobile}>Tokenomics & Raise Structure</SectionTitle>
 
               <div style={{ display: "grid", gap: "12px" }}>
                 {[
@@ -1010,21 +1086,13 @@ export default function Home() {
 
             <div
               style={{
-                background: "rgba(255,255,255,0.05)",
+                background: "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))",
                 border: "1px solid rgba(255,255,255,0.08)",
                 borderRadius: "24px",
                 padding: isMobile ? "20px" : "24px",
               }}
             >
-              <div
-                style={{
-                  fontSize: isMobile ? "24px" : "28px",
-                  fontWeight: 900,
-                  marginBottom: "18px",
-                }}
-              >
-                Roadmap
-              </div>
+              <SectionTitle isMobile={isMobile}>Roadmap</SectionTitle>
 
               <div style={{ display: "grid", gap: "16px" }}>
                 {ROADMAP.map((item) => (
@@ -1053,21 +1121,13 @@ export default function Home() {
         <div style={{ marginTop: "26px" }}>
           <div
             style={{
-              background: "rgba(255,255,255,0.05)",
+              background: "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))",
               border: "1px solid rgba(255,255,255,0.08)",
               borderRadius: "24px",
               padding: isMobile ? "20px" : "24px",
             }}
           >
-            <div
-              style={{
-                fontSize: isMobile ? "24px" : "28px",
-                fontWeight: 900,
-                marginBottom: "18px",
-              }}
-            >
-              Contact Us
-            </div>
+            <SectionTitle isMobile={isMobile}>Contact Us</SectionTitle>
 
             <form onSubmit={submitContactForm}>
               <div
@@ -1083,17 +1143,7 @@ export default function Home() {
                   placeholder="Your name"
                   value={contactName}
                   onChange={(e) => setContactName(e.target.value)}
-                  style={{
-                    width: "100%",
-                    boxSizing: "border-box",
-                    padding: "15px 16px",
-                    borderRadius: "14px",
-                    border: "1px solid rgba(255,255,255,0.12)",
-                    background: "rgba(255,255,255,0.04)",
-                    color: "#fff",
-                    fontSize: "16px",
-                    outline: "none",
-                  }}
+                  style={contactInputStyle}
                 />
 
                 <input
@@ -1101,17 +1151,7 @@ export default function Home() {
                   placeholder="Your email"
                   value={contactEmail}
                   onChange={(e) => setContactEmail(e.target.value)}
-                  style={{
-                    width: "100%",
-                    boxSizing: "border-box",
-                    padding: "15px 16px",
-                    borderRadius: "14px",
-                    border: "1px solid rgba(255,255,255,0.12)",
-                    background: "rgba(255,255,255,0.04)",
-                    color: "#fff",
-                    fontSize: "16px",
-                    outline: "none",
-                  }}
+                  style={contactInputStyle}
                 />
               </div>
 
@@ -1121,15 +1161,8 @@ export default function Home() {
                 onChange={(e) => setContactQuestion(e.target.value)}
                 rows={6}
                 style={{
-                  width: "100%",
-                  boxSizing: "border-box",
-                  padding: "15px 16px",
-                  borderRadius: "14px",
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  background: "rgba(255,255,255,0.04)",
-                  color: "#fff",
-                  fontSize: "16px",
-                  outline: "none",
+                  ...contactInputStyle,
+                  minHeight: isMobile ? "150px" : "170px",
                   resize: "vertical",
                 }}
               />
@@ -1189,21 +1222,13 @@ export default function Home() {
         <div style={{ marginTop: "26px" }}>
           <div
             style={{
-              background: "rgba(255,255,255,0.05)",
+              background: "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))",
               border: "1px solid rgba(255,255,255,0.08)",
               borderRadius: "24px",
               padding: isMobile ? "20px" : "24px",
             }}
           >
-            <div
-              style={{
-                fontSize: isMobile ? "24px" : "28px",
-                fontWeight: 900,
-                marginBottom: "18px",
-              }}
-            >
-              Recent Activity
-            </div>
+            <SectionTitle isMobile={isMobile}>Recent Activity</SectionTitle>
 
             <div style={{ display: "grid", gap: "12px" }}>
               {fallbackActivity.map((item, index) => (
@@ -1252,21 +1277,13 @@ export default function Home() {
         <div style={{ marginTop: "26px" }}>
           <div
             style={{
-              background: "rgba(255,255,255,0.05)",
+              background: "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))",
               border: "1px solid rgba(255,255,255,0.08)",
               borderRadius: "24px",
               padding: isMobile ? "20px" : "24px",
             }}
           >
-            <div
-              style={{
-                fontSize: isMobile ? "24px" : "28px",
-                fontWeight: 900,
-                marginBottom: "18px",
-              }}
-            >
-              Frequently Asked Questions
-            </div>
+            <SectionTitle isMobile={isMobile}>Frequently Asked Questions</SectionTitle>
 
             <div style={{ display: "grid", gap: "14px" }}>
               {FAQS.map((item) => (
@@ -1302,6 +1319,7 @@ export default function Home() {
             lineHeight: 1.7,
             fontSize: "12px",
             letterSpacing: "0.3px",
+            paddingBottom: "10px",
           }}
         >
           © {new Date().getFullYear()} GDN Enterprise Pty Ltd · Powered by CLX
@@ -1310,3 +1328,15 @@ export default function Home() {
     </div>
   );
 }
+
+const contactInputStyle = {
+  width: "100%",
+  boxSizing: "border-box",
+  padding: "15px 16px",
+  borderRadius: "14px",
+  border: "1px solid rgba(255,255,255,0.12)",
+  background: "rgba(255,255,255,0.04)",
+  color: "#fff",
+  fontSize: "16px",
+  outline: "none",
+};
