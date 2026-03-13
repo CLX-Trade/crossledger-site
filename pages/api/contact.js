@@ -1,11 +1,9 @@
 export default async function handler(req, res) {
-
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
-
     const { name, email, message } = req.body;
 
     if (!name || !email || !message) {
@@ -18,17 +16,13 @@ export default async function handler(req, res) {
     console.log("Message:", message);
 
     return res.status(200).json({
-      success: true
+      success: true,
     });
-
   } catch (error) {
-
-    console.error(error);
+    console.error("CONTACT ERROR:", error);
 
     return res.status(500).json({
-      error: "Server error"
+      error: "Server error",
     });
-
   }
-
 }
