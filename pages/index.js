@@ -1,3 +1,4 @@
+import Head from "next/head";
 import { useEffect, useMemo, useState } from "react";
 import { ethers } from "ethers";
 
@@ -141,44 +142,52 @@ const FAQS = [
   },
 ];
 
-function StatCard({ label, value, isMobile }) {
+function SectionTitle({ children, mobile }) {
+  return (
+    <h2
+      style={{
+        fontSize: mobile ? "24px" : "30px",
+        fontWeight: 900,
+        margin: "0 0 18px 0",
+        letterSpacing: "-0.03em",
+      }}
+    >
+      {children}
+    </h2>
+  );
+}
+
+function StatCard({ label, value, mobile }) {
   return (
     <div
       style={{
-        background: "linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04))",
+        background: "linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.03))",
         border: "1px solid rgba(255,255,255,0.08)",
         borderRadius: "18px",
-        padding: isMobile ? "16px" : "18px",
-        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)",
+        padding: mobile ? "16px" : "18px",
+        boxSizing: "border-box",
+        minWidth: 0,
       }}
     >
       <div
         style={{
           color: "#94a3b8",
-          fontSize: isMobile ? "12px" : "13px",
+          fontSize: mobile ? "12px" : "13px",
           marginBottom: "6px",
         }}
       >
         {label}
       </div>
-      <div style={{ fontSize: isMobile ? "18px" : "22px", fontWeight: 800 }}>
+      <div
+        style={{
+          fontSize: mobile ? "18px" : "22px",
+          fontWeight: 800,
+          lineHeight: 1.2,
+          wordBreak: "break-word",
+        }}
+      >
         {value}
       </div>
-    </div>
-  );
-}
-
-function SectionTitle({ children, isMobile }) {
-  return (
-    <div
-      style={{
-        fontSize: isMobile ? "24px" : "30px",
-        fontWeight: 900,
-        marginBottom: "18px",
-        letterSpacing: "-0.02em",
-      }}
-    >
-      {children}
     </div>
   );
 }
@@ -218,8 +227,8 @@ export default function Home() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const isMobile = screenWidth < 768;
-  const isTablet = screenWidth >= 768 && screenWidth < 1100;
+  const mobile = screenWidth < 768;
+  const tablet = screenWidth >= 768 && screenWidth < 1100;
 
   const presaleStart = useMemo(() => {
     const now = new Date();
@@ -417,915 +426,955 @@ export default function Home() {
   }
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background:
-          "radial-gradient(circle at top, #173055 0%, #0c1730 35%, #060b16 100%)",
-        color: "#fff",
-        fontFamily:
-          'Inter, Arial, Helvetica, sans-serif',
-      }}
-    >
+    <>
+      <Head>
+        <title>CLX Presale</title>
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
+        />
+      </Head>
+
       <div
         style={{
-          maxWidth: "1280px",
-          margin: "0 auto",
-          padding: isMobile ? "18px 14px 48px" : "26px 20px 70px",
+          minHeight: "100vh",
+          width: "100%",
+          overflowX: "hidden",
+          background:
+            "radial-gradient(circle at top, #173055 0%, #0c1730 35%, #060b16 100%)",
+          color: "#fff",
+          fontFamily: "Arial, sans-serif",
         }}
       >
         <div
           style={{
-            display: "flex",
-            flexDirection: isMobile ? "column" : "row",
-            justifyContent: "space-between",
-            alignItems: isMobile ? "stretch" : "center",
-            gap: "18px",
-            marginBottom: isMobile ? "18px" : "28px",
+            width: "100%",
+            maxWidth: "1280px",
+            margin: "0 auto",
+            padding: mobile ? "16px 14px 40px" : "28px 20px 72px",
+            boxSizing: "border-box",
           }}
         >
           <div
             style={{
               display: "flex",
-              alignItems: "center",
-              gap: isMobile ? "12px" : "16px",
-              minWidth: 0,
-            }}
-          >
-            <img
-              src="/clx-logo.png"
-              alt="CLX Logo"
-              style={{
-                width: isMobile ? "54px" : "72px",
-                height: isMobile ? "54px" : "72px",
-                objectFit: "contain",
-                borderRadius: "14px",
-                boxShadow: "0 10px 30px rgba(0,0,0,0.35)",
-                background: "rgba(255,255,255,0.03)",
-                padding: "4px",
-                flexShrink: 0,
-              }}
-            />
-
-            <div style={{ minWidth: 0 }}>
-              <div
-                style={{
-                  fontSize: isMobile ? "26px" : "34px",
-                  fontWeight: 900,
-                  letterSpacing: "-0.03em",
-                }}
-              >
-                {TOKEN_CONFIG.symbol} Presale
-              </div>
-              <div
-                style={{
-                  color: "#94a3b8",
-                  marginTop: "4px",
-                  fontSize: isMobile ? "13px" : "15px",
-                }}
-              >
-                {TOKEN_CONFIG.name} • {TOKEN_CONFIG.network}
-              </div>
-            </div>
-          </div>
-
-          <button
-            onClick={connectWallet}
-            disabled={isConnecting || isCheckingWallet}
-            style={{
-              padding: isMobile ? "14px 16px" : "14px 20px",
-              borderRadius: "14px",
-              border: "1px solid rgba(255,255,255,0.12)",
-              background: walletAddress ? "#14532d" : "linear-gradient(135deg, #2563eb, #1d4ed8)",
-              color: "#fff",
-              fontWeight: 800,
-              cursor: "pointer",
-              minWidth: isMobile ? "100%" : "210px",
-              width: isMobile ? "100%" : "auto",
-              boxShadow: "0 12px 24px rgba(0,0,0,0.2)",
-            }}
-          >
-            {isCheckingWallet
-              ? "Checking Wallet..."
-              : isConnecting
-              ? "Connecting..."
-              : walletAddress
-              ? `Connected: ${shortAddress(walletAddress)}`
-              : "Connect Wallet"}
-          </button>
-        </div>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: isMobile
-              ? "1fr"
-              : isTablet
-              ? "1fr"
-              : "1.35fr 0.82fr",
-            gap: "24px",
-          }}
-        >
-          <div
-            style={{
-              background: "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))",
-              border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: isMobile ? "22px" : "28px",
-              padding: isMobile ? "20px" : "30px",
-              backdropFilter: "blur(10px)",
-              boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
+              flexDirection: mobile ? "column" : "row",
+              justifyContent: "space-between",
+              alignItems: mobile ? "stretch" : "center",
+              gap: "18px",
+              marginBottom: "24px",
             }}
           >
             <div
               style={{
-                display: "inline-block",
-                background: "rgba(59,130,246,0.18)",
-                color: "#93c5fd",
-                fontWeight: 800,
-                fontSize: "12px",
-                borderRadius: "999px",
-                padding: "8px 14px",
-                marginBottom: "16px",
-                letterSpacing: "0.03em",
+                display: "flex",
+                alignItems: "center",
+                gap: mobile ? "12px" : "16px",
+                minWidth: 0,
               }}
             >
-              {TOKEN_CONFIG.launchTag}
-            </div>
-
-            <h1
-              style={{
-                fontSize: isMobile ? "32px" : isTablet ? "42px" : "58px",
-                lineHeight: 1.02,
-                margin: "0 0 14px",
-                fontWeight: 900,
-                maxWidth: "860px",
-                letterSpacing: "-0.04em",
-              }}
-            >
-              {TOKEN_CONFIG.headline}
-            </h1>
-
-            <p
-              style={{
-                color: "#cbd5e1",
-                fontSize: isMobile ? "15px" : "18px",
-                lineHeight: 1.7,
-                marginBottom: "24px",
-                maxWidth: "860px",
-              }}
-            >
-              {TOKEN_CONFIG.subheadline}
-            </p>
-
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(4, 1fr)",
-                gap: "12px",
-                marginBottom: "24px",
-              }}
-            >
-              {[
-                { label: "Days", value: timeLeft.days },
-                { label: "Hours", value: timeLeft.hours },
-                { label: "Minutes", value: timeLeft.minutes },
-                { label: "Seconds", value: timeLeft.seconds },
-              ].map((item) => (
-                <div
-                  key={item.label}
-                  style={{
-                    background: "rgba(255,255,255,0.04)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    borderRadius: "18px",
-                    padding: isMobile ? "14px 10px" : "18px 14px",
-                    textAlign: "center",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: isMobile ? "22px" : "30px",
-                      fontWeight: 900,
-                    }}
-                  >
-                    {String(item.value).padStart(2, "0")}
-                  </div>
-                  <div style={{ color: "#94a3b8", fontSize: "12px" }}>
-                    {item.label}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(4, 1fr)",
-                gap: "14px",
-                marginBottom: "24px",
-              }}
-            >
-              <StatCard
-                label="Already Raised"
-                value={TOKEN_CONFIG.alreadyRaised}
-                isMobile={isMobile}
-              />
-              <StatCard
-                label="Current Round"
-                value={TOKEN_CONFIG.prelaunchTarget}
-                isMobile={isMobile}
-              />
-              <StatCard
-                label="Next Stage"
-                value={TOKEN_CONFIG.stageTwoTarget}
-                isMobile={isMobile}
-              />
-              <StatCard
-                label="Projected Launch"
-                value={TOKEN_CONFIG.projectedLaunchPrice}
-                isMobile={isMobile}
-              />
-            </div>
-
-            <div
-              style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: "20px",
-                padding: isMobile ? "16px" : "18px",
-              }}
-            >
-              <div
+              <img
+                src="/clx-logo.png"
+                alt="CLX Logo"
                 style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  gap: "12px",
-                  marginBottom: "10px",
-                  flexWrap: "wrap",
+                  width: mobile ? "56px" : "72px",
+                  height: mobile ? "56px" : "72px",
+                  objectFit: "contain",
+                  borderRadius: "14px",
+                  background: "rgba(255,255,255,0.04)",
+                  padding: "4px",
+                  boxShadow: "0 10px 30px rgba(0,0,0,0.3)",
+                  flexShrink: 0,
                 }}
-              >
-                <div style={{ fontWeight: 800 }}>Raise Progress</div>
-                <div style={{ color: "#93c5fd", fontWeight: 800 }}>
-                  {TOKEN_CONFIG.alreadyRaised} of {TOKEN_CONFIG.overallRaiseTarget}
-                </div>
-              </div>
+              />
 
-              <div
-                style={{
-                  width: "100%",
-                  height: "14px",
-                  background: "rgba(255,255,255,0.08)",
-                  borderRadius: "999px",
-                  overflow: "hidden",
-                  marginBottom: "10px",
-                }}
-              >
+              <div style={{ minWidth: 0 }}>
                 <div
                   style={{
-                    width: `${alreadyRaisedPct}%`,
-                    height: "100%",
-                    background: "linear-gradient(90deg, #2563eb 0%, #22c55e 100%)",
-                    borderRadius: "999px",
-                  }}
-                />
-              </div>
-
-              <div style={{ color: "#cbd5e1", lineHeight: 1.7, fontSize: "14px" }}>
-                Current progress: <strong>{alreadyRaisedPct}%</strong> of total raise
-                target.
-                <br />
-                If the current pre-launch round completes, progress would move to{" "}
-                <strong>{afterCurrentRoundPct}%</strong>.
-              </div>
-            </div>
-          </div>
-
-          <div
-            style={{
-              background: "linear-gradient(180deg, #ffffff, #f5f8fc)",
-              color: "#0f172a",
-              borderRadius: isMobile ? "22px" : "28px",
-              padding: isMobile ? "20px" : "28px",
-              boxShadow: "0 22px 60px rgba(0,0,0,0.28)",
-              alignSelf: "start",
-            }}
-          >
-            <div
-              style={{
-                fontSize: isMobile ? "24px" : "30px",
-                fontWeight: 900,
-                marginBottom: "8px",
-                letterSpacing: "-0.02em",
-              }}
-            >
-              Buy {TOKEN_CONFIG.symbol}
-            </div>
-
-            <div style={{ color: "#475569", lineHeight: 1.6, marginBottom: "18px" }}>
-              Connect your wallet and purchase directly with{" "}
-              {TOKEN_CONFIG.acceptedCurrency}.
-            </div>
-
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "12px",
-                marginBottom: "16px",
-              }}
-            >
-              <div
-                style={{
-                  background: "#f8fafc",
-                  border: "1px solid #e2e8f0",
-                  borderRadius: "14px",
-                  padding: "12px",
-                }}
-              >
-                <div style={{ color: "#64748b", fontSize: "12px" }}>Current Price</div>
-                <div style={{ fontWeight: 900, marginTop: "4px" }}>
-                  {TOKEN_CONFIG.currentPrice}
-                </div>
-              </div>
-
-              <div
-                style={{
-                  background: "#f8fafc",
-                  border: "1px solid #e2e8f0",
-                  borderRadius: "14px",
-                  padding: "12px",
-                }}
-              >
-                <div style={{ color: "#64748b", fontSize: "12px" }}>
-                  Projected Launch
-                </div>
-                <div style={{ fontWeight: 900, marginTop: "4px" }}>
-                  {TOKEN_CONFIG.projectedLaunchPrice}
-                </div>
-              </div>
-            </div>
-
-            <label
-              style={{
-                display: "block",
-                fontWeight: 800,
-                marginBottom: "8px",
-              }}
-            >
-              Amount in ETH
-            </label>
-
-            <input
-              type="number"
-              placeholder={MIN_BUY_ETH}
-              value={ethAmount}
-              onChange={(e) => setEthAmount(e.target.value)}
-              step="0.0001"
-              min="0"
-              style={{
-                width: "100%",
-                boxSizing: "border-box",
-                padding: "15px 16px",
-                borderRadius: "14px",
-                border: "1px solid #cbd5e1",
-                fontSize: "16px",
-                marginBottom: "16px",
-                outline: "none",
-              }}
-            />
-
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(2, 1fr)",
-                gap: "10px",
-                marginBottom: "16px",
-              }}
-            >
-              {[MIN_BUY_ETH, "0.10", "0.25", "0.50"].map((value) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setEthAmount(value)}
-                  style={{
-                    padding: "10px 12px",
-                    borderRadius: "12px",
-                    border: "1px solid #cbd5e1",
-                    background: "#fff",
-                    cursor: "pointer",
-                    fontWeight: 700,
+                    fontSize: mobile ? "26px" : "34px",
+                    fontWeight: 900,
+                    letterSpacing: "-0.03em",
+                    lineHeight: 1.05,
                   }}
                 >
-                  {value} ETH
-                </button>
-              ))}
+                  {TOKEN_CONFIG.symbol} Presale
+                </div>
+                <div
+                  style={{
+                    color: "#94a3b8",
+                    marginTop: "4px",
+                    fontSize: mobile ? "13px" : "15px",
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {TOKEN_CONFIG.name} • {TOKEN_CONFIG.network}
+                </div>
+              </div>
             </div>
 
             <button
-              onClick={buyTokens}
-              disabled={isBuying}
+              onClick={connectWallet}
+              disabled={isConnecting || isCheckingWallet}
               style={{
-                width: "100%",
-                padding: "15px 18px",
+                padding: mobile ? "14px 16px" : "14px 20px",
                 borderRadius: "14px",
-                border: "none",
-                background: "linear-gradient(135deg, #111827, #1f2937)",
+                border: "1px solid rgba(255,255,255,0.14)",
+                background: walletAddress
+                  ? "#14532d"
+                  : "linear-gradient(135deg, #2563eb, #1d4ed8)",
                 color: "#fff",
-                fontWeight: 900,
-                fontSize: "16px",
+                fontWeight: 800,
                 cursor: "pointer",
-                boxShadow: "0 10px 25px rgba(17,24,39,0.25)",
+                width: mobile ? "100%" : "auto",
+                minWidth: mobile ? "100%" : "210px",
+                boxSizing: "border-box",
               }}
             >
-              {isBuying ? "Processing..." : `Buy ${TOKEN_CONFIG.symbol}`}
+              {isCheckingWallet
+                ? "Checking Wallet..."
+                : isConnecting
+                ? "Connecting..."
+                : walletAddress
+                ? `Connected: ${shortAddress(walletAddress)}`
+                : "Connect Wallet"}
             </button>
-
-            {walletAddress && (
-              <div
-                style={{
-                  marginTop: "16px",
-                  background: "#f8fafc",
-                  border: "1px solid #e2e8f0",
-                  borderRadius: "12px",
-                  padding: "12px",
-                  fontSize: "14px",
-                  wordBreak: "break-all",
-                }}
-              >
-                <strong>Connected wallet:</strong> {walletAddress}
-              </div>
-            )}
-
-            {success && (
-              <div
-                style={{
-                  marginTop: "16px",
-                  background: "#dcfce7",
-                  color: "#166534",
-                  borderRadius: "12px",
-                  padding: "14px",
-                  lineHeight: 1.5,
-                }}
-              >
-                {success}
-              </div>
-            )}
-
-            {error && (
-              <div
-                style={{
-                  marginTop: "16px",
-                  background: "#fee2e2",
-                  color: "#991b1b",
-                  borderRadius: "12px",
-                  padding: "14px",
-                  lineHeight: 1.5,
-                }}
-              >
-                {error}
-              </div>
-            )}
-
-            {txHash && (
-              <div
-                style={{
-                  marginTop: "16px",
-                  background: "#eff6ff",
-                  color: "#1d4ed8",
-                  borderRadius: "12px",
-                  padding: "14px",
-                  lineHeight: 1.5,
-                  wordBreak: "break-all",
-                }}
-              >
-                <strong>Transaction Hash:</strong>
-                <br />
-                {txHash}
-              </div>
-            )}
-
-            <div
-              style={{
-                marginTop: "18px",
-                borderTop: "1px solid #e2e8f0",
-                paddingTop: "16px",
-                color: "#64748b",
-                fontSize: "13px",
-                lineHeight: 1.6,
-              }}
-            >
-              Minimum buy: US${MIN_BUY_USD}
-              <br />
-              Approximate minimum in ETH: {MIN_BUY_ETH} ETH
-              <br />
-              Maximum buy: {TOKEN_CONFIG.maxBuy}
-            </div>
           </div>
-        </div>
 
-        <div style={{ marginTop: "26px" }}>
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)",
-              gap: "18px",
+              gridTemplateColumns: mobile || tablet ? "1fr" : "1.35fr 0.82fr",
+              gap: "24px",
+              alignItems: "start",
             }}
           >
-            {TOKEN_FEATURES.map((item) => (
+            <div
+              style={{
+                background:
+                  "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))",
+                border: "1px solid rgba(255,255,255,0.08)",
+                borderRadius: mobile ? "22px" : "28px",
+                padding: mobile ? "20px 16px" : "30px",
+                backdropFilter: "blur(10px)",
+                boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
+                boxSizing: "border-box",
+                minWidth: 0,
+              }}
+            >
               <div
-                key={item.title}
                 style={{
-                  background: "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  borderRadius: "22px",
-                  padding: isMobile ? "18px" : "22px",
+                  display: "inline-block",
+                  background: "rgba(59,130,246,0.18)",
+                  color: "#93c5fd",
+                  fontWeight: 800,
+                  fontSize: "12px",
+                  borderRadius: "999px",
+                  padding: "8px 14px",
+                  marginBottom: "16px",
                 }}
               >
-                <div
-                  style={{
-                    fontSize: isMobile ? "18px" : "20px",
-                    fontWeight: 900,
-                    marginBottom: "10px",
-                  }}
-                >
-                  {item.title}
-                </div>
-                <div style={{ color: "#cbd5e1", lineHeight: 1.7 }}>{item.text}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div style={{ marginTop: "26px" }}>
-          <div
-            style={{
-              background: "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))",
-              border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: "24px",
-              padding: isMobile ? "20px" : "24px",
-            }}
-          >
-            <SectionTitle isMobile={isMobile}>Presale Phases</SectionTitle>
-
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)",
-                gap: "16px",
-              }}
-            >
-              {PRESALE_PHASES.map((phase) => (
-                <div
-                  key={phase.phase}
-                  style={{
-                    background: "rgba(255,255,255,0.04)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    borderRadius: "20px",
-                    padding: "20px",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "inline-block",
-                      padding: "7px 12px",
-                      borderRadius: "999px",
-                      background:
-                        phase.status === "Current"
-                          ? "rgba(34,197,94,0.18)"
-                          : phase.status === "Projected"
-                          ? "rgba(168,85,247,0.18)"
-                          : "rgba(59,130,246,0.18)",
-                      color:
-                        phase.status === "Current"
-                          ? "#86efac"
-                          : phase.status === "Projected"
-                          ? "#d8b4fe"
-                          : "#93c5fd",
-                      fontWeight: 800,
-                      fontSize: "12px",
-                      marginBottom: "12px",
-                    }}
-                  >
-                    {phase.status}
-                  </div>
-
-                  <div style={{ fontSize: "24px", fontWeight: 900, marginBottom: "8px" }}>
-                    {phase.phase}
-                  </div>
-                  <div style={{ color: "#94a3b8", marginBottom: "6px" }}>
-                    Price: <strong style={{ color: "#fff" }}>{phase.price}</strong>
-                  </div>
-                  <div style={{ color: "#94a3b8", marginBottom: "6px" }}>
-                    Allocation: <strong style={{ color: "#fff" }}>{phase.allocation}</strong>
-                  </div>
-                  <div style={{ color: "#94a3b8", marginBottom: "12px" }}>
-                    Raise Target:{" "}
-                    <strong style={{ color: "#fff" }}>{phase.raiseTarget}</strong>
-                  </div>
-                  <div style={{ color: "#cbd5e1", lineHeight: 1.65 }}>
-                    {phase.description}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div style={{ marginTop: "26px" }}>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-              gap: "20px",
-            }}
-          >
-            <div
-              style={{
-                background: "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: "24px",
-                padding: isMobile ? "20px" : "24px",
-              }}
-            >
-              <SectionTitle isMobile={isMobile}>Tokenomics & Raise Structure</SectionTitle>
-
-              <div style={{ display: "grid", gap: "12px" }}>
-                {[
-                  ["Overall Raise Target", "US$3,000,000"],
-                  ["Already Raised", "US$1,000,000"],
-                  ["Pre-Launch Raise", "US$750,000"],
-                  ["Pre-Launch Price", "US$0.10"],
-                  ["Pre-Launch Allocation", "7,500,000 CLX"],
-                  ["Stage 2 Raise", "US$1,250,000"],
-                  ["Stage 2 Price", "US$0.50"],
-                  ["Stage 2 Allocation", "2,500,000 CLX"],
-                  ["Defined Active Round Tokens", "10,000,000 CLX"],
-                  ["Projected Launch Price", "US$13.50"],
-                ].map(([label, value]) => (
-                  <div
-                    key={label}
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      gap: "10px",
-                      background: "rgba(255,255,255,0.04)",
-                      borderRadius: "14px",
-                      padding: "14px 16px",
-                      flexWrap: "wrap",
-                    }}
-                  >
-                    <span style={{ color: "#cbd5e1" }}>{label}</span>
-                    <strong>{value}</strong>
-                  </div>
-                ))}
+                {TOKEN_CONFIG.launchTag}
               </div>
 
-              <div style={{ color: "#94a3b8", marginTop: "14px", lineHeight: 1.6 }}>
-                {TOKEN_CONFIG.vestingNote}
-              </div>
-            </div>
+              <h1
+                style={{
+                  fontSize: mobile ? "34px" : tablet ? "44px" : "58px",
+                  lineHeight: 1.02,
+                  margin: "0 0 14px",
+                  fontWeight: 900,
+                  letterSpacing: "-0.04em",
+                  maxWidth: "860px",
+                }}
+              >
+                {TOKEN_CONFIG.headline}
+              </h1>
 
-            <div
-              style={{
-                background: "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: "24px",
-                padding: isMobile ? "20px" : "24px",
-              }}
-            >
-              <SectionTitle isMobile={isMobile}>Roadmap</SectionTitle>
+              <p
+                style={{
+                  color: "#cbd5e1",
+                  fontSize: mobile ? "15px" : "18px",
+                  lineHeight: 1.7,
+                  marginBottom: "24px",
+                  maxWidth: "860px",
+                }}
+              >
+                {TOKEN_CONFIG.subheadline}
+              </p>
 
-              <div style={{ display: "grid", gap: "16px" }}>
-                {ROADMAP.map((item) => (
-                  <div
-                    key={item.stage}
-                    style={{
-                      background: "rgba(255,255,255,0.04)",
-                      borderRadius: "16px",
-                      padding: "16px",
-                    }}
-                  >
-                    <div style={{ color: "#93c5fd", fontWeight: 800, marginBottom: "6px" }}>
-                      {item.stage}
-                    </div>
-                    <div style={{ fontSize: "20px", fontWeight: 900, marginBottom: "8px" }}>
-                      {item.title}
-                    </div>
-                    <div style={{ color: "#cbd5e1", lineHeight: 1.65 }}>{item.text}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div style={{ marginTop: "26px" }}>
-          <div
-            style={{
-              background: "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))",
-              border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: "24px",
-              padding: isMobile ? "20px" : "24px",
-            }}
-          >
-            <SectionTitle isMobile={isMobile}>Contact Us</SectionTitle>
-
-            <form onSubmit={submitContactForm}>
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-                  gap: "14px",
-                  marginBottom: "14px",
+                  gridTemplateColumns: mobile ? "repeat(2, 1fr)" : "repeat(4, 1fr)",
+                  gap: "12px",
+                  marginBottom: "24px",
                 }}
               >
-                <input
-                  type="text"
-                  placeholder="Your name"
-                  value={contactName}
-                  onChange={(e) => setContactName(e.target.value)}
-                  style={contactInputStyle}
-                />
+                {[
+                  { label: "Days", value: timeLeft.days },
+                  { label: "Hours", value: timeLeft.hours },
+                  { label: "Minutes", value: timeLeft.minutes },
+                  { label: "Seconds", value: timeLeft.seconds },
+                ].map((item) => (
+                  <div
+                    key={item.label}
+                    style={{
+                      background: "rgba(255,255,255,0.04)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      borderRadius: "18px",
+                      padding: mobile ? "14px 10px" : "18px 14px",
+                      textAlign: "center",
+                      boxSizing: "border-box",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: mobile ? "22px" : "30px",
+                        fontWeight: 900,
+                      }}
+                    >
+                      {String(item.value).padStart(2, "0")}
+                    </div>
+                    <div style={{ color: "#94a3b8", fontSize: "12px" }}>
+                      {item.label}
+                    </div>
+                  </div>
+                ))}
+              </div>
 
-                <input
-                  type="email"
-                  placeholder="Your email"
-                  value={contactEmail}
-                  onChange={(e) => setContactEmail(e.target.value)}
-                  style={contactInputStyle}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: mobile ? "repeat(2, 1fr)" : "repeat(4, 1fr)",
+                  gap: "14px",
+                  marginBottom: "24px",
+                }}
+              >
+                <StatCard
+                  label="Already Raised"
+                  value={TOKEN_CONFIG.alreadyRaised}
+                  mobile={mobile}
+                />
+                <StatCard
+                  label="Current Round"
+                  value={TOKEN_CONFIG.prelaunchTarget}
+                  mobile={mobile}
+                />
+                <StatCard
+                  label="Next Stage"
+                  value={TOKEN_CONFIG.stageTwoTarget}
+                  mobile={mobile}
+                />
+                <StatCard
+                  label="Projected Launch"
+                  value={TOKEN_CONFIG.projectedLaunchPrice}
+                  mobile={mobile}
                 />
               </div>
 
-              <textarea
-                placeholder="Your question"
-                value={contactQuestion}
-                onChange={(e) => setContactQuestion(e.target.value)}
-                rows={6}
+              <div
                 style={{
-                  ...contactInputStyle,
-                  minHeight: isMobile ? "150px" : "170px",
-                  resize: "vertical",
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  borderRadius: "20px",
+                  padding: mobile ? "16px" : "18px",
+                  boxSizing: "border-box",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: "12px",
+                    marginBottom: "10px",
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <div style={{ fontWeight: 800 }}>Raise Progress</div>
+                  <div style={{ color: "#93c5fd", fontWeight: 800 }}>
+                    {TOKEN_CONFIG.alreadyRaised} of {TOKEN_CONFIG.overallRaiseTarget}
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    width: "100%",
+                    height: "14px",
+                    background: "rgba(255,255,255,0.08)",
+                    borderRadius: "999px",
+                    overflow: "hidden",
+                    marginBottom: "10px",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: `${alreadyRaisedPct}%`,
+                      height: "100%",
+                      background:
+                        "linear-gradient(90deg, #2563eb 0%, #22c55e 100%)",
+                      borderRadius: "999px",
+                    }}
+                  />
+                </div>
+
+                <div style={{ color: "#cbd5e1", lineHeight: 1.7, fontSize: "14px" }}>
+                  Current progress: <strong>{alreadyRaisedPct}%</strong> of total raise
+                  target.
+                  <br />
+                  If the current pre-launch round completes, progress would move to{" "}
+                  <strong>{afterCurrentRoundPct}%</strong>.
+                </div>
+              </div>
+            </div>
+
+            <div
+              style={{
+                background: "linear-gradient(180deg, #ffffff, #f5f8fc)",
+                color: "#0f172a",
+                borderRadius: mobile ? "22px" : "28px",
+                padding: mobile ? "20px 16px" : "28px",
+                boxShadow: "0 22px 60px rgba(0,0,0,0.28)",
+                boxSizing: "border-box",
+                minWidth: 0,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: mobile ? "24px" : "30px",
+                  fontWeight: 900,
+                  marginBottom: "8px",
+                  letterSpacing: "-0.02em",
+                }}
+              >
+                Buy {TOKEN_CONFIG.symbol}
+              </div>
+
+              <div style={{ color: "#475569", lineHeight: 1.6, marginBottom: "18px" }}>
+                Connect your wallet and purchase directly with{" "}
+                {TOKEN_CONFIG.acceptedCurrency}.
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "12px",
+                  marginBottom: "16px",
+                }}
+              >
+                <div
+                  style={{
+                    background: "#f8fafc",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "14px",
+                    padding: "12px",
+                    boxSizing: "border-box",
+                  }}
+                >
+                  <div style={{ color: "#64748b", fontSize: "12px" }}>Current Price</div>
+                  <div style={{ fontWeight: 900, marginTop: "4px" }}>
+                    {TOKEN_CONFIG.currentPrice}
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    background: "#f8fafc",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "14px",
+                    padding: "12px",
+                    boxSizing: "border-box",
+                  }}
+                >
+                  <div style={{ color: "#64748b", fontSize: "12px" }}>
+                    Projected Launch
+                  </div>
+                  <div style={{ fontWeight: 900, marginTop: "4px" }}>
+                    {TOKEN_CONFIG.projectedLaunchPrice}
+                  </div>
+                </div>
+              </div>
+
+              <label
+                style={{
+                  display: "block",
+                  fontWeight: 800,
+                  marginBottom: "8px",
+                }}
+              >
+                Amount in ETH
+              </label>
+
+              <input
+                type="number"
+                placeholder={MIN_BUY_ETH}
+                value={ethAmount}
+                onChange={(e) => setEthAmount(e.target.value)}
+                step="0.0001"
+                min="0"
+                style={{
+                  width: "100%",
+                  boxSizing: "border-box",
+                  padding: "15px 16px",
+                  borderRadius: "14px",
+                  border: "1px solid #cbd5e1",
+                  fontSize: "16px",
+                  marginBottom: "16px",
+                  outline: "none",
                 }}
               />
 
-              <button
-                type="submit"
-                disabled={contactLoading}
+              <div
                 style={{
-                  marginTop: "16px",
-                  padding: "15px 22px",
+                  display: "grid",
+                  gridTemplateColumns: "repeat(2, 1fr)",
+                  gap: "10px",
+                  marginBottom: "16px",
+                }}
+              >
+                {[MIN_BUY_ETH, "0.10", "0.25", "0.50"].map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setEthAmount(value)}
+                    style={{
+                      padding: "10px 12px",
+                      borderRadius: "12px",
+                      border: "1px solid #cbd5e1",
+                      background: "#fff",
+                      cursor: "pointer",
+                      fontWeight: 700,
+                      boxSizing: "border-box",
+                    }}
+                  >
+                    {value} ETH
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={buyTokens}
+                disabled={isBuying}
+                style={{
+                  width: "100%",
+                  padding: "15px 18px",
                   borderRadius: "14px",
                   border: "none",
-                  background: "#ffffff",
-                  color: "#0f172a",
+                  background: "linear-gradient(135deg, #111827, #1f2937)",
+                  color: "#fff",
                   fontWeight: 900,
                   fontSize: "16px",
                   cursor: "pointer",
-                  width: isMobile ? "100%" : "auto",
                 }}
               >
-                {contactLoading ? "Sending..." : "Send Message"}
+                {isBuying ? "Processing..." : `Buy ${TOKEN_CONFIG.symbol}`}
               </button>
 
-              {contactSuccess && (
+              {walletAddress && (
                 <div
                   style={{
                     marginTop: "16px",
-                    background: "rgba(34,197,94,0.18)",
-                    color: "#86efac",
+                    background: "#f8fafc",
+                    border: "1px solid #e2e8f0",
                     borderRadius: "12px",
-                    padding: "14px",
-                    lineHeight: 1.5,
+                    padding: "12px",
+                    fontSize: "14px",
+                    wordBreak: "break-all",
                   }}
                 >
-                  {contactSuccess}
+                  <strong>Connected wallet:</strong> {walletAddress}
                 </div>
               )}
 
-              {contactError && (
+              {success && (
                 <div
                   style={{
                     marginTop: "16px",
-                    background: "rgba(239,68,68,0.18)",
-                    color: "#fca5a5",
+                    background: "#dcfce7",
+                    color: "#166534",
                     borderRadius: "12px",
                     padding: "14px",
                     lineHeight: 1.5,
                   }}
                 >
-                  {contactError}
+                  {success}
                 </div>
               )}
-            </form>
+
+              {error && (
+                <div
+                  style={{
+                    marginTop: "16px",
+                    background: "#fee2e2",
+                    color: "#991b1b",
+                    borderRadius: "12px",
+                    padding: "14px",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {error}
+                </div>
+              )}
+
+              {txHash && (
+                <div
+                  style={{
+                    marginTop: "16px",
+                    background: "#eff6ff",
+                    color: "#1d4ed8",
+                    borderRadius: "12px",
+                    padding: "14px",
+                    lineHeight: 1.5,
+                    wordBreak: "break-all",
+                  }}
+                >
+                  <strong>Transaction Hash:</strong>
+                  <br />
+                  {txHash}
+                </div>
+              )}
+
+              <div
+                style={{
+                  marginTop: "18px",
+                  borderTop: "1px solid #e2e8f0",
+                  paddingTop: "16px",
+                  color: "#64748b",
+                  fontSize: "13px",
+                  lineHeight: 1.6,
+                }}
+              >
+                Minimum buy: US${MIN_BUY_USD}
+                <br />
+                Approximate minimum in ETH: {MIN_BUY_ETH} ETH
+                <br />
+                Maximum buy: {TOKEN_CONFIG.maxBuy}
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div style={{ marginTop: "26px" }}>
-          <div
-            style={{
-              background: "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))",
-              border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: "24px",
-              padding: isMobile ? "20px" : "24px",
-            }}
-          >
-            <SectionTitle isMobile={isMobile}>Recent Activity</SectionTitle>
-
-            <div style={{ display: "grid", gap: "12px" }}>
-              {fallbackActivity.map((item, index) => (
+          <div style={{ marginTop: "26px" }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: mobile ? "1fr" : "repeat(3, 1fr)",
+                gap: "18px",
+              }}
+            >
+              {TOKEN_FEATURES.map((item) => (
                 <div
-                  key={`${item.buyer}-${index}`}
+                  key={item.title}
+                  style={{
+                    background:
+                      "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    borderRadius: "22px",
+                    padding: mobile ? "18px 16px" : "22px",
+                    boxSizing: "border-box",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: mobile ? "18px" : "20px",
+                      fontWeight: 900,
+                      marginBottom: "10px",
+                    }}
+                  >
+                    {item.title}
+                  </div>
+                  <div style={{ color: "#cbd5e1", lineHeight: 1.7 }}>{item.text}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ marginTop: "26px" }}>
+            <div
+              style={{
+                background:
+                  "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))",
+                border: "1px solid rgba(255,255,255,0.08)",
+                borderRadius: "24px",
+                padding: mobile ? "20px 16px" : "24px",
+                boxSizing: "border-box",
+              }}
+            >
+              <SectionTitle mobile={mobile}>Presale Phases</SectionTitle>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: mobile ? "1fr" : "repeat(3, 1fr)",
+                  gap: "16px",
+                }}
+              >
+                {PRESALE_PHASES.map((phase) => (
+                  <div
+                    key={phase.phase}
+                    style={{
+                      background: "rgba(255,255,255,0.04)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      borderRadius: "20px",
+                      padding: "20px",
+                      boxSizing: "border-box",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "inline-block",
+                        padding: "7px 12px",
+                        borderRadius: "999px",
+                        background:
+                          phase.status === "Current"
+                            ? "rgba(34,197,94,0.18)"
+                            : phase.status === "Projected"
+                            ? "rgba(168,85,247,0.18)"
+                            : "rgba(59,130,246,0.18)",
+                        color:
+                          phase.status === "Current"
+                            ? "#86efac"
+                            : phase.status === "Projected"
+                            ? "#d8b4fe"
+                            : "#93c5fd",
+                        fontWeight: 800,
+                        fontSize: "12px",
+                        marginBottom: "12px",
+                      }}
+                    >
+                      {phase.status}
+                    </div>
+
+                    <div style={{ fontSize: "24px", fontWeight: 900, marginBottom: "8px" }}>
+                      {phase.phase}
+                    </div>
+                    <div style={{ color: "#94a3b8", marginBottom: "6px" }}>
+                      Price: <strong style={{ color: "#fff" }}>{phase.price}</strong>
+                    </div>
+                    <div style={{ color: "#94a3b8", marginBottom: "6px" }}>
+                      Allocation: <strong style={{ color: "#fff" }}>{phase.allocation}</strong>
+                    </div>
+                    <div style={{ color: "#94a3b8", marginBottom: "12px" }}>
+                      Raise Target:{" "}
+                      <strong style={{ color: "#fff" }}>{phase.raiseTarget}</strong>
+                    </div>
+                    <div style={{ color: "#cbd5e1", lineHeight: 1.65 }}>
+                      {phase.description}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginTop: "26px" }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: mobile ? "1fr" : "1fr 1fr",
+                gap: "20px",
+              }}
+            >
+              <div
+                style={{
+                  background:
+                    "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  borderRadius: "24px",
+                  padding: mobile ? "20px 16px" : "24px",
+                  boxSizing: "border-box",
+                }}
+              >
+                <SectionTitle mobile={mobile}>Tokenomics & Raise Structure</SectionTitle>
+
+                <div style={{ display: "grid", gap: "12px" }}>
+                  {[
+                    ["Overall Raise Target", "US$3,000,000"],
+                    ["Already Raised", "US$1,000,000"],
+                    ["Pre-Launch Raise", "US$750,000"],
+                    ["Pre-Launch Price", "US$0.10"],
+                    ["Pre-Launch Allocation", "7,500,000 CLX"],
+                    ["Stage 2 Raise", "US$1,250,000"],
+                    ["Stage 2 Price", "US$0.50"],
+                    ["Stage 2 Allocation", "2,500,000 CLX"],
+                    ["Defined Active Round Tokens", "10,000,000 CLX"],
+                    ["Projected Launch Price", "US$13.50"],
+                  ].map(([label, value]) => (
+                    <div
+                      key={label}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        gap: "10px",
+                        background: "rgba(255,255,255,0.04)",
+                        borderRadius: "14px",
+                        padding: "14px 16px",
+                        flexWrap: "wrap",
+                        boxSizing: "border-box",
+                      }}
+                    >
+                      <span style={{ color: "#cbd5e1" }}>{label}</span>
+                      <strong>{value}</strong>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ color: "#94a3b8", marginTop: "14px", lineHeight: 1.6 }}>
+                  {TOKEN_CONFIG.vestingNote}
+                </div>
+              </div>
+
+              <div
+                style={{
+                  background:
+                    "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  borderRadius: "24px",
+                  padding: mobile ? "20px 16px" : "24px",
+                  boxSizing: "border-box",
+                }}
+              >
+                <SectionTitle mobile={mobile}>Roadmap</SectionTitle>
+
+                <div style={{ display: "grid", gap: "16px" }}>
+                  {ROADMAP.map((item) => (
+                    <div
+                      key={item.stage}
+                      style={{
+                        background: "rgba(255,255,255,0.04)",
+                        borderRadius: "16px",
+                        padding: "16px",
+                        boxSizing: "border-box",
+                      }}
+                    >
+                      <div style={{ color: "#93c5fd", fontWeight: 800, marginBottom: "6px" }}>
+                        {item.stage}
+                      </div>
+                      <div style={{ fontSize: "20px", fontWeight: 900, marginBottom: "8px" }}>
+                        {item.title}
+                      </div>
+                      <div style={{ color: "#cbd5e1", lineHeight: 1.65 }}>{item.text}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginTop: "26px" }}>
+            <div
+              style={{
+                background:
+                  "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))",
+                border: "1px solid rgba(255,255,255,0.08)",
+                borderRadius: "24px",
+                padding: mobile ? "20px 16px" : "24px",
+                boxSizing: "border-box",
+              }}
+            >
+              <SectionTitle mobile={mobile}>Contact Us</SectionTitle>
+
+              <form onSubmit={submitContactForm}>
+                <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr auto",
-                    gap: "12px",
-                    alignItems: "center",
-                    padding: "14px 16px",
-                    borderRadius: "16px",
-                    background: "rgba(255,255,255,0.04)",
-                    border: "1px solid rgba(255,255,255,0.06)",
+                    gridTemplateColumns: mobile ? "1fr" : "1fr 1fr",
+                    gap: "14px",
+                    marginBottom: "14px",
                   }}
                 >
-                  <div>
-                    <div style={{ color: "#94a3b8", fontSize: "12px" }}>Buyer</div>
-                    <div style={{ fontWeight: 800 }}>{item.buyer}</div>
-                  </div>
+                  <input
+                    type="text"
+                    placeholder="Your name"
+                    value={contactName}
+                    onChange={(e) => setContactName(e.target.value)}
+                    style={contactInputStyle}
+                  />
 
-                  <div>
-                    <div style={{ color: "#94a3b8", fontSize: "12px" }}>Amount</div>
-                    <div style={{ fontWeight: 800 }}>{item.amount}</div>
-                  </div>
+                  <input
+                    type="email"
+                    placeholder="Your email"
+                    value={contactEmail}
+                    onChange={(e) => setContactEmail(e.target.value)}
+                    style={contactInputStyle}
+                  />
+                </div>
 
+                <textarea
+                  placeholder="Your question"
+                  value={contactQuestion}
+                  onChange={(e) => setContactQuestion(e.target.value)}
+                  rows={6}
+                  style={{
+                    ...contactInputStyle,
+                    minHeight: mobile ? "150px" : "170px",
+                    resize: "vertical",
+                  }}
+                />
+
+                <button
+                  type="submit"
+                  disabled={contactLoading}
+                  style={{
+                    marginTop: "16px",
+                    padding: "15px 22px",
+                    borderRadius: "14px",
+                    border: "none",
+                    background: "#ffffff",
+                    color: "#0f172a",
+                    fontWeight: 900,
+                    fontSize: "16px",
+                    cursor: "pointer",
+                    width: mobile ? "100%" : "auto",
+                  }}
+                >
+                  {contactLoading ? "Sending..." : "Send Message"}
+                </button>
+
+                {contactSuccess && (
                   <div
                     style={{
-                      padding: "8px 12px",
-                      borderRadius: "999px",
-                      background: "rgba(59,130,246,0.18)",
-                      color: "#93c5fd",
-                      fontWeight: 800,
-                      fontSize: "12px",
-                      justifySelf: isMobile ? "start" : "auto",
+                      marginTop: "16px",
+                      background: "rgba(34,197,94,0.18)",
+                      color: "#86efac",
+                      borderRadius: "12px",
+                      padding: "14px",
+                      lineHeight: 1.5,
                     }}
                   >
-                    {item.status}
+                    {contactSuccess}
                   </div>
-                </div>
-              ))}
+                )}
+
+                {contactError && (
+                  <div
+                    style={{
+                      marginTop: "16px",
+                      background: "rgba(239,68,68,0.18)",
+                      color: "#fca5a5",
+                      borderRadius: "12px",
+                      padding: "14px",
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    {contactError}
+                  </div>
+                )}
+              </form>
             </div>
           </div>
-        </div>
 
-        <div style={{ marginTop: "26px" }}>
+          <div style={{ marginTop: "26px" }}>
+            <div
+              style={{
+                background:
+                  "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))",
+                border: "1px solid rgba(255,255,255,0.08)",
+                borderRadius: "24px",
+                padding: mobile ? "20px 16px" : "24px",
+                boxSizing: "border-box",
+              }}
+            >
+              <SectionTitle mobile={mobile}>Recent Activity</SectionTitle>
+
+              <div style={{ display: "grid", gap: "12px" }}>
+                {fallbackActivity.map((item, index) => (
+                  <div
+                    key={`${item.buyer}-${index}`}
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: mobile ? "1fr" : "1fr 1fr auto",
+                      gap: "12px",
+                      alignItems: "center",
+                      padding: "14px 16px",
+                      borderRadius: "16px",
+                      background: "rgba(255,255,255,0.04)",
+                      border: "1px solid rgba(255,255,255,0.06)",
+                      boxSizing: "border-box",
+                    }}
+                  >
+                    <div>
+                      <div style={{ color: "#94a3b8", fontSize: "12px" }}>Buyer</div>
+                      <div style={{ fontWeight: 800 }}>{item.buyer}</div>
+                    </div>
+
+                    <div>
+                      <div style={{ color: "#94a3b8", fontSize: "12px" }}>Amount</div>
+                      <div style={{ fontWeight: 800 }}>{item.amount}</div>
+                    </div>
+
+                    <div
+                      style={{
+                        padding: "8px 12px",
+                        borderRadius: "999px",
+                        background: "rgba(59,130,246,0.18)",
+                        color: "#93c5fd",
+                        fontWeight: 800,
+                        fontSize: "12px",
+                        justifySelf: mobile ? "start" : "auto",
+                      }}
+                    >
+                      {item.status}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginTop: "26px" }}>
+            <div
+              style={{
+                background:
+                  "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))",
+                border: "1px solid rgba(255,255,255,0.08)",
+                borderRadius: "24px",
+                padding: mobile ? "20px 16px" : "24px",
+                boxSizing: "border-box",
+              }}
+            >
+              <SectionTitle mobile={mobile}>Frequently Asked Questions</SectionTitle>
+
+              <div style={{ display: "grid", gap: "14px" }}>
+                {FAQS.map((item) => (
+                  <div
+                    key={item.q}
+                    style={{
+                      background: "rgba(255,255,255,0.04)",
+                      borderRadius: "16px",
+                      padding: "18px",
+                      boxSizing: "border-box",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontWeight: 900,
+                        fontSize: mobile ? "17px" : "18px",
+                        marginBottom: "8px",
+                      }}
+                    >
+                      {item.q}
+                    </div>
+                    <div style={{ color: "#cbd5e1", lineHeight: 1.65 }}>{item.a}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
           <div
             style={{
-              background: "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))",
-              border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: "24px",
-              padding: isMobile ? "20px" : "24px",
+              marginTop: "34px",
+              color: "rgba(255,255,255,0.34)",
+              textAlign: "center",
+              lineHeight: 1.7,
+              fontSize: "12px",
+              letterSpacing: "0.3px",
             }}
           >
-            <SectionTitle isMobile={isMobile}>Frequently Asked Questions</SectionTitle>
-
-            <div style={{ display: "grid", gap: "14px" }}>
-              {FAQS.map((item) => (
-                <div
-                  key={item.q}
-                  style={{
-                    background: "rgba(255,255,255,0.04)",
-                    borderRadius: "16px",
-                    padding: "18px",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontWeight: 900,
-                      fontSize: isMobile ? "17px" : "18px",
-                      marginBottom: "8px",
-                    }}
-                  >
-                    {item.q}
-                  </div>
-                  <div style={{ color: "#cbd5e1", lineHeight: 1.65 }}>{item.a}</div>
-                </div>
-              ))}
-            </div>
+            © {new Date().getFullYear()} GDN Enterprise Pty Ltd · Powered by CLX
           </div>
         </div>
-
-        <div
-          style={{
-            marginTop: "34px",
-            color: "rgba(255,255,255,0.34)",
-            textAlign: "center",
-            lineHeight: 1.7,
-            fontSize: "12px",
-            letterSpacing: "0.3px",
-            paddingBottom: "10px",
-          }}
-        >
-          © {new Date().getFullYear()} GDN Enterprise Pty Ltd · Powered by CLX
-        </div>
       </div>
-    </div>
+    </>
   );
 }
 
