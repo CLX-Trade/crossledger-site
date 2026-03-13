@@ -3,10 +3,10 @@ import { useState } from "react";
 export default function Home() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
+  const [question, setQuestion] = useState("");
   const [status, setStatus] = useState("");
 
-  const submitForm = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus("sending");
 
@@ -19,19 +19,19 @@ export default function Home() {
         body: JSON.stringify({
           name,
           email,
-          message,
+          question,
         }),
       });
 
-      await response.json();
+      const data = await response.json();
 
       if (response.ok) {
         setStatus("success");
         setName("");
         setEmail("");
-        setMessage("");
+        setQuestion("");
       } else {
-        setStatus("error");
+        setStatus(data.message || "error");
       }
     } catch (error) {
       setStatus("error");
@@ -46,7 +46,7 @@ export default function Home() {
           Send us a message and our team will get back to you.
         </p>
 
-        <form onSubmit={submitForm}>
+        <form onSubmit={handleSubmit} style={formStyle}>
           <input
             type="text"
             placeholder="Name"
@@ -66,29 +66,29 @@ export default function Home() {
           />
 
           <textarea
-            placeholder="Message"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Question"
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
             style={textareaStyle}
             required
           />
 
           <button type="submit" style={buttonStyle}>
-            Send Message
+            {status === "sending" ? "Sending..." : "Send Message"}
           </button>
         </form>
-
-        {status === "sending" && (
-          <p style={infoStyle}>Sending...</p>
-        )}
 
         {status === "success" && (
           <p style={successStyle}>Message sent successfully.</p>
         )}
 
-        {status === "error" && (
-          <p style={errorStyle}>Failed to send message.</p>
-        )}
+        {status !== "" &&
+          status !== "success" &&
+          status !== "sending" && (
+            <p style={errorStyle}>
+              {status === "error" ? "Failed to send message." : status}
+            </p>
+          )}
       </div>
     </div>
   );
@@ -96,87 +96,97 @@ export default function Home() {
 
 const pageStyle = {
   minHeight: "100vh",
+  background:
+    "radial-gradient(circle at top, #071a44 0%, #03102b 45%, #020817 100%)",
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
-  background: "#020617",
-  padding: "20px",
+  padding: "40px 20px",
   fontFamily: "Arial, sans-serif",
 };
 
 const cardStyle = {
   width: "100%",
-  maxWidth: "600px",
-  background: "#0f172a",
-  borderRadius: "16px",
-  padding: "40px",
-  boxShadow: "0 0 30px rgba(0,0,0,0.45)",
-  color: "white",
+  maxWidth: "900px",
+  background: "rgba(9, 23, 52, 0.96)",
+  border: "1px solid rgba(83, 116, 176, 0.35)",
+  borderRadius: "30px",
+  padding: "56px",
   boxSizing: "border-box",
+  boxShadow: "0 20px 60px rgba(0, 0, 0, 0.4)",
 };
 
 const titleStyle = {
-  fontSize: "32px",
-  fontWeight: "700",
-  marginBottom: "10px",
+  color: "#ffffff",
+  fontSize: "64px",
+  fontWeight: 700,
+  lineHeight: 1.05,
+  margin: "0 0 24px 0",
 };
 
 const subtitleStyle = {
-  color: "#94a3b8",
-  marginBottom: "28px",
-  lineHeight: "1.5",
+  color: "#97a6c3",
+  fontSize: "26px",
+  lineHeight: 1.5,
+  margin: "0 0 40px 0",
+};
+
+const formStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: "24px",
 };
 
 const inputStyle = {
   width: "100%",
-  padding: "14px 16px",
-  marginBottom: "16px",
-  borderRadius: "10px",
-  border: "1px solid #334155",
-  background: "#111827",
-  color: "white",
-  fontSize: "16px",
-  boxSizing: "border-box",
+  height: "84px",
+  borderRadius: "20px",
+  border: "1px solid rgba(112, 137, 185, 0.45)",
+  background: "rgba(8, 20, 45, 0.95)",
+  color: "#ffffff",
+  fontSize: "24px",
+  padding: "0 24px",
   outline: "none",
+  boxSizing: "border-box",
 };
 
 const textareaStyle = {
   width: "100%",
-  minHeight: "140px",
-  padding: "14px 16px",
-  marginBottom: "20px",
-  borderRadius: "10px",
-  border: "1px solid #334155",
-  background: "#111827",
-  color: "white",
-  fontSize: "16px",
-  boxSizing: "border-box",
+  minHeight: "220px",
+  borderRadius: "20px",
+  border: "1px solid rgba(112, 137, 185, 0.45)",
+  background: "rgba(8, 20, 45, 0.95)",
+  color: "#ffffff",
+  fontSize: "24px",
+  padding: "22px 24px",
   outline: "none",
+  boxSizing: "border-box",
   resize: "vertical",
 };
 
 const buttonStyle = {
-  padding: "14px 22px",
-  borderRadius: "10px",
-  border: "none",
-  background: "#ffffff",
-  color: "#0f172a",
-  fontWeight: "700",
-  fontSize: "16px",
+  marginTop: "8px",
+  width: "280px",
+  height: "92px",
+  borderRadius: "20px",
+  border: "2px solid #d9dce4",
+  background: "#f4f4f6",
+  color: "#0f1a34",
+  fontSize: "24px",
+  fontWeight: 700,
   cursor: "pointer",
 };
 
-const infoStyle = {
-  marginTop: "18px",
-  color: "#cbd5e1",
-};
-
 const successStyle = {
-  marginTop: "18px",
-  color: "#22c55e",
+  marginTop: "28px",
+  color: "#24e06d",
+  fontSize: "26px",
+  fontWeight: 500,
 };
 
 const errorStyle = {
-  marginTop: "18px",
-  color: "#ef4444",
+  marginTop: "28px",
+  color: "#ff4d4f",
+  fontSize: "26px",
+  fontWeight: 500,
 };
