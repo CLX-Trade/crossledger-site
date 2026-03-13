@@ -1,4 +1,3 @@
-```javascript
 import { useEffect, useMemo, useState } from "react";
 import { ethers } from "ethers";
 
@@ -7,13 +6,6 @@ const MIN_BUY_USD = 200;
 const ASSUMED_ETH_USD = 2500;
 const MIN_BUY_ETH = (MIN_BUY_USD / ASSUMED_ETH_USD).toFixed(4);
 
-/*
-  IMPORTANT:
-  This assumes your contract has:
-  function buyTokens() external payable
-
-  If your actual function is different, replace the ABI and the call in buyTokens().
-*/
 const CONTRACT_ABI = [
   {
     inputs: [],
@@ -43,7 +35,7 @@ const TOKEN_CONFIG = {
   prelaunchTokens: "7,500,000 CLX",
   stageTwoTokens: "2,500,000 CLX",
   totalDefinedRoundTokens: "10,000,000 CLX",
-  minBuy: `US$${MIN_BUY_USD}`,
+  minBuy: "US$200",
   maxBuy: "TBA",
   acceptedCurrency: "ETH",
   vestingNote:
@@ -434,7 +426,13 @@ export default function Home() {
             <div style={{ fontSize: isMobile ? "28px" : "32px", fontWeight: 900 }}>
               {TOKEN_CONFIG.symbol} Presale
             </div>
-            <div style={{ color: "#94a3b8", marginTop: "6px", fontSize: isMobile ? "14px" : "16px" }}>
+            <div
+              style={{
+                color: "#94a3b8",
+                marginTop: "6px",
+                fontSize: isMobile ? "14px" : "16px",
+              }}
+            >
               {TOKEN_CONFIG.name} • {TOKEN_CONFIG.network}
             </div>
           </div>
@@ -1254,7 +1252,13 @@ export default function Home() {
                     padding: "18px",
                   }}
                 >
-                  <div style={{ fontWeight: 900, fontSize: isMobile ? "17px" : "18px", marginBottom: "8px" }}>
+                  <div
+                    style={{
+                      fontWeight: 900,
+                      fontSize: isMobile ? "17px" : "18px",
+                      marginBottom: "8px",
+                    }}
+                  >
                     {item.q}
                   </div>
                   <div style={{ color: "#cbd5e1", lineHeight: 1.65 }}>{item.a}</div>
@@ -1281,4 +1285,3 @@ export default function Home() {
     </div>
   );
 }
-```
