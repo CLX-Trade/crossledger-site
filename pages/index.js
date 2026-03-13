@@ -1425,7 +1425,7 @@ const CONTRACT_ABI = [
   // "function buyTokens() payable"
 ];
 
-const FORMSPREE_ENDPOINT = "https://formspree.io/f/mlgpnvbk"; // replace with your real Formspree endpoint
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/mlgpnvbk"; 
 
 const TOKEN_NAME = "CrossLedger";
 const TOKEN_SYMBOL = "CLX";
