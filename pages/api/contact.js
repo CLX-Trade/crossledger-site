@@ -6,9 +6,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { name, email, question } = req.body;
+    const { name, email, message } = req.body;
 
-    if (!name || !email || !question) {
+    if (!name || !email || !message) {
       return res.status(400).json({ message: "All fields are required." });
     }
 
@@ -29,7 +29,7 @@ export default async function handler(req, res) {
       to: process.env.CONTACT_TO,
       replyTo: email,
       subject: "New CLX Contact Message",
-      text: `Name: ${name}\nEmail: ${email}\n\nQuestion:\n${question}`,
+      text: `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`,
     });
 
     console.log("EMAIL SENT:", info.messageId);
