@@ -22,11 +22,9 @@ export default async function handler(req, res) {
       },
     });
 
-    const recipient = process.env.CONTACT_TO_EMAIL;
-
     await transporter.sendMail({
       from: process.env.CONTACT_FROM_EMAIL,
-      to: recipient,
+      to: process.env.CONTACT_TO_EMAIL,
       replyTo: email,
       subject: `CrossLedger Contact Form - ${name}`,
       text: `
