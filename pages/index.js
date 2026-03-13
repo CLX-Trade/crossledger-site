@@ -1,1287 +1,182 @@
-import { useEffect, useMemo, useState } from "react";
-import { ethers } from "ethers";
-
-const CONTRACT_ADDRESS = "0xCA30Cbe4D511Dd283e0FDe62d2215c42C358Ba4c";
-const MIN_BUY_USD = 200;
-const ASSUMED_ETH_USD = 2500;
-const MIN_BUY_ETH = (MIN_BUY_USD / ASSUMED_ETH_USD).toFixed(4);
-
-const CONTRACT_ABI = [
-  {
-    inputs: [],
-    name: "buyTokens",
-    outputs: [],
-    stateMutability: "payable",
-    type: "function",
-  },
-];
-
-const TOKEN_CONFIG = {
-  name: "CrossLedger",
-  symbol: "CLX",
-  network: "Ethereum",
-  launchTag: "CrossLedger Pre-Launch & Presale",
-  headline: "Blockchain infrastructure for the future of international trade",
-  subheadline:
-    "CrossLedger is being developed to support smart-contract-based international trade infrastructure. The current capital raise is structured toward a US$3,000,000 objective, with US$1,000,000 already secured, a live pre-launch round of US$750,000 at US$0.10 per token, and a second-stage presale balance of US$1,250,000 at US$0.50 per token.",
-  contractAddress: CONTRACT_ADDRESS,
-  currentPrice: "US$0.10",
-  stageTwoPrice: "US$0.50",
-  projectedLaunchPrice: "US$13.50",
-  overallRaiseTarget: "US$3,000,000",
-  alreadyRaised: "US$1,000,000",
-  prelaunchTarget: "US$750,000",
-  stageTwoTarget: "US$1,250,000",
-  prelaunchTokens: "7,500,000 CLX",
-  stageTwoTokens: "2,500,000 CLX",
-  totalDefinedRoundTokens: "10,000,000 CLX",
-  minBuy: "US$200",
-  maxBuy: "TBA",
-  acceptedCurrency: "ETH",
-  vestingNote:
-    "Current raise targets and active round pricing are defined. Broader tokenomics allocations and final vesting structure remain subject to final release settings.",
-};
-
-const RAISE_PROGRESS = {
-  totalTarget: 3000000,
-  alreadyRaised: 1000000,
-  currentRoundTarget: 750000,
-  nextStageTarget: 1250000,
-};
-
-const alreadyRaisedPct = (
-  (RAISE_PROGRESS.alreadyRaised / RAISE_PROGRESS.totalTarget) *
-  100
-).toFixed(2);
-
-const afterCurrentRoundPct = (
-  ((RAISE_PROGRESS.alreadyRaised + RAISE_PROGRESS.currentRoundTarget) /
-    RAISE_PROGRESS.totalTarget) *
-  100
-).toFixed(2);
-
-const PRESALE_PHASES = [
-  {
-    phase: "Pre-Launch",
-    price: "US$0.10",
-    allocation: "7,500,000 CLX",
-    raiseTarget: "US$750,000",
-    status: "Current",
-    description:
-      "The current pre-launch round is structured to raise US$750,000 at US$0.10 per token, positioning early participants ahead of the wider presale.",
-  },
-  {
-    phase: "Presale Stage 2",
-    price: "US$0.50",
-    allocation: "2,500,000 CLX",
-    raiseTarget: "US$1,250,000",
-    status: "Upcoming",
-    description:
-      "The second stage is designed to complete the remaining balance toward the US$3,000,000 raise target at US$0.50 per token.",
-  },
-  {
-    phase: "Projected Launch",
-    price: "US$13.50",
-    allocation: "Market Release",
-    raiseTarget: "N/A",
-    status: "Projected",
-    description:
-      "The projected post-launch price is US$13.50 per token as the CrossLedger ecosystem expands through smart contract infrastructure built for international trade.",
-  },
-];
-
-const TOKEN_FEATURES = [
-  {
-    title: "International Trade Utility",
-    text: "CLX is intended to support a blockchain ecosystem where smart contracts can strengthen trust, execution, and transactional efficiency across international trade flows.",
-  },
-  {
-    title: "Growth Through Smart Contracts",
-    text: "The long-term value thesis for CLX is tied to the rollout of smart-contract infrastructure that supports real trade activity, settlement logic, and scalable commercial use cases.",
-  },
-  {
-    title: "Structured Early Entry",
-    text: "The pre-launch and staged presale model is designed to progressively fund ecosystem development while providing structured market entry ahead of broader launch.",
-  },
-];
-
-const ROADMAP = [
-  {
-    stage: "Stage 1",
-    title: "Pre-Launch Capital Raise",
-    text: "Complete the current US$750,000 pre-launch round at US$0.10 per token while strengthening market confidence and ecosystem positioning.",
-  },
-  {
-    stage: "Stage 2",
-    title: "Presale Expansion",
-    text: "Open the second-stage presale at US$0.50 per token to complete the remaining US$1,250,000 toward the US$3,000,000 raise objective.",
-  },
-  {
-    stage: "Stage 3",
-    title: "Launch and Utility Growth",
-    text: "Support broader market rollout and expand smart contract functionality for international trade applications, with a projected launch reference of US$13.50 per token.",
-  },
-];
-
-const FAQS = [
-  {
-    q: "How much is the current pre-launch price?",
-    a: "The current pre-launch price is US$0.10 per CLX token.",
-  },
-  {
-    q: "How much has already been raised?",
-    a: "US$1,000,000 has already been raised toward the overall US$3,000,000 objective.",
-  },
-  {
-    q: "What is the next presale stage price?",
-    a: "The second presale stage is structured at US$0.50 per token.",
-  },
-  {
-    q: "What is the projected launch price?",
-    a: "The projected post-launch price referenced for CLX is US$13.50 per token.",
-  },
-];
-
-function StatCard({ label, value }) {
-  return (
-    <div
-      style={{
-        background: "rgba(255,255,255,0.05)",
-        border: "1px solid rgba(255,255,255,0.08)",
-        borderRadius: "18px",
-        padding: "18px",
-      }}
-    >
-      <div style={{ color: "#94a3b8", fontSize: "13px", marginBottom: "6px" }}>
-        {label}
-      </div>
-      <div style={{ fontSize: "22px", fontWeight: 800 }}>{value}</div>
-    </div>
-  );
-}
+import { useState } from "react";
 
 export default function Home() {
-  const [walletAddress, setWalletAddress] = useState("");
-  const [ethAmount, setEthAmount] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [txHash, setTxHash] = useState("");
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [isBuying, setIsBuying] = useState(false);
-  const [isCheckingWallet, setIsCheckingWallet] = useState(true);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [status, setStatus] = useState("");
 
-  const [contactName, setContactName] = useState("");
-  const [contactEmail, setContactEmail] = useState("");
-  const [contactQuestion, setContactQuestion] = useState("");
-  const [contactLoading, setContactLoading] = useState(false);
-  const [contactSuccess, setContactSuccess] = useState("");
-  const [contactError, setContactError] = useState("");
-
-  const [screenWidth, setScreenWidth] = useState(1200);
-
-  const fallbackActivity = [
-    { buyer: "0x71...9ab4", amount: "12,500 CLX", status: "Preview" },
-    { buyer: "0x93...1fd2", amount: "4,800 CLX", status: "Preview" },
-    { buyer: "0x28...7ce1", amount: "18,200 CLX", status: "Preview" },
-  ];
-
-  useEffect(() => {
-    function handleResize() {
-      setScreenWidth(window.innerWidth);
-    }
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  const isMobile = screenWidth < 768;
-  const isTablet = screenWidth >= 768 && screenWidth < 1024;
-
-  const presaleStart = useMemo(() => {
-    const now = new Date();
-    const start = new Date(now);
-    start.setDate(now.getDate() + 1);
-    start.setHours(0, 0, 0, 0);
-    return start;
-  }, []);
-
-  const [timeLeft, setTimeLeft] = useState({
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-  });
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const now = new Date();
-      const diff = Math.max(presaleStart.getTime() - now.getTime(), 0);
-
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-      const minutes = Math.floor((diff / (1000 * 60)) % 60);
-      const seconds = Math.floor((diff / 1000) % 60);
-
-      setTimeLeft({ days, hours, minutes, seconds });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [presaleStart]);
-
-  useEffect(() => {
-    async function checkExistingWallet() {
-      try {
-        if (!window.ethereum) return;
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const accounts = await provider.send("eth_accounts", []);
-        if (accounts && accounts.length > 0) {
-          setWalletAddress(accounts[0]);
-        }
-      } catch (err) {
-        console.error("Wallet check failed:", err);
-      } finally {
-        setIsCheckingWallet(false);
-      }
-    }
-
-    checkExistingWallet();
-  }, []);
-
-  async function connectWallet() {
-    try {
-      setError("");
-      setSuccess("");
-      setTxHash("");
-      setIsConnecting(true);
-
-      if (!window.ethereum) {
-        setError("MetaMask is not installed");
-        return;
-      }
-
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const accounts = await provider.send("eth_requestAccounts", []);
-
-      if (!accounts || accounts.length === 0) {
-        setError("No wallet account found");
-        return;
-      }
-
-      setWalletAddress(accounts[0]);
-    } catch (err) {
-      console.error(err);
-      setError(err?.message || "Wallet connection failed");
-    } finally {
-      setIsConnecting(false);
-    }
-  }
-
-  async function buyTokens() {
-    try {
-      setError("");
-      setSuccess("");
-      setTxHash("");
-
-      if (!window.ethereum) {
-        setError("MetaMask is not installed");
-        return;
-      }
-
-      if (!walletAddress) {
-        setError("Please connect your wallet first");
-        return;
-      }
-
-      if (!ethAmount || Number(ethAmount) <= 0) {
-        setError("Please enter a valid ETH amount");
-        return;
-      }
-
-      if (Number(ethAmount) < Number(MIN_BUY_ETH)) {
-        setError(
-          `Minimum purchase is US$${MIN_BUY_USD} (approximately ${MIN_BUY_ETH} ETH based on ETH at US$${ASSUMED_ETH_USD}).`
-        );
-        return;
-      }
-
-      setIsBuying(true);
-
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-
-      const tx = await contract.buyTokens({
-        value: ethers.parseEther(ethAmount),
-      });
-
-      setTxHash(tx.hash);
-      setSuccess("Transaction submitted. Waiting for confirmation...");
-
-      const receipt = await tx.wait();
-
-      if (receipt.status === 1) {
-        setSuccess(
-          `Purchase successful. ${TOKEN_CONFIG.symbol} should arrive in your wallet.`
-        );
-      } else {
-        setError("Transaction failed");
-      }
-    } catch (err) {
-      console.error(err);
-
-      if (err?.code === "ACTION_REJECTED") {
-        setError("Transaction was rejected in MetaMask");
-      } else if (err?.reason) {
-        setError(err.reason);
-      } else if (err?.shortMessage) {
-        setError(err.shortMessage);
-      } else if (err?.message) {
-        setError(err.message);
-      } else {
-        setError("Token purchase failed");
-      }
-    } finally {
-      setIsBuying(false);
-    }
-  }
-
-  async function submitContactForm(e) {
+  const submitForm = async (e) => {
     e.preventDefault();
-    setContactSuccess("");
-    setContactError("");
-
-    if (!contactName.trim() || !contactEmail.trim() || !contactQuestion.trim()) {
-      setContactError("Please complete all contact form fields.");
-      return;
-    }
+    setStatus("sending");
 
     try {
-      setContactLoading(true);
-
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          name: contactName,
-          email: contactEmail,
-          question: contactQuestion,
+          name,
+          email,
+          message,
         }),
       });
 
-      const data = await response.json();
+      await response.json();
 
-      if (!response.ok) {
-        throw new Error(data?.message || "Failed to send message.");
+      if (response.ok) {
+        setStatus("success");
+        setName("");
+        setEmail("");
+        setMessage("");
+      } else {
+        setStatus("error");
       }
-
-      setContactSuccess("Thank you. Your message has been sent successfully.");
-      setContactName("");
-      setContactEmail("");
-      setContactQuestion("");
-    } catch (err) {
-      console.error(err);
-      setContactError(err.message || "Failed to send message.");
-    } finally {
-      setContactLoading(false);
+    } catch (error) {
+      setStatus("error");
     }
-  }
-
-  function shortAddress(address) {
-    if (!address) return "";
-    return `${address.slice(0, 6)}...${address.slice(-4)}`;
-  }
+  };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background:
-          "radial-gradient(circle at top, #1e293b 0%, #0f172a 40%, #020617 100%)",
-        color: "#fff",
-        fontFamily: "Arial, sans-serif",
-      }}
-    >
-      <div
-        style={{
-          maxWidth: "1240px",
-          margin: "0 auto",
-          padding: isMobile ? "20px 14px 50px" : "28px 18px 70px",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            gap: "16px",
-            alignItems: "center",
-            flexWrap: "wrap",
-            marginBottom: "24px",
-          }}
-        >
-          <div style={{ width: isMobile ? "100%" : "auto" }}>
-            <div style={{ fontSize: isMobile ? "28px" : "32px", fontWeight: 900 }}>
-              {TOKEN_CONFIG.symbol} Presale
-            </div>
-            <div
-              style={{
-                color: "#94a3b8",
-                marginTop: "6px",
-                fontSize: isMobile ? "14px" : "16px",
-              }}
-            >
-              {TOKEN_CONFIG.name} • {TOKEN_CONFIG.network}
-            </div>
-          </div>
+    <div style={pageStyle}>
+      <div style={cardStyle}>
+        <h1 style={titleStyle}>CLX Contact</h1>
+        <p style={subtitleStyle}>
+          Send us a message and our team will get back to you.
+        </p>
 
-          <button
-            onClick={connectWallet}
-            disabled={isConnecting || isCheckingWallet}
-            style={{
-              padding: "14px 20px",
-              borderRadius: "12px",
-              border: "1px solid rgba(255,255,255,0.15)",
-              background: walletAddress ? "#14532d" : "#2563eb",
-              color: "#fff",
-              fontWeight: 800,
-              cursor: "pointer",
-              minWidth: isMobile ? "100%" : "185px",
-              width: isMobile ? "100%" : "auto",
-            }}
-          >
-            {isCheckingWallet
-              ? "Checking Wallet..."
-              : isConnecting
-              ? "Connecting..."
-              : walletAddress
-              ? `Connected: ${shortAddress(walletAddress)}`
-              : "Connect Wallet"}
+        <form onSubmit={submitForm}>
+          <input
+            type="text"
+            placeholder="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            style={inputStyle}
+            required
+          />
+
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            style={inputStyle}
+            required
+          />
+
+          <textarea
+            placeholder="Message"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            style={textareaStyle}
+            required
+          />
+
+          <button type="submit" style={buttonStyle}>
+            Send Message
           </button>
-        </div>
+        </form>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: isMobile ? "1fr" : "1.4fr 0.8fr",
-            gap: "24px",
-          }}
-        >
-          <div
-            style={{
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: "26px",
-              padding: isMobile ? "20px" : "28px",
-              backdropFilter: "blur(8px)",
-            }}
-          >
-            <div
-              style={{
-                display: "inline-block",
-                background: "rgba(59,130,246,0.18)",
-                color: "#93c5fd",
-                fontWeight: 800,
-                fontSize: "13px",
-                borderRadius: "999px",
-                padding: "8px 14px",
-                marginBottom: "16px",
-              }}
-            >
-              {TOKEN_CONFIG.launchTag}
-            </div>
+        {status === "sending" && (
+          <p style={infoStyle}>Sending...</p>
+        )}
 
-            <h1
-              style={{
-                fontSize: isMobile ? "34px" : isTablet ? "44px" : "54px",
-                lineHeight: 1.02,
-                margin: "0 0 14px",
-                fontWeight: 900,
-                maxWidth: "860px",
-              }}
-            >
-              {TOKEN_CONFIG.headline}
-            </h1>
+        {status === "success" && (
+          <p style={successStyle}>Message sent successfully.</p>
+        )}
 
-            <p
-              style={{
-                color: "#cbd5e1",
-                fontSize: isMobile ? "16px" : "18px",
-                lineHeight: 1.65,
-                marginBottom: "24px",
-                maxWidth: "860px",
-              }}
-            >
-              {TOKEN_CONFIG.subheadline}
-            </p>
-
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: isMobile
-                  ? "repeat(2, 1fr)"
-                  : "repeat(4, minmax(80px, 1fr))",
-                gap: "12px",
-                marginBottom: "24px",
-              }}
-            >
-              {[
-                { label: "Days", value: timeLeft.days },
-                { label: "Hours", value: timeLeft.hours },
-                { label: "Minutes", value: timeLeft.minutes },
-                { label: "Seconds", value: timeLeft.seconds },
-              ].map((item) => (
-                <div
-                  key={item.label}
-                  style={{
-                    background: "rgba(255,255,255,0.04)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    borderRadius: "18px",
-                    padding: "18px 14px",
-                    textAlign: "center",
-                  }}
-                >
-                  <div style={{ fontSize: isMobile ? "24px" : "30px", fontWeight: 900 }}>
-                    {String(item.value).padStart(2, "0")}
-                  </div>
-                  <div style={{ color: "#94a3b8", fontSize: "13px" }}>
-                    {item.label}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(4, 1fr)",
-                gap: "14px",
-                marginBottom: "24px",
-              }}
-            >
-              <StatCard label="Already Raised" value={TOKEN_CONFIG.alreadyRaised} />
-              <StatCard label="Current Round" value={TOKEN_CONFIG.prelaunchTarget} />
-              <StatCard label="Next Stage" value={TOKEN_CONFIG.stageTwoTarget} />
-              <StatCard
-                label="Projected Launch"
-                value={TOKEN_CONFIG.projectedLaunchPrice}
-              />
-            </div>
-
-            <div
-              style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: "20px",
-                padding: "18px",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  gap: "12px",
-                  marginBottom: "10px",
-                  flexWrap: "wrap",
-                }}
-              >
-                <div style={{ fontWeight: 800 }}>Raise Progress</div>
-                <div style={{ color: "#93c5fd", fontWeight: 800 }}>
-                  {TOKEN_CONFIG.alreadyRaised} of {TOKEN_CONFIG.overallRaiseTarget}
-                </div>
-              </div>
-
-              <div
-                style={{
-                  width: "100%",
-                  height: "14px",
-                  background: "rgba(255,255,255,0.08)",
-                  borderRadius: "999px",
-                  overflow: "hidden",
-                  marginBottom: "10px",
-                }}
-              >
-                <div
-                  style={{
-                    width: `${alreadyRaisedPct}%`,
-                    height: "100%",
-                    background: "linear-gradient(90deg, #2563eb 0%, #22c55e 100%)",
-                    borderRadius: "999px",
-                  }}
-                />
-              </div>
-
-              <div style={{ color: "#cbd5e1", lineHeight: 1.7, fontSize: "14px" }}>
-                Current progress: <strong>{alreadyRaisedPct}%</strong> of total raise
-                target.
-                <br />
-                If the current pre-launch round completes, progress would move to{" "}
-                <strong>{afterCurrentRoundPct}%</strong>.
-              </div>
-            </div>
-          </div>
-
-          <div
-            style={{
-              background: "#fff",
-              color: "#0f172a",
-              borderRadius: "26px",
-              padding: isMobile ? "20px" : "28px",
-              boxShadow: "0 20px 60px rgba(0,0,0,0.28)",
-            }}
-          >
-            <div style={{ fontSize: isMobile ? "24px" : "28px", fontWeight: 900, marginBottom: "8px" }}>
-              Buy {TOKEN_CONFIG.symbol}
-            </div>
-            <div style={{ color: "#475569", lineHeight: 1.6, marginBottom: "18px" }}>
-              Connect your wallet and purchase directly with{" "}
-              {TOKEN_CONFIG.acceptedCurrency}.
-            </div>
-
-            <div
-              style={{
-                background: "#f8fafc",
-                border: "1px solid #e2e8f0",
-                borderRadius: "14px",
-                padding: "14px",
-                marginBottom: "16px",
-              }}
-            >
-              <div style={{ color: "#64748b", fontSize: "13px" }}>Contract</div>
-              <div style={{ fontWeight: 800, wordBreak: "break-all", marginTop: "5px" }}>
-                {TOKEN_CONFIG.contractAddress}
-              </div>
-            </div>
-
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-                gap: "12px",
-                marginBottom: "16px",
-              }}
-            >
-              <div
-                style={{
-                  background: "#f8fafc",
-                  border: "1px solid #e2e8f0",
-                  borderRadius: "14px",
-                  padding: "12px",
-                }}
-              >
-                <div style={{ color: "#64748b", fontSize: "12px" }}>Current Price</div>
-                <div style={{ fontWeight: 900, marginTop: "4px" }}>
-                  {TOKEN_CONFIG.currentPrice}
-                </div>
-              </div>
-
-              <div
-                style={{
-                  background: "#f8fafc",
-                  border: "1px solid #e2e8f0",
-                  borderRadius: "14px",
-                  padding: "12px",
-                }}
-              >
-                <div style={{ color: "#64748b", fontSize: "12px" }}>
-                  Projected Launch
-                </div>
-                <div style={{ fontWeight: 900, marginTop: "4px" }}>
-                  {TOKEN_CONFIG.projectedLaunchPrice}
-                </div>
-              </div>
-            </div>
-
-            <label
-              style={{ display: "block", fontWeight: 800, marginBottom: "8px" }}
-            >
-              Amount in ETH
-            </label>
-
-            <input
-              type="number"
-              placeholder={MIN_BUY_ETH}
-              value={ethAmount}
-              onChange={(e) => setEthAmount(e.target.value)}
-              step="0.0001"
-              min="0"
-              style={{
-                width: "100%",
-                boxSizing: "border-box",
-                padding: "15px 16px",
-                borderRadius: "14px",
-                border: "1px solid #cbd5e1",
-                fontSize: "16px",
-                marginBottom: "16px",
-                outline: "none",
-              }}
-            />
-
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(2, 1fr)",
-                gap: "10px",
-                marginBottom: "16px",
-              }}
-            >
-              {[MIN_BUY_ETH, "0.10", "0.25", "0.50"].map((value) => (
-                <button
-                  key={value}
-                  onClick={() => setEthAmount(value)}
-                  style={{
-                    padding: "10px 12px",
-                    borderRadius: "12px",
-                    border: "1px solid #cbd5e1",
-                    background: "#fff",
-                    cursor: "pointer",
-                    fontWeight: 700,
-                  }}
-                >
-                  {value} ETH
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={buyTokens}
-              disabled={isBuying}
-              style={{
-                width: "100%",
-                padding: "15px 18px",
-                borderRadius: "14px",
-                border: "none",
-                background: "#111827",
-                color: "#fff",
-                fontWeight: 900,
-                fontSize: "16px",
-                cursor: "pointer",
-              }}
-            >
-              {isBuying ? "Processing..." : `Buy ${TOKEN_CONFIG.symbol}`}
-            </button>
-
-            {walletAddress && (
-              <div
-                style={{
-                  marginTop: "16px",
-                  background: "#f8fafc",
-                  border: "1px solid #e2e8f0",
-                  borderRadius: "12px",
-                  padding: "12px",
-                  fontSize: "14px",
-                  wordBreak: "break-all",
-                }}
-              >
-                <strong>Connected wallet:</strong> {walletAddress}
-              </div>
-            )}
-
-            {success && (
-              <div
-                style={{
-                  marginTop: "16px",
-                  background: "#dcfce7",
-                  color: "#166534",
-                  borderRadius: "12px",
-                  padding: "14px",
-                  lineHeight: 1.5,
-                }}
-              >
-                {success}
-              </div>
-            )}
-
-            {error && (
-              <div
-                style={{
-                  marginTop: "16px",
-                  background: "#fee2e2",
-                  color: "#991b1b",
-                  borderRadius: "12px",
-                  padding: "14px",
-                  lineHeight: 1.5,
-                }}
-              >
-                {error}
-              </div>
-            )}
-
-            {txHash && (
-              <div
-                style={{
-                  marginTop: "16px",
-                  background: "#eff6ff",
-                  color: "#1d4ed8",
-                  borderRadius: "12px",
-                  padding: "14px",
-                  lineHeight: 1.5,
-                  wordBreak: "break-all",
-                }}
-              >
-                <strong>Transaction Hash:</strong>
-                <br />
-                {txHash}
-              </div>
-            )}
-
-            <div
-              style={{
-                marginTop: "18px",
-                borderTop: "1px solid #e2e8f0",
-                paddingTop: "16px",
-                color: "#64748b",
-                fontSize: "13px",
-                lineHeight: 1.6,
-              }}
-            >
-              Minimum buy: US${MIN_BUY_USD}
-              <br />
-              Approximate minimum in ETH: {MIN_BUY_ETH} ETH
-              <br />
-              Maximum buy: {TOKEN_CONFIG.maxBuy}
-            </div>
-          </div>
-        </div>
-
-        <div style={{ marginTop: "26px" }}>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)",
-              gap: "18px",
-            }}
-          >
-            {TOKEN_FEATURES.map((item) => (
-              <div
-                key={item.title}
-                style={{
-                  background: "rgba(255,255,255,0.05)",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  borderRadius: "22px",
-                  padding: "22px",
-                }}
-              >
-                <div style={{ fontSize: "20px", fontWeight: 900, marginBottom: "10px" }}>
-                  {item.title}
-                </div>
-                <div style={{ color: "#cbd5e1", lineHeight: 1.7 }}>{item.text}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div style={{ marginTop: "26px" }}>
-          <div
-            style={{
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: "24px",
-              padding: isMobile ? "20px" : "24px",
-            }}
-          >
-            <div style={{ fontSize: isMobile ? "24px" : "28px", fontWeight: 900, marginBottom: "18px" }}>
-              Presale Phases
-            </div>
-
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)",
-                gap: "16px",
-              }}
-            >
-              {PRESALE_PHASES.map((phase) => (
-                <div
-                  key={phase.phase}
-                  style={{
-                    background: "rgba(255,255,255,0.04)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    borderRadius: "20px",
-                    padding: "20px",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "inline-block",
-                      padding: "7px 12px",
-                      borderRadius: "999px",
-                      background:
-                        phase.status === "Current"
-                          ? "rgba(34,197,94,0.18)"
-                          : phase.status === "Projected"
-                          ? "rgba(168,85,247,0.18)"
-                          : "rgba(59,130,246,0.18)",
-                      color:
-                        phase.status === "Current"
-                          ? "#86efac"
-                          : phase.status === "Projected"
-                          ? "#d8b4fe"
-                          : "#93c5fd",
-                      fontWeight: 800,
-                      fontSize: "12px",
-                      marginBottom: "12px",
-                    }}
-                  >
-                    {phase.status}
-                  </div>
-
-                  <div style={{ fontSize: "24px", fontWeight: 900, marginBottom: "8px" }}>
-                    {phase.phase}
-                  </div>
-                  <div style={{ color: "#94a3b8", marginBottom: "6px" }}>
-                    Price: <strong style={{ color: "#fff" }}>{phase.price}</strong>
-                  </div>
-                  <div style={{ color: "#94a3b8", marginBottom: "6px" }}>
-                    Allocation: <strong style={{ color: "#fff" }}>{phase.allocation}</strong>
-                  </div>
-                  <div style={{ color: "#94a3b8", marginBottom: "12px" }}>
-                    Raise Target:{" "}
-                    <strong style={{ color: "#fff" }}>{phase.raiseTarget}</strong>
-                  </div>
-                  <div style={{ color: "#cbd5e1", lineHeight: 1.65 }}>
-                    {phase.description}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div style={{ marginTop: "26px" }}>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-              gap: "20px",
-            }}
-          >
-            <div
-              style={{
-                background: "rgba(255,255,255,0.05)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: "24px",
-                padding: isMobile ? "20px" : "24px",
-              }}
-            >
-              <div style={{ fontSize: isMobile ? "24px" : "28px", fontWeight: 900, marginBottom: "18px" }}>
-                Tokenomics & Raise Structure
-              </div>
-
-              <div style={{ display: "grid", gap: "12px" }}>
-                {[
-                  ["Overall Raise Target", "US$3,000,000"],
-                  ["Already Raised", "US$1,000,000"],
-                  ["Pre-Launch Raise", "US$750,000"],
-                  ["Pre-Launch Price", "US$0.10"],
-                  ["Pre-Launch Allocation", "7,500,000 CLX"],
-                  ["Stage 2 Raise", "US$1,250,000"],
-                  ["Stage 2 Price", "US$0.50"],
-                  ["Stage 2 Allocation", "2,500,000 CLX"],
-                  ["Defined Active Round Tokens", "10,000,000 CLX"],
-                  ["Projected Launch Price", "US$13.50"],
-                ].map(([label, value]) => (
-                  <div
-                    key={label}
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      gap: "10px",
-                      background: "rgba(255,255,255,0.04)",
-                      borderRadius: "14px",
-                      padding: "14px 16px",
-                      flexWrap: "wrap",
-                    }}
-                  >
-                    <span style={{ color: "#cbd5e1" }}>{label}</span>
-                    <strong>{value}</strong>
-                  </div>
-                ))}
-              </div>
-
-              <div style={{ color: "#94a3b8", marginTop: "14px", lineHeight: 1.6 }}>
-                {TOKEN_CONFIG.vestingNote}
-              </div>
-            </div>
-
-            <div
-              style={{
-                background: "rgba(255,255,255,0.05)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: "24px",
-                padding: isMobile ? "20px" : "24px",
-              }}
-            >
-              <div style={{ fontSize: isMobile ? "24px" : "28px", fontWeight: 900, marginBottom: "18px" }}>
-                Roadmap
-              </div>
-
-              <div style={{ display: "grid", gap: "16px" }}>
-                {ROADMAP.map((item) => (
-                  <div
-                    key={item.stage}
-                    style={{
-                      background: "rgba(255,255,255,0.04)",
-                      borderRadius: "16px",
-                      padding: "16px",
-                    }}
-                  >
-                    <div style={{ color: "#93c5fd", fontWeight: 800, marginBottom: "6px" }}>
-                      {item.stage}
-                    </div>
-                    <div style={{ fontSize: "20px", fontWeight: 900, marginBottom: "8px" }}>
-                      {item.title}
-                    </div>
-                    <div style={{ color: "#cbd5e1", lineHeight: 1.65 }}>{item.text}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div style={{ marginTop: "26px" }}>
-          <div
-            style={{
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: "24px",
-              padding: isMobile ? "20px" : "24px",
-            }}
-          >
-            <div style={{ fontSize: isMobile ? "24px" : "28px", fontWeight: 900, marginBottom: "18px" }}>
-              Contact Us
-            </div>
-
-            <form onSubmit={submitContactForm}>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-                  gap: "14px",
-                  marginBottom: "14px",
-                }}
-              >
-                <input
-                  type="text"
-                  placeholder="Your name"
-                  value={contactName}
-                  onChange={(e) => setContactName(e.target.value)}
-                  style={{
-                    width: "100%",
-                    boxSizing: "border-box",
-                    padding: "15px 16px",
-                    borderRadius: "14px",
-                    border: "1px solid rgba(255,255,255,0.12)",
-                    background: "rgba(255,255,255,0.04)",
-                    color: "#fff",
-                    fontSize: "16px",
-                    outline: "none",
-                  }}
-                />
-
-                <input
-                  type="email"
-                  placeholder="Your email"
-                  value={contactEmail}
-                  onChange={(e) => setContactEmail(e.target.value)}
-                  style={{
-                    width: "100%",
-                    boxSizing: "border-box",
-                    padding: "15px 16px",
-                    borderRadius: "14px",
-                    border: "1px solid rgba(255,255,255,0.12)",
-                    background: "rgba(255,255,255,0.04)",
-                    color: "#fff",
-                    fontSize: "16px",
-                    outline: "none",
-                  }}
-                />
-              </div>
-
-              <textarea
-                placeholder="Your question"
-                value={contactQuestion}
-                onChange={(e) => setContactQuestion(e.target.value)}
-                rows={6}
-                style={{
-                  width: "100%",
-                  boxSizing: "border-box",
-                  padding: "15px 16px",
-                  borderRadius: "14px",
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  background: "rgba(255,255,255,0.04)",
-                  color: "#fff",
-                  fontSize: "16px",
-                  outline: "none",
-                  resize: "vertical",
-                }}
-              />
-
-              <button
-                type="submit"
-                disabled={contactLoading}
-                style={{
-                  marginTop: "16px",
-                  padding: "15px 22px",
-                  borderRadius: "14px",
-                  border: "none",
-                  background: "#ffffff",
-                  color: "#0f172a",
-                  fontWeight: 900,
-                  fontSize: "16px",
-                  cursor: "pointer",
-                  width: isMobile ? "100%" : "auto",
-                }}
-              >
-                {contactLoading ? "Sending..." : "Send Message"}
-              </button>
-
-              {contactSuccess && (
-                <div
-                  style={{
-                    marginTop: "16px",
-                    background: "rgba(34,197,94,0.18)",
-                    color: "#86efac",
-                    borderRadius: "12px",
-                    padding: "14px",
-                    lineHeight: 1.5,
-                  }}
-                >
-                  {contactSuccess}
-                </div>
-              )}
-
-              {contactError && (
-                <div
-                  style={{
-                    marginTop: "16px",
-                    background: "rgba(239,68,68,0.18)",
-                    color: "#fca5a5",
-                    borderRadius: "12px",
-                    padding: "14px",
-                    lineHeight: 1.5,
-                  }}
-                >
-                  {contactError}
-                </div>
-              )}
-            </form>
-          </div>
-        </div>
-
-        <div style={{ marginTop: "26px" }}>
-          <div
-            style={{
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: "24px",
-              padding: isMobile ? "20px" : "24px",
-            }}
-          >
-            <div style={{ fontSize: isMobile ? "24px" : "28px", fontWeight: 900, marginBottom: "18px" }}>
-              Recent Activity
-            </div>
-
-            <div style={{ display: "grid", gap: "12px" }}>
-              {fallbackActivity.map((item, index) => (
-                <div
-                  key={`${item.buyer}-${index}`}
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr auto",
-                    gap: "12px",
-                    alignItems: "center",
-                    padding: "14px 16px",
-                    borderRadius: "16px",
-                    background: "rgba(255,255,255,0.04)",
-                    border: "1px solid rgba(255,255,255,0.06)",
-                  }}
-                >
-                  <div>
-                    <div style={{ color: "#94a3b8", fontSize: "12px" }}>Buyer</div>
-                    <div style={{ fontWeight: 800 }}>{item.buyer}</div>
-                  </div>
-
-                  <div>
-                    <div style={{ color: "#94a3b8", fontSize: "12px" }}>Amount</div>
-                    <div style={{ fontWeight: 800 }}>{item.amount}</div>
-                  </div>
-
-                  <div
-                    style={{
-                      padding: "8px 12px",
-                      borderRadius: "999px",
-                      background: "rgba(59,130,246,0.18)",
-                      color: "#93c5fd",
-                      fontWeight: 800,
-                      fontSize: "12px",
-                      justifySelf: isMobile ? "start" : "auto",
-                    }}
-                  >
-                    {item.status}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div style={{ marginTop: "26px" }}>
-          <div
-            style={{
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: "24px",
-              padding: isMobile ? "20px" : "24px",
-            }}
-          >
-            <div style={{ fontSize: isMobile ? "24px" : "28px", fontWeight: 900, marginBottom: "18px" }}>
-              Frequently Asked Questions
-            </div>
-
-            <div style={{ display: "grid", gap: "14px" }}>
-              {FAQS.map((item) => (
-                <div
-                  key={item.q}
-                  style={{
-                    background: "rgba(255,255,255,0.04)",
-                    borderRadius: "16px",
-                    padding: "18px",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontWeight: 900,
-                      fontSize: isMobile ? "17px" : "18px",
-                      marginBottom: "8px",
-                    }}
-                  >
-                    {item.q}
-                  </div>
-                  <div style={{ color: "#cbd5e1", lineHeight: 1.65 }}>{item.a}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div
-          style={{
-            marginTop: "30px",
-            color: "#94a3b8",
-            textAlign: "center",
-            lineHeight: 1.7,
-            fontSize: "14px",
-          }}
-        >
-          Always verify the contract address and network before confirming a transaction.
-          <br />
-          Contract: {TOKEN_CONFIG.contractAddress}
-        </div>
+        {status === "error" && (
+          <p style={errorStyle}>Failed to send message.</p>
+        )}
       </div>
     </div>
   );
 }
+
+const pageStyle = {
+  minHeight: "100vh",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  background: "#020617",
+  padding: "20px",
+  fontFamily: "Arial, sans-serif",
+};
+
+const cardStyle = {
+  width: "100%",
+  maxWidth: "600px",
+  background: "#0f172a",
+  borderRadius: "16px",
+  padding: "40px",
+  boxShadow: "0 0 30px rgba(0,0,0,0.45)",
+  color: "white",
+  boxSizing: "border-box",
+};
+
+const titleStyle = {
+  fontSize: "32px",
+  fontWeight: "700",
+  marginBottom: "10px",
+};
+
+const subtitleStyle = {
+  color: "#94a3b8",
+  marginBottom: "28px",
+  lineHeight: "1.5",
+};
+
+const inputStyle = {
+  width: "100%",
+  padding: "14px 16px",
+  marginBottom: "16px",
+  borderRadius: "10px",
+  border: "1px solid #334155",
+  background: "#111827",
+  color: "white",
+  fontSize: "16px",
+  boxSizing: "border-box",
+  outline: "none",
+};
+
+const textareaStyle = {
+  width: "100%",
+  minHeight: "140px",
+  padding: "14px 16px",
+  marginBottom: "20px",
+  borderRadius: "10px",
+  border: "1px solid #334155",
+  background: "#111827",
+  color: "white",
+  fontSize: "16px",
+  boxSizing: "border-box",
+  outline: "none",
+  resize: "vertical",
+};
+
+const buttonStyle = {
+  padding: "14px 22px",
+  borderRadius: "10px",
+  border: "none",
+  background: "#ffffff",
+  color: "#0f172a",
+  fontWeight: "700",
+  fontSize: "16px",
+  cursor: "pointer",
+};
+
+const infoStyle = {
+  marginTop: "18px",
+  color: "#cbd5e1",
+};
+
+const successStyle = {
+  marginTop: "18px",
+  color: "#22c55e",
+};
+
+const errorStyle = {
+  marginTop: "18px",
+  color: "#ef4444",
+};
