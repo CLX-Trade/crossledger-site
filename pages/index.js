@@ -1,3 +1,4 @@
+```javascript
 import { useEffect, useMemo, useState } from "react";
 import { ethers } from "ethers";
 
@@ -184,11 +185,27 @@ export default function Home() {
   const [contactSuccess, setContactSuccess] = useState("");
   const [contactError, setContactError] = useState("");
 
+  const [screenWidth, setScreenWidth] = useState(1200);
+
   const fallbackActivity = [
     { buyer: "0x71...9ab4", amount: "12,500 CLX", status: "Preview" },
     { buyer: "0x93...1fd2", amount: "4,800 CLX", status: "Preview" },
     { buyer: "0x28...7ce1", amount: "18,200 CLX", status: "Preview" },
   ];
+
+  useEffect(() => {
+    function handleResize() {
+      setScreenWidth(window.innerWidth);
+    }
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const isMobile = screenWidth < 768;
+  const isTablet = screenWidth >= 768 && screenWidth < 1024;
 
   const presaleStart = useMemo(() => {
     const now = new Date();
@@ -400,7 +417,7 @@ export default function Home() {
         style={{
           maxWidth: "1240px",
           margin: "0 auto",
-          padding: "28px 18px 70px",
+          padding: isMobile ? "20px 14px 50px" : "28px 18px 70px",
         }}
       >
         <div
@@ -413,11 +430,11 @@ export default function Home() {
             marginBottom: "24px",
           }}
         >
-          <div>
-            <div style={{ fontSize: "32px", fontWeight: 900 }}>
+          <div style={{ width: isMobile ? "100%" : "auto" }}>
+            <div style={{ fontSize: isMobile ? "28px" : "32px", fontWeight: 900 }}>
               {TOKEN_CONFIG.symbol} Presale
             </div>
-            <div style={{ color: "#94a3b8", marginTop: "6px" }}>
+            <div style={{ color: "#94a3b8", marginTop: "6px", fontSize: isMobile ? "14px" : "16px" }}>
               {TOKEN_CONFIG.name} • {TOKEN_CONFIG.network}
             </div>
           </div>
@@ -433,7 +450,8 @@ export default function Home() {
               color: "#fff",
               fontWeight: 800,
               cursor: "pointer",
-              minWidth: "185px",
+              minWidth: isMobile ? "100%" : "185px",
+              width: isMobile ? "100%" : "auto",
             }}
           >
             {isCheckingWallet
@@ -449,7 +467,7 @@ export default function Home() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "1.4fr 0.8fr",
+            gridTemplateColumns: isMobile ? "1fr" : "1.4fr 0.8fr",
             gap: "24px",
           }}
         >
@@ -458,7 +476,7 @@ export default function Home() {
               background: "rgba(255,255,255,0.05)",
               border: "1px solid rgba(255,255,255,0.08)",
               borderRadius: "26px",
-              padding: "28px",
+              padding: isMobile ? "20px" : "28px",
               backdropFilter: "blur(8px)",
             }}
           >
@@ -479,7 +497,7 @@ export default function Home() {
 
             <h1
               style={{
-                fontSize: "54px",
+                fontSize: isMobile ? "34px" : isTablet ? "44px" : "54px",
                 lineHeight: 1.02,
                 margin: "0 0 14px",
                 fontWeight: 900,
@@ -492,7 +510,7 @@ export default function Home() {
             <p
               style={{
                 color: "#cbd5e1",
-                fontSize: "18px",
+                fontSize: isMobile ? "16px" : "18px",
                 lineHeight: 1.65,
                 marginBottom: "24px",
                 maxWidth: "860px",
@@ -504,7 +522,9 @@ export default function Home() {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(4, minmax(80px, 1fr))",
+                gridTemplateColumns: isMobile
+                  ? "repeat(2, 1fr)"
+                  : "repeat(4, minmax(80px, 1fr))",
                 gap: "12px",
                 marginBottom: "24px",
               }}
@@ -525,7 +545,7 @@ export default function Home() {
                     textAlign: "center",
                   }}
                 >
-                  <div style={{ fontSize: "30px", fontWeight: 900 }}>
+                  <div style={{ fontSize: isMobile ? "24px" : "30px", fontWeight: 900 }}>
                     {String(item.value).padStart(2, "0")}
                   </div>
                   <div style={{ color: "#94a3b8", fontSize: "13px" }}>
@@ -538,7 +558,7 @@ export default function Home() {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(4, 1fr)",
+                gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(4, 1fr)",
                 gap: "14px",
                 marginBottom: "24px",
               }}
@@ -610,11 +630,11 @@ export default function Home() {
               background: "#fff",
               color: "#0f172a",
               borderRadius: "26px",
-              padding: "28px",
+              padding: isMobile ? "20px" : "28px",
               boxShadow: "0 20px 60px rgba(0,0,0,0.28)",
             }}
           >
-            <div style={{ fontSize: "28px", fontWeight: 900, marginBottom: "8px" }}>
+            <div style={{ fontSize: isMobile ? "24px" : "28px", fontWeight: 900, marginBottom: "8px" }}>
               Buy {TOKEN_CONFIG.symbol}
             </div>
             <div style={{ color: "#475569", lineHeight: 1.6, marginBottom: "18px" }}>
@@ -640,7 +660,7 @@ export default function Home() {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "1fr 1fr",
+                gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
                 gap: "12px",
                 marginBottom: "16px",
               }}
@@ -832,7 +852,7 @@ export default function Home() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
+              gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)",
               gap: "18px",
             }}
           >
@@ -861,17 +881,17 @@ export default function Home() {
               background: "rgba(255,255,255,0.05)",
               border: "1px solid rgba(255,255,255,0.08)",
               borderRadius: "24px",
-              padding: "24px",
+              padding: isMobile ? "20px" : "24px",
             }}
           >
-            <div style={{ fontSize: "28px", fontWeight: 900, marginBottom: "18px" }}>
+            <div style={{ fontSize: isMobile ? "24px" : "28px", fontWeight: 900, marginBottom: "18px" }}>
               Presale Phases
             </div>
 
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(3, 1fr)",
+                gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)",
                 gap: "16px",
               }}
             >
@@ -936,7 +956,7 @@ export default function Home() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "1fr 1fr",
+              gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
               gap: "20px",
             }}
           >
@@ -945,10 +965,10 @@ export default function Home() {
                 background: "rgba(255,255,255,0.05)",
                 border: "1px solid rgba(255,255,255,0.08)",
                 borderRadius: "24px",
-                padding: "24px",
+                padding: isMobile ? "20px" : "24px",
               }}
             >
-              <div style={{ fontSize: "28px", fontWeight: 900, marginBottom: "18px" }}>
+              <div style={{ fontSize: isMobile ? "24px" : "28px", fontWeight: 900, marginBottom: "18px" }}>
                 Tokenomics & Raise Structure
               </div>
 
@@ -974,6 +994,7 @@ export default function Home() {
                       background: "rgba(255,255,255,0.04)",
                       borderRadius: "14px",
                       padding: "14px 16px",
+                      flexWrap: "wrap",
                     }}
                   >
                     <span style={{ color: "#cbd5e1" }}>{label}</span>
@@ -992,10 +1013,10 @@ export default function Home() {
                 background: "rgba(255,255,255,0.05)",
                 border: "1px solid rgba(255,255,255,0.08)",
                 borderRadius: "24px",
-                padding: "24px",
+                padding: isMobile ? "20px" : "24px",
               }}
             >
-              <div style={{ fontSize: "28px", fontWeight: 900, marginBottom: "18px" }}>
+              <div style={{ fontSize: isMobile ? "24px" : "28px", fontWeight: 900, marginBottom: "18px" }}>
                 Roadmap
               </div>
 
@@ -1029,10 +1050,10 @@ export default function Home() {
               background: "rgba(255,255,255,0.05)",
               border: "1px solid rgba(255,255,255,0.08)",
               borderRadius: "24px",
-              padding: "24px",
+              padding: isMobile ? "20px" : "24px",
             }}
           >
-            <div style={{ fontSize: "28px", fontWeight: 900, marginBottom: "18px" }}>
+            <div style={{ fontSize: isMobile ? "24px" : "28px", fontWeight: 900, marginBottom: "18px" }}>
               Contact Us
             </div>
 
@@ -1040,7 +1061,7 @@ export default function Home() {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
+                  gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
                   gap: "14px",
                   marginBottom: "14px",
                 }}
@@ -1114,6 +1135,7 @@ export default function Home() {
                   fontWeight: 900,
                   fontSize: "16px",
                   cursor: "pointer",
+                  width: isMobile ? "100%" : "auto",
                 }}
               >
                 {contactLoading ? "Sending..." : "Send Message"}
@@ -1158,10 +1180,10 @@ export default function Home() {
               background: "rgba(255,255,255,0.05)",
               border: "1px solid rgba(255,255,255,0.08)",
               borderRadius: "24px",
-              padding: "24px",
+              padding: isMobile ? "20px" : "24px",
             }}
           >
-            <div style={{ fontSize: "28px", fontWeight: 900, marginBottom: "18px" }}>
+            <div style={{ fontSize: isMobile ? "24px" : "28px", fontWeight: 900, marginBottom: "18px" }}>
               Recent Activity
             </div>
 
@@ -1171,7 +1193,7 @@ export default function Home() {
                   key={`${item.buyer}-${index}`}
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "1fr 1fr auto",
+                    gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr auto",
                     gap: "12px",
                     alignItems: "center",
                     padding: "14px 16px",
@@ -1198,6 +1220,7 @@ export default function Home() {
                       color: "#93c5fd",
                       fontWeight: 800,
                       fontSize: "12px",
+                      justifySelf: isMobile ? "start" : "auto",
                     }}
                   >
                     {item.status}
@@ -1214,10 +1237,10 @@ export default function Home() {
               background: "rgba(255,255,255,0.05)",
               border: "1px solid rgba(255,255,255,0.08)",
               borderRadius: "24px",
-              padding: "24px",
+              padding: isMobile ? "20px" : "24px",
             }}
           >
-            <div style={{ fontSize: "28px", fontWeight: 900, marginBottom: "18px" }}>
+            <div style={{ fontSize: isMobile ? "24px" : "28px", fontWeight: 900, marginBottom: "18px" }}>
               Frequently Asked Questions
             </div>
 
@@ -1231,7 +1254,7 @@ export default function Home() {
                     padding: "18px",
                   }}
                 >
-                  <div style={{ fontWeight: 900, fontSize: "18px", marginBottom: "8px" }}>
+                  <div style={{ fontWeight: 900, fontSize: isMobile ? "17px" : "18px", marginBottom: "8px" }}>
                     {item.q}
                   </div>
                   <div style={{ color: "#cbd5e1", lineHeight: 1.65 }}>{item.a}</div>
@@ -1258,62 +1281,4 @@ export default function Home() {
     </div>
   );
 }
-What is this?
-2) Create a new file: pages/api/contact.js
-import nodemailer from "nodemailer";
-
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ message: "Method not allowed" });
-  }
-
-  try {
-    const { name, email, question } = req.body || {};
-
-    if (!name || !email || !question) {
-      return res.status(400).json({ message: "All fields are required." });
-    }
-
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT || 587),
-      secure: String(process.env.SMTP_SECURE) === "true",
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
-
-    const recipient = process.env.CONTACT_TO_EMAIL;
-
-    await transporter.sendMail({
-      from: process.env.CONTACT_FROM_EMAIL,
-      to: recipient,
-      replyTo: email,
-      subject: `CrossLedger Contact Form - ${name}`,
-      text: `
-New CrossLedger contact form submission
-
-Name: ${name}
-Email: ${email}
-
-Question:
-${question}
-      `,
-      html: `
-        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-          <h2>New CrossLedger contact form submission</h2>
-          <p><strong>Name:</strong> ${name}</p>
-          <p><strong>Email:</strong> ${email}</p>
-          <p><strong>Question:</strong></p>
-          <p>${question.replace(/\n/g, "<br />")}</p>
-        </div>
-      `,
-    });
-
-    return res.status(200).json({ success: true });
-  } catch (error) {
-    console.error("Contact API error:", error);
-    return res.status(500).json({ message: "Failed to send message." });
-  }
-}
+```
