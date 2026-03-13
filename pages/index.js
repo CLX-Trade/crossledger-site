@@ -1,4 +1,42 @@
+import { useState } from "react";
+
 export default function Home() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [question, setQuestion] = useState("");
+  const [status, setStatus] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setStatus("sending");
+
+    try {
+      const response = await fetch("https://formspree.io/f/mlgpnvbk", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          question,
+        }),
+      });
+
+      if (response.ok) {
+        setStatus("success");
+        setName("");
+        setEmail("");
+        setQuestion("");
+      } else {
+        setStatus("error");
+      }
+    } catch (error) {
+      setStatus("error");
+    }
+  };
+
   return (
     <div style={pageStyle}>
       <div style={cardStyle}>
@@ -7,15 +45,13 @@ export default function Home() {
           Send us a message and our team will get back to you.
         </p>
 
-        <form
-          action="https://formspree.io/f/mlgpnvbk"
-          method="POST"
-          style={formStyle}
-        >
+        <form onSubmit={handleSubmit} style={formStyle}>
           <input
             type="text"
             name="name"
             placeholder="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             style={inputStyle}
             required
           />
@@ -24,6 +60,8 @@ export default function Home() {
             type="email"
             name="email"
             placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             style={inputStyle}
             required
           />
@@ -31,14 +69,24 @@ export default function Home() {
           <textarea
             name="question"
             placeholder="Question"
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
             style={textareaStyle}
             required
           />
 
           <button type="submit" style={buttonStyle}>
-            Send Message
+            {status === "sending" ? "Sending..." : "Send Message"}
           </button>
         </form>
+
+        {status === "success" && (
+          <p style={successStyle}>Message sent successfully.</p>
+        )}
+
+        {status === "error" && (
+          <p style={errorStyle}>Failed to send message.</p>
+        )}
       </div>
     </div>
   );
@@ -125,4 +173,18 @@ const buttonStyle = {
   fontSize: "24px",
   fontWeight: 700,
   cursor: "pointer",
+};
+
+const successStyle = {
+  marginTop: "28px",
+  color: "#24e06d",
+  fontSize: "26px",
+  fontWeight: 500,
+};
+
+const errorStyle = {
+  marginTop: "28px",
+  color: "#ff4d4f",
+  fontSize: "26px",
+  fontWeight: 500,
 };
