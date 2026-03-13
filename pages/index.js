@@ -161,7 +161,8 @@ function StatCard({ label, value, mobile }) {
   return (
     <div
       style={{
-        background: "linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.03))",
+        background:
+          "linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.03))",
         border: "1px solid rgba(255,255,255,0.08)",
         borderRadius: "18px",
         padding: mobile ? "16px" : "18px",
@@ -341,7 +342,11 @@ export default function Home() {
 
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+      const contract = new ethers.Contract(
+        CONTRACT_ADDRESS,
+        CONTRACT_ABI,
+        signer
+      );
 
       const tx = await contract.buyTokens({
         value: ethers.parseEther(ethAmount),
@@ -474,7 +479,7 @@ export default function Home() {
               }}
             >
               <img
-                src="/clx-logo.png"
+                src="/B4FB988C-108A-4E70-9923-81BB722E9AB4.png"
                 alt="CLX Logo"
                 style={{
                   width: mobile ? "56px" : "72px",
