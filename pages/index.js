@@ -2,71 +2,59 @@ import { useEffect, useMemo, useState } from "react";
 import { ethers } from "ethers";
 
 /*
-  =========================
-  CROSSLEDGER PAGE SETTINGS
-  =========================
+  =========================================================
+  REPLACE THESE 3 ADDRESSES WITH YOUR REAL DEPLOYED VALUES
+  =========================================================
 */
+const PRESALE_CONTRACT_ADDRESS = "PASTE_YOUR_DEPLOYED_PRESALE_CONTRACT_ADDRESS";
+const USDT_TOKEN_ADDRESS = "PASTE_YOUR_USDT_TOKEN_ADDRESS";
+const CLX_TOKEN_ADDRESS = "PASTE_YOUR_CLX_TOKEN_ADDRESS";
 
-// If your sale currently works by sending ETH directly to the presale address,
-// leave PURCHASE_MODE as "direct".
-// If your sale requires a smart contract function call, change PURCHASE_MODE to "contract"
-// and paste the ABI + function name below.
-const PURCHASE_MODE = "direct"; // "direct" | "contract"
-
-const PRESALE_ADDRESS = "0x264C542aDC1447E3a75aF2B8e2C758D73E562571";
-const CONTRACT_ADDRESS = "0x264C542aDC1447E3a75aF2B8e2C758D73E562571";
-const CONTRACT_FUNCTION_NAME = "buyTokens";
-
-// Paste your Remix ABI here if/when needed for contract mode
-const CONTRACT_ABI = [
-  // Example:
-  // "function buyTokens() payable"
-];
-
+/*
+  =================
+  FORMSPREE CONTACT
+  =================
+*/
 const FORMSPREE_ENDPOINT = "https://formspree.io/f/mlgpnvbk";
 
+/*
+  =========================
+  TOKEN / PAGE INFORMATION
+  =========================
+*/
 const TOKEN_NAME = "CrossLedger";
 const TOKEN_SYMBOL = "CLX";
 const TAGLINE = "Global Trade Infrastructure Token";
-const CURRENT_PRICE_USD = 0.10;
+const CURRENT_PRICE_USD = 0.1;
 const PROJECTED_LAUNCH_USD = 13.5;
 const MIN_PURCHASE_USD = 300;
 const MAX_PURCHASE_TEXT = "TBA";
-const FALLBACK_ETH_USD = 2500;
 
-const PRESET_AMOUNTS = ["0.10", "0.25", "0.50", "1.00"];
+/*
+  =========================
+  ABI
+  =========================
+*/
+const PRESALE_ABI = [
+  "function buyTokens(uint256 usdtAmount) external",
+  "function claimTokens() external",
+  "function currentPrice() view returns (uint256)",
+  "function remainingInStage() view returns (uint256)",
+  "function minPurchase() view returns (uint256)",
+  "function stage() view returns (uint256)",
+  "function salePaused() view returns (bool)",
+  "function claimEnabled() view returns (bool)",
+  "function buyerInfo(address account) view returns (uint256 usdtSpent, uint256 totalPurchased, uint256 totalClaimed, uint256 claimable)",
+  "function purchasedCLX(address account) view returns (uint256)",
+  "function spentUSDT(address account) view returns (uint256)",
+  "function claimedCLX(address account) view returns (uint256)"
+];
 
-const TOKEN_ALLOCATION = [
-  {
-    title: "Ecosystem & Trade Incentives",
-    percent: "35%",
-    desc: "User rewards, rebates, trade stimulation and referrals.",
-  },
-  {
-    title: "Treasury & Compliance",
-    percent: "20%",
-    desc: "Regulatory reserves and operational buffer.",
-  },
-  {
-    title: "Founders & Team",
-    percent: "15%",
-    desc: "Vested over 3 years for long-term alignment.",
-  },
-  {
-    title: "Strategic Investors",
-    percent: "15%",
-    desc: "Token-based incentives for seed and growth partners.",
-  },
-  {
-    title: "Exchange & Liquidity",
-    percent: "10%",
-    desc: "Market making and exchange liquidity support.",
-  },
-  {
-    title: "Operations & Partnerships",
-    percent: "5%",
-    desc: "Enterprise integrations and onboarding support.",
-  },
+const ERC20_ABI = [
+  "function approve(address spender, uint256 amount) external returns (bool)",
+  "function allowance(address owner, address spender) external view returns (uint256)",
+  "function balanceOf(address account) external view returns (uint256)",
+  "function decimals() external view returns (uint8)"
 ];
 
 const RECENT_ACTIVITY = [
@@ -74,29 +62,82 @@ const RECENT_ACTIVITY = [
   { buyer: "0x93...1fd2", amount: "4,800 USDT", status: "Confirmed" },
   { buyer: "0x28...7ce1", amount: "18,200 USDT", status: "Confirmed" },
   { buyer: "0x84...ab19", amount: "7,100 USDT", status: "Confirmed" },
-  { buyer: "0x16...ce42", amount: "25,000 USDT", status: "Confirmed" },
+  { buyer: "0x16...ce42", amount: "25,000 USDT", status: "Confirmed" }
+];
+
+const TOKEN_ALLOCATION = [
+  {
+    title: "Ecosystem & Trade Incentives",
+    percent: "35%",
+    desc: "User rewards, trade stimulation, rebates and referrals."
+  },
+  {
+    title: "Treasury & Compliance",
+    percent: "20%",
+    desc: "Regulatory readiness and operational reserves."
+  },
+  {
+    title: "Founders & Team",
+    percent: "15%",
+    desc: "Long-term alignment and execution support."
+  },
+  {
+    title: "Strategic Investors",
+    percent: "15%",
+    desc: "Seed and strategic capital partners."
+  },
+  {
+    title: "Exchange & Liquidity",
+    percent: "10%",
+    desc: "Liquidity, market making and listing support."
+  },
+  {
+    title: "Operations & Partnerships",
+    percent: "5%",
+    desc: "Commercial growth and ecosystem integrations."
+  }
 ];
 
 export default function HomePage() {
   const [walletAddress, setWalletAddress] = useState("");
-  const [ethAmount, setEthAmount] = useState("");
-  const [ethPriceUsd, setEthPriceUsd] = useState(FALLBACK_ETH_USD);
+  const [networkName, setNetworkName] = useState("");
+  const [usdtAmount, setUsdtAmount] = useState("");
 
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
 
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isApproving, setIsApproving] = useState(false);
   const [isBuying, setIsBuying] = useState(false);
-  const [isLoadingPrice, setIsLoadingPrice] = useState(true);
-  const [copiedWallet, setCopiedWallet] = useState(false);
+  const [isClaiming, setIsClaiming] = useState(false);
+
+  const [copiedPresale, setCopiedPresale] = useState(false);
+  const [copiedUsdt, setCopiedUsdt] = useState(false);
 
   const [contactStatus, setContactStatus] = useState("");
   const [isSubmittingContact, setIsSubmittingContact] = useState(false);
   const [contactForm, setContactForm] = useState({
     name: "",
     email: "",
-    message: "",
+    message: ""
+  });
+
+  const [presaleInfo, setPresaleInfo] = useState({
+    minPurchase: MIN_PURCHASE_USD,
+    stage: 1,
+    salePaused: false,
+    claimEnabled: false,
+    remainingInStage: "0"
+  });
+
+  const [walletData, setWalletData] = useState({
+    usdtBalance: "0",
+    allowance: "0",
+    usdtSpent: "0",
+    totalPurchased: "0",
+    totalClaimed: "0",
+    claimable: "0"
   });
 
   const currentProgress = 33.33;
@@ -107,27 +148,30 @@ export default function HomePage() {
     return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   }, []);
 
-  const minEthAmount = useMemo(() => {
-    if (!ethPriceUsd || Number(ethPriceUsd) <= 0) return "0.1200";
-    return (MIN_PURCHASE_USD / ethPriceUsd).toFixed(4);
-  }, [ethPriceUsd]);
-
-  const estimatedUsdValue = useMemo(() => {
-    const amount = Number(ethAmount);
-    if (!amount || amount <= 0) return 0;
-    return amount * ethPriceUsd;
-  }, [ethAmount, ethPriceUsd]);
+  const numericUsdtAmount = useMemo(() => Number(usdtAmount || 0), [usdtAmount]);
 
   const estimatedTokens = useMemo(() => {
-    if (!estimatedUsdValue || CURRENT_PRICE_USD <= 0) return 0;
-    return estimatedUsdValue / CURRENT_PRICE_USD;
-  }, [estimatedUsdValue]);
+    if (!numericUsdtAmount || CURRENT_PRICE_USD <= 0) return 0;
+    return numericUsdtAmount / CURRENT_PRICE_USD;
+  }, [numericUsdtAmount]);
+
+  const hasEnoughAllowance = useMemo(() => {
+    return Number(walletData.allowance || 0) >= Number(usdtAmount || 0) && Number(usdtAmount || 0) > 0;
+  }, [walletData.allowance, usdtAmount]);
 
   useEffect(() => {
     restorePendingAmount();
-    loadEthPrice();
     restoreExistingWallet();
   }, []);
+
+  useEffect(() => {
+    if (walletAddress) {
+      loadPresaleInfo();
+      loadWalletData();
+    } else {
+      loadPresaleInfo();
+    }
+  }, [walletAddress]);
 
   useEffect(() => {
     if (typeof window === "undefined" || !window.ethereum) return;
@@ -154,61 +198,29 @@ export default function HomePage() {
     };
   }, []);
 
-  async function loadEthPrice() {
-    try {
-      setIsLoadingPrice(true);
-      const response = await fetch(
-        "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd"
-      );
-      const data = await response.json();
-      const livePrice = data?.ethereum?.usd;
-      if (livePrice && Number(livePrice) > 0) {
-        setEthPriceUsd(Number(livePrice));
-      }
-    } catch (error) {
-      console.error("ETH price fetch failed:", error);
-    } finally {
-      setIsLoadingPrice(false);
-    }
+  function clearMessages() {
+    setErrorMessage("");
+    setSuccessMessage("");
+    setStatusMessage("");
   }
 
-  async function restoreExistingWallet() {
-    if (typeof window === "undefined" || !window.ethereum) return;
-
+  function savePendingAmount(value) {
+    if (typeof window === "undefined") return;
     try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const accounts = await provider.send("eth_accounts", []);
-      if (accounts && accounts.length > 0) {
-        setWalletAddress(accounts[0]);
-      }
+      localStorage.setItem("clx_pending_usdt_amount", value);
     } catch (error) {
-      console.error("Wallet restore failed:", error);
+      console.error(error);
     }
   }
 
   function restorePendingAmount() {
     if (typeof window === "undefined") return;
     try {
-      const savedAmount = localStorage.getItem("clx_pending_eth_amount");
-      if (savedAmount) setEthAmount(savedAmount);
+      const saved = localStorage.getItem("clx_pending_usdt_amount");
+      if (saved) setUsdtAmount(saved);
     } catch (error) {
-      console.error("Could not restore saved ETH amount:", error);
+      console.error(error);
     }
-  }
-
-  function savePendingAmount(value) {
-    if (typeof window === "undefined") return;
-    try {
-      localStorage.setItem("clx_pending_eth_amount", value);
-    } catch (error) {
-      console.error("Could not save ETH amount:", error);
-    }
-  }
-
-  function clearMessages() {
-    setErrorMessage("");
-    setSuccessMessage("");
-    setStatusMessage("");
   }
 
   function formatWallet(address) {
@@ -220,6 +232,31 @@ export default function HomePage() {
     if (typeof window === "undefined") return;
     const cleanUrl = window.location.href.replace(/^https?:\/\//, "");
     window.location.href = `https://link.metamask.io/dapp/${cleanUrl}`;
+  }
+
+  async function getProvider() {
+    if (typeof window === "undefined" || typeof window.ethereum === "undefined") {
+      throw new Error("MetaMask is not installed");
+    }
+    return new ethers.BrowserProvider(window.ethereum);
+  }
+
+  async function restoreExistingWallet() {
+    if (typeof window === "undefined" || !window.ethereum) return;
+
+    try {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const accounts = await provider.send("eth_accounts", []);
+      const network = await provider.getNetwork();
+
+      if (accounts && accounts.length > 0) {
+        setWalletAddress(accounts[0]);
+      }
+
+      setNetworkName(network?.name || "");
+    } catch (error) {
+      console.error("Wallet restore failed:", error);
+    }
   }
 
   async function connectWallet() {
@@ -238,13 +275,17 @@ export default function HomePage() {
 
     try {
       setIsConnecting(true);
-      const provider = new ethers.BrowserProvider(window.ethereum);
+
+      const provider = await getProvider();
       const accounts = await provider.send("eth_requestAccounts", []);
+      const network = await provider.getNetwork();
 
       if (accounts && accounts.length > 0) {
         setWalletAddress(accounts[0]);
         setSuccessMessage("Wallet connected successfully");
       }
+
+      setNetworkName(network?.name || "");
     } catch (error) {
       if (error?.code === 4001) return;
       console.error("Connect wallet error:", error);
@@ -254,26 +295,255 @@ export default function HomePage() {
     }
   }
 
-  function handlePresetAmountSelect(value) {
-    setEthAmount(value);
-    savePendingAmount(value);
-    clearMessages();
+  async function loadPresaleInfo() {
+    try {
+      if (!PRESALE_CONTRACT_ADDRESS || PRESALE_CONTRACT_ADDRESS.includes("PASTE_")) return;
+      if (typeof window === "undefined" || !window.ethereum) return;
+
+      const provider = await getProvider();
+      const presale = new ethers.Contract(PRESALE_CONTRACT_ADDRESS, PRESALE_ABI, provider);
+
+      const [minPurchase, stage, salePaused, claimEnabled, remainingInStage] = await Promise.all([
+        presale.minPurchase(),
+        presale.stage(),
+        presale.salePaused(),
+        presale.claimEnabled(),
+        presale.remainingInStage()
+      ]);
+
+      setPresaleInfo({
+        minPurchase: Number(ethers.formatUnits(minPurchase, 6)),
+        stage: Number(stage),
+        salePaused,
+        claimEnabled,
+        remainingInStage: Number(ethers.formatUnits(remainingInStage, 18)).toLocaleString(undefined, {
+          maximumFractionDigits: 0
+        })
+      });
+    } catch (error) {
+      console.error("Failed to load presale info:", error);
+    }
   }
 
-  function handleEthAmountChange(event) {
+  async function loadWalletData() {
+    try {
+      if (!walletAddress) return;
+      if (
+        !PRESALE_CONTRACT_ADDRESS ||
+        PRESALE_CONTRACT_ADDRESS.includes("PASTE_") ||
+        !USDT_TOKEN_ADDRESS ||
+        USDT_TOKEN_ADDRESS.includes("PASTE_")
+      ) {
+        return;
+      }
+
+      const provider = await getProvider();
+      const presale = new ethers.Contract(PRESALE_CONTRACT_ADDRESS, PRESALE_ABI, provider);
+      const usdt = new ethers.Contract(USDT_TOKEN_ADDRESS, ERC20_ABI, provider);
+
+      const [balanceRaw, allowanceRaw, buyerInfo] = await Promise.all([
+        usdt.balanceOf(walletAddress),
+        usdt.allowance(walletAddress, PRESALE_CONTRACT_ADDRESS),
+        presale.buyerInfo(walletAddress)
+      ]);
+
+      setWalletData({
+        usdtBalance: Number(ethers.formatUnits(balanceRaw, 6)).toFixed(2),
+        allowance: Number(ethers.formatUnits(allowanceRaw, 6)).toFixed(2),
+        usdtSpent: Number(ethers.formatUnits(buyerInfo[0], 6)).toFixed(2),
+        totalPurchased: Number(ethers.formatUnits(buyerInfo[1], 18)).toLocaleString(undefined, {
+          maximumFractionDigits: 2
+        }),
+        totalClaimed: Number(ethers.formatUnits(buyerInfo[2], 18)).toLocaleString(undefined, {
+          maximumFractionDigits: 2
+        }),
+        claimable: Number(ethers.formatUnits(buyerInfo[3], 18)).toLocaleString(undefined, {
+          maximumFractionDigits: 2
+        })
+      });
+    } catch (error) {
+      console.error("Failed to load wallet data:", error);
+    }
+  }
+
+  function handleUsdtAmountChange(event) {
     const value = event.target.value;
     if (/^\d*\.?\d*$/.test(value)) {
-      setEthAmount(value);
+      setUsdtAmount(value);
       savePendingAmount(value);
       clearMessages();
     }
   }
 
-  async function copyWalletAddress() {
+  function handlePresetAmountSelect(value) {
+    setUsdtAmount(value);
+    savePendingAmount(value);
+    clearMessages();
+  }
+
+  async function handleApproveUSDT() {
+    clearMessages();
+
+    if (!walletAddress) {
+      await connectWallet();
+      return;
+    }
+
+    if (!numericUsdtAmount || numericUsdtAmount <= 0) {
+      setErrorMessage("Please enter a valid USDT amount");
+      return;
+    }
+
     try {
-      await navigator.clipboard.writeText(PRESALE_ADDRESS);
-      setCopiedWallet(true);
-      setTimeout(() => setCopiedWallet(false), 2000);
+      setIsApproving(true);
+
+      const provider = await getProvider();
+      const signer = await provider.getSigner();
+      const usdt = new ethers.Contract(USDT_TOKEN_ADDRESS, ERC20_ABI, signer);
+
+      const amount = ethers.parseUnits(usdtAmount, 6);
+
+      setStatusMessage("Waiting for USDT approval confirmation...");
+      const tx = await usdt.approve(PRESALE_CONTRACT_ADDRESS, amount);
+
+      setStatusMessage("Approval submitted. Waiting for blockchain confirmation...");
+      await tx.wait();
+
+      setStatusMessage("");
+      setSuccessMessage("USDT approved successfully");
+      await loadWalletData();
+    } catch (error) {
+      if (error?.code === 4001) return;
+
+      console.error("Approve error:", error);
+      const friendlyMessage =
+        error?.reason ||
+        error?.shortMessage ||
+        error?.message ||
+        "USDT approval failed";
+
+      setStatusMessage("");
+      setErrorMessage(friendlyMessage);
+    } finally {
+      setIsApproving(false);
+    }
+  }
+
+  async function handleBuy() {
+    clearMessages();
+
+    if (!walletAddress) {
+      await connectWallet();
+      return;
+    }
+
+    if (!numericUsdtAmount || numericUsdtAmount <= 0) {
+      setErrorMessage("Please enter a valid USDT amount");
+      return;
+    }
+
+    if (numericUsdtAmount < Number(presaleInfo.minPurchase || MIN_PURCHASE_USD)) {
+      setErrorMessage(`Minimum purchase is ${Number(presaleInfo.minPurchase || MIN_PURCHASE_USD).toFixed(2)} USDT`);
+      return;
+    }
+
+    if (!hasEnoughAllowance) {
+      setErrorMessage("Please approve USDT first");
+      return;
+    }
+
+    try {
+      setIsBuying(true);
+
+      const provider = await getProvider();
+      const signer = await provider.getSigner();
+      const presale = new ethers.Contract(PRESALE_CONTRACT_ADDRESS, PRESALE_ABI, signer);
+
+      const amount = ethers.parseUnits(usdtAmount, 6);
+
+      setStatusMessage("Waiting for purchase confirmation...");
+      const tx = await presale.buyTokens(amount);
+
+      setStatusMessage("Purchase submitted. Waiting for blockchain confirmation...");
+      await tx.wait();
+
+      setStatusMessage("");
+      setSuccessMessage("Purchase completed successfully");
+
+      await loadPresaleInfo();
+      await loadWalletData();
+    } catch (error) {
+      if (error?.code === 4001) return;
+
+      console.error("Purchase error:", error);
+      const friendlyMessage =
+        error?.reason ||
+        error?.shortMessage ||
+        error?.message ||
+        "Purchase failed";
+
+      setStatusMessage("");
+      setErrorMessage(friendlyMessage);
+    } finally {
+      setIsBuying(false);
+    }
+  }
+
+  async function handleClaimTokens() {
+    clearMessages();
+
+    if (!walletAddress) {
+      await connectWallet();
+      return;
+    }
+
+    try {
+      setIsClaiming(true);
+
+      const provider = await getProvider();
+      const signer = await provider.getSigner();
+      const presale = new ethers.Contract(PRESALE_CONTRACT_ADDRESS, PRESALE_ABI, signer);
+
+      setStatusMessage("Waiting for claim confirmation...");
+      const tx = await presale.claimTokens();
+
+      setStatusMessage("Claim submitted. Waiting for blockchain confirmation...");
+      await tx.wait();
+
+      setStatusMessage("");
+      setSuccessMessage("Tokens claimed successfully");
+
+      await loadWalletData();
+    } catch (error) {
+      if (error?.code === 4001) return;
+
+      console.error("Claim error:", error);
+      const friendlyMessage =
+        error?.reason ||
+        error?.shortMessage ||
+        error?.message ||
+        "Claim failed";
+
+      setStatusMessage("");
+      setErrorMessage(friendlyMessage);
+    } finally {
+      setIsClaiming(false);
+    }
+  }
+
+  async function copyAddress(value, type) {
+    try {
+      await navigator.clipboard.writeText(value);
+
+      if (type === "presale") {
+        setCopiedPresale(true);
+        setTimeout(() => setCopiedPresale(false), 2000);
+      }
+
+      if (type === "usdt") {
+        setCopiedUsdt(true);
+        setTimeout(() => setCopiedUsdt(false), 2000);
+      }
     } catch (error) {
       console.error("Copy failed:", error);
     }
@@ -283,7 +553,7 @@ export default function HomePage() {
     const { name, value } = event.target;
     setContactForm((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: value
     }));
   }
 
@@ -303,13 +573,13 @@ export default function HomePage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Accept: "application/json",
+          Accept: "application/json"
         },
         body: JSON.stringify({
           name: contactForm.name,
           email: contactForm.email,
-          message: contactForm.message,
-        }),
+          message: contactForm.message
+        })
       });
 
       const data = await response.json().catch(() => ({}));
@@ -321,7 +591,7 @@ export default function HomePage() {
       setContactForm({
         name: "",
         email: "",
-        message: "",
+        message: ""
       });
 
       setContactStatus("Message sent successfully.");
@@ -330,106 +600,6 @@ export default function HomePage() {
       setContactStatus("Failed to send message. Please try again.");
     } finally {
       setIsSubmittingContact(false);
-    }
-  }
-
-  async function executeDirectPurchase(signer, value) {
-    return signer.sendTransaction({
-      to: PRESALE_ADDRESS,
-      value,
-    });
-  }
-
-  async function executeContractPurchase(signer, value) {
-    if (!CONTRACT_ABI.length) {
-      throw new Error("Contract ABI is missing. Paste your Remix ABI and try again.");
-    }
-
-    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-
-    if (typeof contract[CONTRACT_FUNCTION_NAME] !== "function") {
-      throw new Error(
-        `Contract function "${CONTRACT_FUNCTION_NAME}" was not found. Update the function name or ABI.`
-      );
-    }
-
-    return contract[CONTRACT_FUNCTION_NAME]({ value });
-  }
-
-  async function handleBuy() {
-    clearMessages();
-
-    const numericAmount = Number(ethAmount);
-
-    if (!numericAmount || numericAmount <= 0) {
-      setErrorMessage("Please enter a valid ETH amount");
-      return;
-    }
-
-    if (estimatedUsdValue < MIN_PURCHASE_USD) {
-      setErrorMessage(`Minimum purchase is approximately US$${MIN_PURCHASE_USD}`);
-      return;
-    }
-
-    savePendingAmount(ethAmount);
-
-    if (typeof window === "undefined") return;
-
-    if (typeof window.ethereum === "undefined") {
-      if (isMobile) {
-        openInMetaMask();
-        return;
-      }
-      setErrorMessage("MetaMask is not installed");
-      return;
-    }
-
-    try {
-      setIsBuying(true);
-
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      let accounts = await provider.send("eth_accounts", []);
-
-      if (!accounts || accounts.length === 0) {
-        accounts = await provider.send("eth_requestAccounts", []);
-      }
-
-      if (accounts && accounts.length > 0) {
-        setWalletAddress(accounts[0]);
-      }
-
-      const signer = await provider.getSigner();
-      const value = ethers.parseEther(ethAmount);
-
-      setStatusMessage("Waiting for wallet confirmation...");
-
-      let tx;
-      if (PURCHASE_MODE === "contract") {
-        tx = await executeContractPurchase(signer, value);
-      } else {
-        tx = await executeDirectPurchase(signer, value);
-      }
-
-      setStatusMessage("Transaction submitted. Waiting for blockchain confirmation...");
-      await tx.wait();
-
-      setStatusMessage("");
-      setSuccessMessage("Transaction submitted successfully.");
-    } catch (error) {
-      if (error?.code === 4001) return;
-
-      console.error("Purchase error:", error);
-
-      const friendlyMessage =
-        error?.reason ||
-        error?.shortMessage ||
-        error?.message ||
-        "Purchase failed";
-
-      setStatusMessage("");
-      setErrorMessage(friendlyMessage);
-    } finally {
-      setIsBuying(false);
     }
   }
 
@@ -463,8 +633,11 @@ export default function HomePage() {
                 : "Connect Wallet"}
             </button>
 
-            <button className="secondary-btn" onClick={copyWalletAddress}>
-              {copiedWallet ? "Wallet Copied" : "Copy Presale Wallet"}
+            <button
+              className="secondary-btn"
+              onClick={() => copyAddress(PRESALE_CONTRACT_ADDRESS, "presale")}
+            >
+              {copiedPresale ? "Presale Copied" : "Copy Presale Contract"}
             </button>
           </div>
         </section>
@@ -496,10 +669,11 @@ export default function HomePage() {
           <div className="left-col">
             <section className="buy-card white-card">
               <div className="section-head">
-                <p className="section-kicker">Token Presale</p>
+                <p className="section-kicker">USDT Presale</p>
                 <h2>Buy {TOKEN_SYMBOL}</h2>
                 <p className="section-copy">
-                  Stage 1 pricing is live. Connect your wallet and participate directly with ETH.
+                  This presale contract purchases CLX using USDT. Connect your wallet, approve USDT,
+                  commit the purchase, and claim tokens once claims are enabled.
                 </p>
               </div>
 
@@ -508,41 +682,70 @@ export default function HomePage() {
                   <span className="metric-label">Current Price</span>
                   <span className="metric-value">US${CURRENT_PRICE_USD.toFixed(2)}</span>
                 </div>
+
                 <div className="metric-box">
                   <span className="metric-label">Projected Launch</span>
                   <span className="metric-value">US${PROJECTED_LAUNCH_USD.toFixed(2)}</span>
                 </div>
+
+                <div className="metric-box">
+                  <span className="metric-label">Current Stage</span>
+                  <span className="metric-value">Stage {presaleInfo.stage}</span>
+                </div>
+
+                <div className="metric-box">
+                  <span className="metric-label">Remaining This Stage</span>
+                  <span className="metric-value small">{presaleInfo.remainingInStage} CLX</span>
+                </div>
               </div>
 
-              <label className="input-label">Amount in ETH</label>
+              <label className="input-label">Amount in USDT</label>
               <input
-                className="eth-input"
+                className="usdt-input"
                 type="text"
                 inputMode="decimal"
-                value={ethAmount}
-                onChange={handleEthAmountChange}
-                placeholder={minEthAmount}
+                value={usdtAmount}
+                onChange={handleUsdtAmountChange}
+                placeholder={String(presaleInfo.minPurchase || MIN_PURCHASE_USD)}
               />
 
               <div className="preset-grid">
-                {PRESET_AMOUNTS.map((amount) => (
+                {["300", "500", "1000", "2500"].map((amount) => (
                   <button
                     key={amount}
                     type="button"
-                    className={`preset-btn ${ethAmount === amount ? "active" : ""}`}
+                    className={`preset-btn ${usdtAmount === amount ? "active" : ""}`}
                     onClick={() => handlePresetAmountSelect(amount)}
                   >
-                    {amount} ETH
+                    {amount} USDT
                   </button>
                 ))}
               </div>
 
+              <div className="action-grid">
+                <button
+                  className="approve-btn"
+                  onClick={handleApproveUSDT}
+                  disabled={isApproving || isConnecting}
+                >
+                  {isApproving ? "Approving..." : "Approve USDT"}
+                </button>
+
+                <button
+                  className="buy-btn"
+                  onClick={handleBuy}
+                  disabled={isBuying || isConnecting || presaleInfo.salePaused}
+                >
+                  {isBuying ? "Processing..." : "Commit Purchase"}
+                </button>
+              </div>
+
               <button
-                className="buy-btn"
-                onClick={handleBuy}
-                disabled={isBuying || isConnecting}
+                className="claim-btn"
+                onClick={handleClaimTokens}
+                disabled={isClaiming || !presaleInfo.claimEnabled}
               >
-                {isBuying ? "Processing..." : `Buy ${TOKEN_SYMBOL}`}
+                {isClaiming ? "Claiming..." : presaleInfo.claimEnabled ? "Claim Tokens" : "Claim Not Enabled Yet"}
               </button>
 
               {statusMessage ? <div className="status-box info">{statusMessage}</div> : null}
@@ -552,163 +755,186 @@ export default function HomePage() {
               <div className="summary-list">
                 <div className="summary-row">
                   <span>Minimum purchase</span>
-                  <strong>US${MIN_PURCHASE_USD}</strong>
+                  <strong>{Number(presaleInfo.minPurchase || MIN_PURCHASE_USD).toFixed(2)} USDT</strong>
                 </div>
+
                 <div className="summary-row">
-                  <span>Approximate minimum in ETH</span>
-                  <strong>{minEthAmount} ETH</strong>
-                </div>
-                <div className="summary-row">
-                  <span>Maximum purchase</span>
-                  <strong>{MAX_PURCHASE_TEXT}</strong>
-                </div>
-                <div className="summary-row">
-                  <span>ETH/USD reference</span>
-                  <strong>
-                    {isLoadingPrice ? "Loading..." : `US$${Number(ethPriceUsd).toLocaleString()}`}
-                  </strong>
-                </div>
-                <div className="summary-row">
-                  <span>Estimated value</span>
-                  <strong>{estimatedUsdValue > 0 ? `US$${estimatedUsdValue.toFixed(2)}` : "—"}</strong>
-                </div>
-                <div className="summary-row">
-                  <span>Estimated {TOKEN_SYMBOL}</span>
+                  <span>Estimated CLX</span>
                   <strong>
                     {estimatedTokens > 0
                       ? Number(estimatedTokens).toLocaleString(undefined, {
-                          maximumFractionDigits: 2,
+                          maximumFractionDigits: 2
                         })
                       : "—"}
                   </strong>
                 </div>
+
                 <div className="summary-row">
                   <span>Wallet status</span>
                   <strong>{walletAddress ? `Connected (${formatWallet(walletAddress)})` : "Not connected"}</strong>
                 </div>
+
                 <div className="summary-row">
-                  <span>Purchase mode</span>
-                  <strong>{PURCHASE_MODE === "contract" ? "Contract call" : "Direct transfer"}</strong>
+                  <span>Network</span>
+                  <strong>{networkName || "—"}</strong>
                 </div>
+
+                <div className="summary-row">
+                  <span>Sale status</span>
+                  <strong>{presaleInfo.salePaused ? "Paused" : "Active"}</strong>
+                </div>
+
+                <div className="summary-row">
+                  <span>Claim status</span>
+                  <strong>{presaleInfo.claimEnabled ? "Enabled" : "Disabled"}</strong>
+                </div>
+
+                <div className="summary-row">
+                  <span>USDT balance</span>
+                  <strong>{walletData.usdtBalance} USDT</strong>
+                </div>
+
+                <div className="summary-row">
+                  <span>Approved allowance</span>
+                  <strong>{walletData.allowance} USDT</strong>
+                </div>
+
+                <div className="summary-row">
+                  <span>Total USDT spent</span>
+                  <strong>{walletData.usdtSpent} USDT</strong>
+                </div>
+
+                <div className="summary-row">
+                  <span>Total CLX purchased</span>
+                  <strong>{walletData.totalPurchased}</strong>
+                </div>
+
+                <div className="summary-row">
+                  <span>Total CLX claimed</span>
+                  <strong>{walletData.totalClaimed}</strong>
+                </div>
+
+                <div className="summary-row">
+                  <span>Claimable CLX</span>
+                  <strong>{walletData.claimable}</strong>
+                </div>
+
                 <div className="summary-row wallet-row">
-                  <span>Presale wallet</span>
-                  <strong>{PRESALE_ADDRESS}</strong>
+                  <span>Presale contract</span>
+                  <strong>{PRESALE_CONTRACT_ADDRESS}</strong>
+                </div>
+
+                <div className="summary-row wallet-row">
+                  <span>USDT token</span>
+                  <strong>{USDT_TOKEN_ADDRESS}</strong>
+                </div>
+
+                <div className="summary-row wallet-row">
+                  <span>CLX token</span>
+                  <strong>{CLX_TOKEN_ADDRESS}</strong>
+                </div>
+              </div>
+            </section>
+
+            <section className="content-card glass">
+              <p className="section-kicker light">How The Purchase Works</p>
+              <h3>Real presale flow from your smart contract</h3>
+              <div className="steps">
+                <div className="step">
+                  <span>1</span>
+                  <div>
+                    <strong>Connect wallet</strong>
+                    <p>Users connect MetaMask on desktop or mobile.</p>
+                  </div>
+                </div>
+                <div className="step">
+                  <span>2</span>
+                  <div>
+                    <strong>Enter USDT amount</strong>
+                    <p>The contract accepts USDT, not ETH, with a minimum purchase threshold.</p>
+                  </div>
+                </div>
+                <div className="step">
+                  <span>3</span>
+                  <div>
+                    <strong>Approve USDT</strong>
+                    <p>The user authorises the presale contract to spend the chosen amount of USDT.</p>
+                  </div>
+                </div>
+                <div className="step">
+                  <span>4</span>
+                  <div>
+                    <strong>Commit purchase</strong>
+                    <p>The website calls <code>buyTokens(uint256 usdtAmount)</code> on the presale contract.</p>
+                  </div>
+                </div>
+                <div className="step">
+                  <span>5</span>
+                  <div>
+                    <strong>Claim tokens later</strong>
+                    <p>When claims are enabled, the buyer can claim purchased CLX from the website.</p>
+                  </div>
                 </div>
               </div>
             </section>
 
             <section className="content-card glass">
               <p className="section-kicker light">The Problem</p>
-              <h3>Global trade is still slowed by outdated systems</h3>
+              <h3>Trade still depends on outdated infrastructure</h3>
               <div className="bullet-list">
-                <div>Paper-heavy documentation creates delays, errors and fraud risk.</div>
-                <div>Cross-border transactions often involve many intermediaries and manual checks.</div>
-                <div>Traditional trade finance adds friction and cost, especially for SMEs.</div>
-                <div>Opaque workflows reduce trust and slow financing approvals.</div>
+                <div>Manual documentation slows transactions and increases risk.</div>
+                <div>Settlement can take too long across multiple jurisdictions.</div>
+                <div>Trade verification is fragmented and expensive.</div>
+                <div>Smaller businesses struggle to access reliable cross-border infrastructure.</div>
               </div>
             </section>
 
             <section className="content-card glass">
               <p className="section-kicker light">The Solution</p>
-              <h3>CrossLedger Platform + CLX Token</h3>
+              <h3>CrossLedger Platform + CLX Utility</h3>
               <div className="bullet-list">
-                <div>Tiered digital wallets from entry-level to enterprise-grade use.</div>
-                <div>Smart escrow contracts for conditional release of funds.</div>
-                <div>Digitised and verified documentation with blockchain integrity.</div>
-                <div>Real-time tracking and a single transparent ledger for all parties.</div>
-                <div>CLX for fees, escrow, service access, rewards and platform utility.</div>
-              </div>
-            </section>
-
-            <section className="content-card glass">
-              <p className="section-kicker light">How It Works</p>
-              <h3>Step-by-step trade flow</h3>
-              <div className="steps">
-                <div className="step">
-                  <span>1</span>
-                  <div>
-                    <strong>Onboarding & Agreement</strong>
-                    <p>Buyer and seller agree to the trade terms on-platform.</p>
-                  </div>
-                </div>
-                <div className="step">
-                  <span>2</span>
-                  <div>
-                    <strong>Smart Escrow Initiation</strong>
-                    <p>Funds are locked into escrow using CLX or supported settlement flows.</p>
-                  </div>
-                </div>
-                <div className="step">
-                  <span>3</span>
-                  <div>
-                    <strong>Shipment & Tracking</strong>
-                    <p>Documents are uploaded, hashed and tracked alongside the shipment.</p>
-                  </div>
-                </div>
-                <div className="step">
-                  <span>4</span>
-                  <div>
-                    <strong>Automatic Settlement</strong>
-                    <p>Payment is released after milestone confirmation and validation.</p>
-                  </div>
-                </div>
-                <div className="step">
-                  <span>5</span>
-                  <div>
-                    <strong>Post-Trade Incentives</strong>
-                    <p>The record stays immutable and rewards can be granted to participants.</p>
-                  </div>
-                </div>
+                <div>Smart escrow and conditional release of funds.</div>
+                <div>Blockchain-backed document integrity and visibility.</div>
+                <div>Tiered wallets and tools for trade participants.</div>
+                <div>CLX utility across fees, services, incentives and platform access.</div>
               </div>
             </section>
 
             <section className="content-card glass">
               <p className="section-kicker light">Product Advantages</p>
-              <h3>Why CrossLedger wins</h3>
+              <h3>Why CrossLedger is differentiated</h3>
               <div className="adv-grid">
                 <div className="adv-box">
                   <strong>Speed & Efficiency</strong>
-                  <p>Trade settlement in hours, not weeks.</p>
+                  <p>Settlement and validation are faster than traditional workflows.</p>
                 </div>
                 <div className="adv-box">
                   <strong>Lower Costs</strong>
-                  <p>Reduced administrative overhead and lower platform fee model.</p>
+                  <p>Reduced dependency on paper-heavy and intermediary-heavy processes.</p>
                 </div>
                 <div className="adv-box">
                   <strong>Security & Trust</strong>
-                  <p>Smart escrow and blockchain-backed transparency.</p>
+                  <p>Smart escrow and transparent on-chain records strengthen confidence.</p>
                 </div>
                 <div className="adv-box">
-                  <strong>Inclusivity & Access</strong>
-                  <p>Designed to open trade access for SMEs and underserved markets.</p>
+                  <strong>Global Accessibility</strong>
+                  <p>Built for real trade corridors, including underserved markets.</p>
                 </div>
                 <div className="adv-box">
-                  <strong>Integration & Flexibility</strong>
-                  <p>Built for API integrations and multi-asset settlement pathways.</p>
+                  <strong>Service Access</strong>
+                  <p>Wallet tiers and token utility connect users to premium platform functions.</p>
                 </div>
                 <div className="adv-box">
-                  <strong>User-Friendly Design</strong>
-                  <p>Tiered wallets, dashboards and real-time status visibility.</p>
+                  <strong>Scalable Infrastructure</strong>
+                  <p>Designed for expansion across global commodity and trade networks.</p>
                 </div>
-              </div>
-            </section>
-
-            <section className="content-card glass">
-              <p className="section-kicker light">Token Utility</p>
-              <h3>What CLX is used for</h3>
-              <div className="bullet-list">
-                <div>Transaction fees such as smart escrow and document verification.</div>
-                <div>Collateral inside escrow between counterparties.</div>
-                <div>Unlocking platform services, wallet tiers, document minting and tracking tools.</div>
-                <div>Volume and loyalty discounts through non-governance staking models.</div>
-                <div>Early user rewards, referrals and premium service access.</div>
               </div>
             </section>
 
             <section className="allocation-card white-card">
               <div className="section-head">
                 <p className="section-kicker">Token Allocation</p>
-                <h2>Aligned for trade adoption</h2>
+                <h2>Structured for adoption and growth</h2>
               </div>
 
               <div className="allocation-grid">
@@ -749,44 +975,44 @@ export default function HomePage() {
                 <div className="phase-badge">Phase 1</div>
                 <div>
                   <strong>Token Launch & Presale</strong>
-                  <p>Early access, branding, wallet connection and initial token participation.</p>
+                  <p>Brand, token distribution, early investor participation and platform onboarding.</p>
                 </div>
               </div>
               <div className="phase-item">
                 <div className="phase-badge">Phase 2</div>
                 <div>
                   <strong>Trade Validation Platform</strong>
-                  <p>Escrow, documentation validation and transaction workflow deployment.</p>
+                  <p>Digital document workflows, escrow and transaction support functions.</p>
                 </div>
               </div>
               <div className="phase-item">
                 <div className="phase-badge">Phase 3</div>
                 <div>
                   <strong>Global Commodity Network</strong>
-                  <p>Broader rollout into real trade corridors and enterprise partnerships.</p>
+                  <p>Expansion into broader trade corridors, enterprise users and strategic integrations.</p>
                 </div>
               </div>
             </section>
 
             <section className="content-card glass">
               <p className="section-kicker light">Business Model</p>
-              <h3>Wallet tiers, fees and utility</h3>
+              <h3>Where the token fits</h3>
               <div className="bullet-list">
-                <div>Basic, Professional and Enterprise wallet tiers.</div>
-                <div>Transaction fees for smart escrow and document verification.</div>
-                <div>CLX-based discounts, rewards and service access.</div>
-                <div>Long-term expansion into additional trade services and integrations.</div>
+                <div>Platform service fees including smart escrow and verification workflows.</div>
+                <div>Utility access for different wallet tiers and services.</div>
+                <div>Token-enabled discounts, incentives and retention mechanisms.</div>
+                <div>Scalable commercial adoption through enterprise and trade users.</div>
               </div>
             </section>
 
             <section className="content-card glass">
               <p className="section-kicker light">Target Market</p>
-              <h3>Where CrossLedger is focused</h3>
+              <h3>Cross-border trade corridors</h3>
               <div className="bullet-list">
-                <div>Emerging trade hubs across Southeast Asia, Africa and Latin America.</div>
-                <div>Commodity, agri-product, minerals and SME trade flows.</div>
-                <div>Major corridors including Asia-Pacific, the Middle East and Latin America.</div>
-                <div>High-friction trades where paperwork and settlement delay create the biggest pain.</div>
+                <div>Asia-Pacific, the Middle East and Latin America.</div>
+                <div>Commodity, agriculture, metals and SME trade flows.</div>
+                <div>Markets where documentation and settlement delays create major pain points.</div>
+                <div>Trade participants requiring transparency, speed and verifiable workflows.</div>
               </div>
             </section>
 
@@ -797,48 +1023,42 @@ export default function HomePage() {
                 <div className="dot" />
                 <div>
                   <strong>Q1</strong>
-                  <p>Launch website, presale, branding and wallet integration.</p>
+                  <p>Website launch, presale, wallet integration and early community buildout.</p>
                 </div>
               </div>
               <div className="roadmap-item">
                 <div className="dot" />
                 <div>
                   <strong>Q2</strong>
-                  <p>Expand outreach, pilots and strategic infrastructure development.</p>
+                  <p>Platform architecture, strategic outreach and pilot development.</p>
                 </div>
               </div>
               <div className="roadmap-item">
                 <div className="dot" />
                 <div>
                   <strong>Q3</strong>
-                  <p>Deploy trade verification, documentation and workflow tooling.</p>
+                  <p>Trade verification workflows, document systems and operational deployment.</p>
                 </div>
               </div>
               <div className="roadmap-item">
                 <div className="dot" />
                 <div>
                   <strong>Q4</strong>
-                  <p>Scale network participation and partnership-led market expansion.</p>
+                  <p>Network scaling, commercial growth and broader market integration.</p>
                 </div>
               </div>
             </section>
 
             <section className="content-card glass">
               <p className="section-kicker light">Leadership</p>
-              <h3>Team</h3>
+              <h3>Core team</h3>
               <div className="team-item">
                 <strong>Gui Di Nardo — Co-Founder & CEO</strong>
-                <p>
-                  International trade specialist with broad cross-border commodity experience
-                  across Brazil, China and Australia.
-                </p>
+                <p>International trade specialist with broad commodity and cross-border execution experience.</p>
               </div>
               <div className="team-item">
                 <strong>Tom Young — Co-Founder & CTO</strong>
-                <p>
-                  Blockchain and digital asset infrastructure lead focused on token architecture,
-                  legal alignment and technology execution.
-                </p>
+                <p>Blockchain and technology lead focused on digital asset infrastructure and execution.</p>
               </div>
             </section>
 
@@ -975,6 +1195,8 @@ export default function HomePage() {
         .primary-btn,
         .secondary-btn,
         .buy-btn,
+        .approve-btn,
+        .claim-btn,
         .preset-btn {
           transition: transform 0.15s ease, opacity 0.15s ease, box-shadow 0.15s ease;
         }
@@ -982,6 +1204,8 @@ export default function HomePage() {
         .primary-btn:hover,
         .secondary-btn:hover,
         .buy-btn:hover,
+        .approve-btn:hover,
+        .claim-btn:hover,
         .preset-btn:hover {
           transform: translateY(-1px);
         }
@@ -1105,7 +1329,8 @@ export default function HomePage() {
         .white-card h2,
         .white-card h3,
         .white-card .section-copy,
-        .white-card .section-kicker {
+        .white-card .section-kicker,
+        .white-card .input-label {
           color: #0a1734;
         }
 
@@ -1146,8 +1371,13 @@ export default function HomePage() {
 
         .metric-value {
           color: #0a1734;
-          font-size: clamp(28px, 4vw, 34px);
+          font-size: clamp(26px, 4vw, 34px);
           font-weight: 800;
+        }
+
+        .metric-value.small {
+          font-size: clamp(18px, 3vw, 24px);
+          line-height: 1.35;
         }
 
         .input-label {
@@ -1157,7 +1387,7 @@ export default function HomePage() {
           font-weight: 800;
         }
 
-        .eth-input {
+        .usdt-input {
           width: 100%;
           height: 88px;
           border-radius: 22px;
@@ -1193,14 +1423,40 @@ export default function HomePage() {
           box-shadow: 0 10px 22px rgba(45, 87, 224, 0.14);
         }
 
+        .action-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 14px;
+          margin-bottom: 14px;
+        }
+
+        .approve-btn,
         .buy-btn {
           width: 100%;
-          height: 92px;
+          height: 86px;
           border: none;
           border-radius: 24px;
-          background: linear-gradient(90deg, #071225 0%, #162b48 100%);
           color: #fff;
-          font-size: clamp(24px, 4vw, 34px);
+          font-size: clamp(20px, 3vw, 28px);
+          font-weight: 800;
+        }
+
+        .approve-btn {
+          background: linear-gradient(135deg, #305bc6 0%, #274699 100%);
+        }
+
+        .buy-btn {
+          background: linear-gradient(90deg, #071225 0%, #162b48 100%);
+        }
+
+        .claim-btn {
+          width: 100%;
+          height: 76px;
+          border: none;
+          border-radius: 22px;
+          background: linear-gradient(135deg, #2f7d6b 0%, #22594b 100%);
+          color: #fff;
+          font-size: 20px;
           font-weight: 800;
           margin-bottom: 18px;
         }
@@ -1311,6 +1567,11 @@ export default function HomePage() {
           margin: 6px 0 0;
           color: rgba(255, 255, 255, 0.82);
           line-height: 1.65;
+        }
+
+        .step code {
+          color: #9fd0ff;
+          font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
         }
 
         .adv-grid,
@@ -1473,7 +1734,8 @@ export default function HomePage() {
           .metric-grid,
           .adv-grid,
           .allocation-grid,
-          .preset-grid {
+          .preset-grid,
+          .action-grid {
             grid-template-columns: 1fr;
           }
 
@@ -1499,12 +1761,17 @@ export default function HomePage() {
             font-size: 17px;
           }
 
-          .eth-input {
+          .usdt-input {
             height: 82px;
           }
 
+          .approve-btn,
           .buy-btn {
-            height: 84px;
+            height: 78px;
+          }
+
+          .claim-btn {
+            height: 72px;
           }
         }
       `}</style>
