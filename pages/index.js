@@ -1,1434 +1,1074 @@
-import Head from "next/head";
 import { useEffect, useMemo, useState } from "react";
 import { ethers } from "ethers";
 
 const CONTRACT_ADDRESS = "0xCA30Cbe4D511Dd283e0FDe62d2215c42C358Ba4c";
-const MIN_BUY_USD = 200;
-const ASSUMED_ETH_USD = 2500;
-const MIN_BUY_ETH = (MIN_BUY_USD / ASSUMED_ETH_USD).toFixed(4);
+const BUY_FUNCTION_NAME = "buyTokens";
 
+// Replace with your real ABI if needed
 const CONTRACT_ABI = [
-  {
-    inputs: [],
-    name: "buyTokens",
-    outputs: [],
-    stateMutability: "payable",
-    type: "function",
-  },
+  "function buyTokens() payable",
 ];
 
-const TOKEN_CONFIG = {
-  name: "CrossLedger",
-  symbol: "CLX",
-  network: "Ethereum",
-  launchTag: "CrossLedger Pre-Launch & Presale",
-  headline: "Blockchain infrastructure for the future of international trade",
-  subheadline:
-    "CrossLedger is being developed to support smart-contract-based international trade infrastructure. The current capital raise is structured toward a US$3,000,000 objective, with US$1,000,000 already secured, a live pre-launch round of US$750,000 at US$0.10 per token, and a second-stage presale balance of US$1,250,000 at US$0.50 per token.",
-  currentPrice: "US$0.10",
-  stageTwoPrice: "US$0.50",
-  projectedLaunchPrice: "US$13.50",
-  overallRaiseTarget: "US$3,000,000",
-  alreadyRaised: "US$1,000,000",
-  prelaunchTarget: "US$750,000",
-  stageTwoTarget: "US$1,250,000",
-  prelaunchTokens: "7,500,000 CLX",
-  stageTwoTokens: "2,500,000 CLX",
-  totalDefinedRoundTokens: "10,000,000 CLX",
-  minBuy: "US$200",
-  maxBuy: "TBA",
-  acceptedCurrency: "ETH",
-  vestingNote:
-    "Current raise targets and active round pricing are defined. Broader tokenomics allocations and final vesting structure remain subject to final release settings.",
-};
+const TOKEN_SYMBOL = "CLX";
+const TOKEN_NAME = "CrossLedger";
+const TOKEN_SUBTITLE = "Global Trade Infrastructure Token";
+const TOKEN_PRICE_USD = 0.1;
+const PROJECTED_LAUNCH_USD = 13.5;
+const MIN_BUY_USD = 300;
+const MAX_BUY_TEXT = "TBA";
+const FALLBACK_ETH_USD = 2500;
+const PRESET_AMOUNTS = ["0.10", "0.25", "0.50", "1.00"];
+const PRESALE_WALLET = "0x264c542adc1447e3a75af2b8e2c758d73e562571";
 
-const RAISE_PROGRESS = {
-  totalTarget: 3000000,
-  alreadyRaised: 1000000,
-  currentRoundTarget: 750000,
-  nextStageTarget: 1250000,
-};
-
-const alreadyRaisedPct = (
-  (RAISE_PROGRESS.alreadyRaised / RAISE_PROGRESS.totalTarget) *
-  100
-).toFixed(2);
-
-const afterCurrentRoundPct = (
-  ((RAISE_PROGRESS.alreadyRaised + RAISE_PROGRESS.currentRoundTarget) /
-    RAISE_PROGRESS.totalTarget) *
-  100
-).toFixed(2);
-
-const PRESALE_PHASES = [
-  {
-    phase: "Pre-Launch",
-    price: "US$0.10",
-    allocation: "7,500,000 CLX",
-    raiseTarget: "US$750,000",
-    status: "Current",
-    description:
-      "The current pre-launch round is structured to raise US$750,000 at US$0.10 per token, positioning early participants ahead of the wider presale.",
-  },
-  {
-    phase: "Presale Stage 2",
-    price: "US$0.50",
-    allocation: "2,500,000 CLX",
-    raiseTarget: "US$1,250,000",
-    status: "Upcoming",
-    description:
-      "The second stage is designed to complete the remaining balance toward the US$3,000,000 raise target at US$0.50 per token.",
-  },
-  {
-    phase: "Projected Launch",
-    price: "US$13.50",
-    allocation: "Market Release",
-    raiseTarget: "N/A",
-    status: "Projected",
-    description:
-      "The projected post-launch price is US$13.50 per token as the CrossLedger ecosystem expands through smart contract infrastructure built for international trade.",
-  },
-];
-
-const TOKEN_FEATURES = [
-  {
-    title: "International Trade Utility",
-    text: "CLX is intended to support a blockchain ecosystem where smart contracts can strengthen trust, execution, and transactional efficiency across international trade flows.",
-  },
-  {
-    title: "Growth Through Smart Contracts",
-    text: "The long-term value thesis for CLX is tied to the rollout of smart-contract infrastructure that supports real trade activity, settlement logic, and scalable commercial use cases.",
-  },
-  {
-    title: "Structured Early Entry",
-    text: "The pre-launch and staged presale model is designed to progressively fund ecosystem development while providing structured market entry ahead of broader launch.",
-  },
-];
-
-const ROADMAP = [
-  {
-    stage: "Stage 1",
-    title: "Pre-Launch Capital Raise",
-    text: "Complete the current US$750,000 pre-launch round at US$0.10 per token while strengthening market confidence and ecosystem positioning.",
-  },
-  {
-    stage: "Stage 2",
-    title: "Presale Expansion",
-    text: "Open the second-stage presale at US$0.50 per token to complete the remaining US$1,250,000 toward the US$3,000,000 raise objective.",
-  },
-  {
-    stage: "Stage 3",
-    title: "Launch and Utility Growth",
-    text: "Support broader market rollout and expand smart contract functionality for international trade applications, with a projected launch reference of US$13.50 per token.",
-  },
-];
-
-const FAQS = [
-  {
-    q: "How much is the current pre-launch price?",
-    a: "The current pre-launch price is US$0.10 per CLX token.",
-  },
-  {
-    q: "How much has already been raised?",
-    a: "US$1,000,000 has already been raised toward the overall US$3,000,000 objective.",
-  },
-  {
-    q: "What is the next presale stage price?",
-    a: "The second presale stage is structured at US$0.50 per token.",
-  },
-  {
-    q: "What is the projected launch price?",
-    a: "The projected post-launch price referenced for CLX is US$13.50 per token.",
-  },
-];
-
-function SectionTitle({ children, mobile }) {
-  return (
-    <h2
-      style={{
-        fontSize: mobile ? "24px" : "30px",
-        fontWeight: 900,
-        margin: "0 0 18px 0",
-        letterSpacing: "-0.03em",
-      }}
-    >
-      {children}
-    </h2>
-  );
-}
-
-function StatCard({ label, value, mobile }) {
-  return (
-    <div
-      style={{
-        background:
-          "linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.03))",
-        border: "1px solid rgba(255,255,255,0.08)",
-        borderRadius: "18px",
-        padding: mobile ? "16px" : "18px",
-        boxSizing: "border-box",
-        minWidth: 0,
-      }}
-    >
-      <div
-        style={{
-          color: "#94a3b8",
-          fontSize: mobile ? "12px" : "13px",
-          marginBottom: "6px",
-        }}
-      >
-        {label}
-      </div>
-      <div
-        style={{
-          fontSize: mobile ? "18px" : "22px",
-          fontWeight: 800,
-          lineHeight: 1.2,
-          wordBreak: "break-word",
-        }}
-      >
-        {value}
-      </div>
-    </div>
-  );
-}
-
-export default function Home() {
+export default function HomePage() {
   const [walletAddress, setWalletAddress] = useState("");
   const [ethAmount, setEthAmount] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [txHash, setTxHash] = useState("");
+  const [ethPriceUsd, setEthPriceUsd] = useState(FALLBACK_ETH_USD);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [statusMessage, setStatusMessage] = useState("");
   const [isConnecting, setIsConnecting] = useState(false);
   const [isBuying, setIsBuying] = useState(false);
-  const [isCheckingWallet, setIsCheckingWallet] = useState(true);
+  const [isLoadingPrice, setIsLoadingPrice] = useState(true);
+  const [copiedWallet, setCopiedWallet] = useState(false);
 
-  const [contactName, setContactName] = useState("");
-  const [contactEmail, setContactEmail] = useState("");
-  const [contactQuestion, setContactQuestion] = useState("");
-  const [contactLoading, setContactLoading] = useState(false);
-  const [contactSuccess, setContactSuccess] = useState("");
-  const [contactError, setContactError] = useState("");
-
-  const [screenWidth, setScreenWidth] = useState(1280);
-  const [hasEthereum, setHasEthereum] = useState(false);
-
-  const fallbackActivity = [
-    { buyer: "0x71...9ab4", amount: "12,500 CLX", status: "Preview" },
-    { buyer: "0x93...1fd2", amount: "4,800 CLX", status: "Preview" },
-    { buyer: "0x28...7ce1", amount: "18,200 CLX", status: "Preview" },
-  ];
-
-  useEffect(() => {
-    function handleResize() {
-      setScreenWidth(window.innerWidth);
-    }
-
-    handleResize();
-    setHasEthereum(typeof window !== "undefined" && !!window.ethereum);
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+  const isMobile = useMemo(() => {
+    if (typeof navigator === "undefined") return false;
+    return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   }, []);
 
-  const mobile = screenWidth < 768;
-  const tablet = screenWidth >= 768 && screenWidth < 1100;
+  const minEthAmount = useMemo(() => {
+    if (!ethPriceUsd || Number(ethPriceUsd) <= 0) return "0.1200";
+    return (MIN_BUY_USD / ethPriceUsd).toFixed(4);
+  }, [ethPriceUsd]);
 
-  const presaleStart = useMemo(() => {
-    const now = new Date();
-    const start = new Date(now);
-    start.setDate(now.getDate() + 1);
-    start.setHours(0, 0, 0, 0);
-    return start;
+  const estimatedUsdValue = useMemo(() => {
+    const amount = Number(ethAmount);
+    if (!amount || amount <= 0) return 0;
+    return amount * ethPriceUsd;
+  }, [ethAmount, ethPriceUsd]);
+
+  const estimatedTokens = useMemo(() => {
+    if (!estimatedUsdValue || TOKEN_PRICE_USD <= 0) return 0;
+    return estimatedUsdValue / TOKEN_PRICE_USD;
+  }, [estimatedUsdValue]);
+
+  const currentProgress = 33.33;
+  const projectedProgress = 58.33;
+
+  useEffect(() => {
+    restorePendingAmount();
+    loadEthPrice();
+    restoreExistingWallet();
   }, []);
 
-  const [timeLeft, setTimeLeft] = useState({
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-  });
-
   useEffect(() => {
-    const interval = setInterval(() => {
-      const now = new Date();
-      const diff = Math.max(presaleStart.getTime() - now.getTime(), 0);
+    if (typeof window === "undefined" || !window.ethereum) return;
 
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-      const minutes = Math.floor((diff / (1000 * 60)) % 60);
-      const seconds = Math.floor((diff / 1000) % 60);
-
-      setTimeLeft({ days, hours, minutes, seconds });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [presaleStart]);
-
-  useEffect(() => {
-    async function checkExistingWallet() {
-      try {
-        if (!window.ethereum) return;
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const accounts = await provider.send("eth_accounts", []);
-        if (accounts && accounts.length > 0) {
-          setWalletAddress(accounts[0]);
-        }
-      } catch (err) {
-        console.error("Wallet check failed:", err);
-      } finally {
-        setIsCheckingWallet(false);
+    const handleAccountsChanged = (accounts) => {
+      if (accounts && accounts.length > 0) {
+        setWalletAddress(accounts[0]);
+      } else {
+        setWalletAddress("");
       }
-    }
+      clearMessages();
+    };
 
-    checkExistingWallet();
+    const handleChainChanged = () => {
+      window.location.reload();
+    };
+
+    window.ethereum.on?.("accountsChanged", handleAccountsChanged);
+    window.ethereum.on?.("chainChanged", handleChainChanged);
+
+    return () => {
+      window.ethereum.removeListener?.("accountsChanged", handleAccountsChanged);
+      window.ethereum.removeListener?.("chainChanged", handleChainChanged);
+    };
   }, []);
+
+  async function loadEthPrice() {
+    try {
+      setIsLoadingPrice(true);
+      const response = await fetch(
+        "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd"
+      );
+      const data = await response.json();
+      const livePrice = data?.ethereum?.usd;
+      if (livePrice && Number(livePrice) > 0) {
+        setEthPriceUsd(Number(livePrice));
+      }
+    } catch (error) {
+      console.error("ETH price fetch failed:", error);
+    } finally {
+      setIsLoadingPrice(false);
+    }
+  }
+
+  async function restoreExistingWallet() {
+    if (typeof window === "undefined" || !window.ethereum) return;
+
+    try {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const accounts = await provider.send("eth_accounts", []);
+      if (accounts && accounts.length > 0) {
+        setWalletAddress(accounts[0]);
+      }
+    } catch (error) {
+      console.error("Wallet restore failed:", error);
+    }
+  }
+
+  function restorePendingAmount() {
+    if (typeof window === "undefined") return;
+
+    try {
+      const savedAmount = localStorage.getItem("clx_pending_eth_amount");
+      if (savedAmount) {
+        setEthAmount(savedAmount);
+      }
+    } catch (error) {
+      console.error("Could not restore saved ETH amount:", error);
+    }
+  }
+
+  function savePendingAmount(value) {
+    if (typeof window === "undefined") return;
+
+    try {
+      localStorage.setItem("clx_pending_eth_amount", value);
+    } catch (error) {
+      console.error("Could not save ETH amount:", error);
+    }
+  }
+
+  function clearMessages() {
+    setErrorMessage("");
+    setSuccessMessage("");
+    setStatusMessage("");
+  }
+
+  function formatWallet(address) {
+    if (!address) return "";
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  }
 
   function openInMetaMask() {
-    window.location.href = "https://link.metamask.io/dapp/crossledger.trade";
+    if (typeof window === "undefined") return;
+    const cleanUrl = window.location.href.replace(/^https?:\/\//, "");
+    window.location.href = `https://link.metamask.io/dapp/${cleanUrl}`;
   }
 
   async function connectWallet() {
-    try {
-      setError("");
-      setSuccess("");
-      setTxHash("");
-      setIsConnecting(true);
+    clearMessages();
 
-      if (!window.ethereum) {
-        setError(
-          "MetaMask is not installed in this browser. Use the Open in MetaMask button on mobile."
-        );
+    if (typeof window === "undefined") return;
+
+    if (typeof window.ethereum === "undefined") {
+      if (isMobile) {
+        openInMetaMask();
         return;
       }
+      setErrorMessage("MetaMask is not installed");
+      return;
+    }
 
+    try {
+      setIsConnecting(true);
       const provider = new ethers.BrowserProvider(window.ethereum);
       const accounts = await provider.send("eth_requestAccounts", []);
 
-      if (!accounts || accounts.length === 0) {
-        setError("No wallet account found");
+      if (accounts && accounts.length > 0) {
+        setWalletAddress(accounts[0]);
+        setSuccessMessage("Wallet connected successfully");
+      }
+    } catch (error) {
+      if (error?.code === 4001) {
         return;
       }
-
-      setWalletAddress(accounts[0]);
-    } catch (err) {
-      console.error(err);
-
-      if (err?.code === "ACTION_REJECTED" || err?.code === 4001) {
-        setError("Wallet connection was cancelled.");
-      } else {
-        setError(err?.message || "Wallet connection failed");
-      }
+      console.error("Connect wallet error:", error);
+      setErrorMessage("Wallet connection failed");
     } finally {
       setIsConnecting(false);
     }
   }
 
-  async function buyTokens() {
+  function handlePresetAmountSelect(value) {
+    setEthAmount(value);
+    savePendingAmount(value);
+    clearMessages();
+  }
+
+  function handleEthAmountChange(event) {
+    const value = event.target.value;
+
+    if (/^\d*\.?\d*$/.test(value)) {
+      setEthAmount(value);
+      savePendingAmount(value);
+      clearMessages();
+    }
+  }
+
+  async function copyWalletAddress() {
     try {
-      setError("");
-      setSuccess("");
-      setTxHash("");
+      await navigator.clipboard.writeText(PRESALE_WALLET);
+      setCopiedWallet(true);
+      setTimeout(() => setCopiedWallet(false), 2000);
+    } catch (error) {
+      console.error("Copy failed:", error);
+    }
+  }
 
-      if (!window.ethereum) {
-        setError(
-          "MetaMask is not installed in this browser. Use the Open in MetaMask button on mobile."
-        );
+  async function handleBuy() {
+    clearMessages();
+
+    const numericAmount = Number(ethAmount);
+
+    if (!numericAmount || numericAmount <= 0) {
+      setErrorMessage("Please enter a valid ETH amount");
+      return;
+    }
+
+    if (estimatedUsdValue < MIN_BUY_USD) {
+      setErrorMessage(`Minimum buy is approximately US$${MIN_BUY_USD}`);
+      return;
+    }
+
+    savePendingAmount(ethAmount);
+
+    if (typeof window === "undefined") return;
+
+    if (typeof window.ethereum === "undefined") {
+      if (isMobile) {
+        openInMetaMask();
         return;
       }
+      setErrorMessage("MetaMask is not installed");
+      return;
+    }
 
-      if (!walletAddress) {
-        setError("Please connect your wallet first");
-        return;
-      }
-
-      if (!ethAmount || Number(ethAmount) <= 0) {
-        setError("Please enter a valid ETH amount");
-        return;
-      }
-
-      if (Number(ethAmount) < Number(MIN_BUY_ETH)) {
-        setError(
-          `Minimum purchase is US$${MIN_BUY_USD} (approximately ${MIN_BUY_ETH} ETH based on ETH at US$${ASSUMED_ETH_USD}).`
-        );
-        return;
-      }
-
+    try {
       setIsBuying(true);
 
       const provider = new ethers.BrowserProvider(window.ethereum);
+      let accounts = await provider.send("eth_accounts", []);
+
+      if (!accounts || accounts.length === 0) {
+        try {
+          accounts = await provider.send("eth_requestAccounts", []);
+        } catch (error) {
+          if (error?.code === 4001) {
+            return;
+          }
+          throw error;
+        }
+      }
+
+      if (accounts && accounts.length > 0) {
+        setWalletAddress(accounts[0]);
+      }
+
       const signer = await provider.getSigner();
-      const contract = new ethers.Contract(
-        CONTRACT_ADDRESS,
-        CONTRACT_ABI,
-        signer
-      );
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+      const value = ethers.parseEther(ethAmount);
 
-      const tx = await contract.buyTokens({
-        value: ethers.parseEther(ethAmount),
-      });
+      setStatusMessage("Waiting for wallet confirmation...");
 
-      setTxHash(tx.hash);
-      setSuccess("Transaction submitted. Waiting for confirmation...");
-
-      const receipt = await tx.wait();
-
-      if (receipt.status === 1) {
-        setSuccess(
-          `Purchase successful. ${TOKEN_CONFIG.symbol} should arrive in your wallet.`
+      if (typeof contract[BUY_FUNCTION_NAME] !== "function") {
+        throw new Error(
+          `Contract function "${BUY_FUNCTION_NAME}" was not found. Update BUY_FUNCTION_NAME or ABI.`
         );
-      } else {
-        setError("Transaction failed");
       }
-    } catch (err) {
-      console.error(err);
 
-      if (err?.code === "ACTION_REJECTED" || err?.code === 4001) {
-        setError("Transaction was cancelled in MetaMask.");
-      } else if (err?.reason) {
-        setError(err.reason);
-      } else if (err?.shortMessage) {
-        setError(err.shortMessage);
-      } else if (err?.message) {
-        setError(err.message);
-      } else {
-        setError("Token purchase failed");
+      const transaction = await contract[BUY_FUNCTION_NAME]({ value });
+
+      setStatusMessage("Transaction submitted. Waiting for blockchain confirmation...");
+      await transaction.wait();
+
+      setStatusMessage("");
+      setSuccessMessage("Purchase completed successfully");
+    } catch (error) {
+      if (error?.code === 4001) {
+        return;
       }
+
+      console.error("Purchase error:", error);
+
+      const friendlyMessage =
+        error?.reason ||
+        error?.shortMessage ||
+        error?.message ||
+        "Purchase failed";
+
+      setStatusMessage("");
+      setErrorMessage(friendlyMessage);
     } finally {
       setIsBuying(false);
     }
   }
 
-  async function submitContactForm(e) {
-    e.preventDefault();
-    setContactSuccess("");
-    setContactError("");
-
-    if (!contactName.trim() || !contactEmail.trim() || !contactQuestion.trim()) {
-      setContactError("Please complete all contact form fields.");
-      return;
-    }
-
-    try {
-      setContactLoading(true);
-
-      const response = await fetch("https://formspree.io/f/mlgpnvbk", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
-          name: contactName,
-          email: contactEmail,
-          question: contactQuestion,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to send message.");
-      }
-
-      setContactSuccess("Thank you. Your message has been sent successfully.");
-      setContactName("");
-      setContactEmail("");
-      setContactQuestion("");
-    } catch (err) {
-      console.error(err);
-      setContactError(err.message || "Failed to send message.");
-    } finally {
-      setContactLoading(false);
-    }
-  }
-
-  function shortAddress(address) {
-    if (!address) return "";
-    return `${address.slice(0, 6)}...${address.slice(-4)}`;
-  }
-
   return (
-    <>
-      <Head>
-        <title>CLX Presale</title>
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
-        />
-      </Head>
+    <div style={styles.page}>
+      <div style={styles.backgroundGlowLeft} />
+      <div style={styles.backgroundGlowRight} />
 
-      <div
-        style={{
-          minHeight: "100vh",
-          width: "100%",
-          overflowX: "hidden",
-          background:
-            "radial-gradient(circle at top, #173055 0%, #0c1730 35%, #060b16 100%)",
-          color: "#fff",
-          fontFamily: "Arial, sans-serif",
-        }}
-      >
-        <div
-          style={{
-            width: "100%",
-            maxWidth: "1280px",
-            margin: "0 auto",
-            padding: mobile ? "16px 14px 40px" : "28px 20px 72px",
-            boxSizing: "border-box",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              flexDirection: mobile ? "column" : "row",
-              justifyContent: "space-between",
-              alignItems: mobile ? "stretch" : "center",
-              gap: "18px",
-              marginBottom: "24px",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: mobile ? "12px" : "16px",
-                minWidth: 0,
-              }}
-            >
-              <img
-                src="/B4FB988C-108A-4E70-9923-81BB722E9AB4.png"
-                alt="CLX Logo"
-                style={{
-                  width: mobile ? "56px" : "72px",
-                  height: mobile ? "56px" : "72px",
-                  objectFit: "contain",
-                  borderRadius: "14px",
-                  background: "rgba(255,255,255,0.04)",
-                  padding: "4px",
-                  boxShadow: "0 10px 30px rgba(0,0,0,0.3)",
-                  flexShrink: 0,
-                }}
-              />
+      <main style={styles.container}>
+        <section style={styles.heroSection}>
+          <div style={styles.logoBadge}>CLX</div>
 
-              <div style={{ minWidth: 0 }}>
-                <div
-                  style={{
-                    fontSize: mobile ? "26px" : "34px",
-                    fontWeight: 900,
-                    letterSpacing: "-0.03em",
-                    lineHeight: 1.05,
-                  }}
-                >
-                  {TOKEN_CONFIG.symbol} Presale
-                </div>
-                <div
-                  style={{
-                    color: "#94a3b8",
-                    marginTop: "4px",
-                    fontSize: mobile ? "13px" : "15px",
-                    lineHeight: 1.4,
-                  }}
-                >
-                  {TOKEN_CONFIG.name} • {TOKEN_CONFIG.network}
-                </div>
-              </div>
-            </div>
+          <div style={styles.heroContent}>
+            <p style={styles.kicker}>{TOKEN_NAME}</p>
+            <h1 style={styles.mainTitle}>{TOKEN_SUBTITLE}</h1>
+            <p style={styles.mainSubtitle}>
+              Built to support secure and transparent transaction verification across
+              global commodity markets, with a presale experience optimized for both
+              desktop and mobile users.
+            </p>
+          </div>
 
+          <div style={styles.heroActions}>
             <button
               onClick={connectWallet}
-              disabled={isConnecting || isCheckingWallet}
+              disabled={isConnecting}
               style={{
-                padding: mobile ? "14px 16px" : "14px 20px",
-                borderRadius: "14px",
-                border: "1px solid rgba(255,255,255,0.14)",
-                background: walletAddress
-                  ? "#14532d"
-                  : "linear-gradient(135deg, #2563eb, #1d4ed8)",
-                color: "#fff",
-                fontWeight: 800,
-                cursor: "pointer",
-                width: mobile ? "100%" : "auto",
-                minWidth: mobile ? "100%" : "210px",
-                boxSizing: "border-box",
+                ...styles.primaryTopButton,
+                opacity: isConnecting ? 0.85 : 1,
+                cursor: isConnecting ? "not-allowed" : "pointer",
               }}
             >
-              {isCheckingWallet
-                ? "Checking Wallet..."
+              {walletAddress
+                ? `Connected: ${formatWallet(walletAddress)}`
                 : isConnecting
                 ? "Connecting..."
-                : walletAddress
-                ? `Connected: ${shortAddress(walletAddress)}`
                 : "Connect Wallet"}
             </button>
+
+            <button
+              onClick={copyWalletAddress}
+              style={styles.secondaryTopButton}
+            >
+              {copiedWallet ? "Wallet Copied" : "Copy Presale Wallet"}
+            </button>
+          </div>
+        </section>
+
+        <section style={styles.progressCard}>
+          <div style={styles.progressHeader}>
+            <div>
+              <div style={styles.progressLabel}>Current progress</div>
+              <div style={styles.progressValue}>{currentProgress.toFixed(2)}%</div>
+            </div>
+            <div>
+              <div style={styles.progressLabel}>If this round completes</div>
+              <div style={styles.progressValue}>{projectedProgress.toFixed(2)}%</div>
+            </div>
           </div>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: mobile || tablet ? "1fr" : "1.35fr 0.82fr",
-              gap: "24px",
-              alignItems: "start",
-            }}
-          >
+          <div style={styles.progressTrack}>
             <div
               style={{
-                background:
-                  "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: mobile ? "22px" : "28px",
-                padding: mobile ? "20px 16px" : "30px",
-                backdropFilter: "blur(10px)",
-                boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
-                boxSizing: "border-box",
-                minWidth: 0,
+                ...styles.progressFill,
+                width: `${currentProgress}%`,
               }}
-            >
-              <div
-                style={{
-                  display: "inline-block",
-                  background: "rgba(59,130,246,0.18)",
-                  color: "#93c5fd",
-                  fontWeight: 800,
-                  fontSize: "12px",
-                  borderRadius: "999px",
-                  padding: "8px 14px",
-                  marginBottom: "16px",
-                }}
-              >
-                {TOKEN_CONFIG.launchTag}
-              </div>
+            />
+          </div>
 
-              <h1
-                style={{
-                  fontSize: mobile ? "34px" : tablet ? "44px" : "58px",
-                  lineHeight: 1.02,
-                  margin: "0 0 14px",
-                  fontWeight: 900,
-                  letterSpacing: "-0.04em",
-                  maxWidth: "860px",
-                }}
-              >
-                {TOKEN_CONFIG.headline}
-              </h1>
+          <p style={styles.progressText}>
+            Current progress: <strong>{currentProgress.toFixed(2)}%</strong> of total raise target.
+            If the current pre-launch round completes, progress would move to{" "}
+            <strong>{projectedProgress.toFixed(2)}%</strong>.
+          </p>
+        </section>
 
-              <p
-                style={{
-                  color: "#cbd5e1",
-                  fontSize: mobile ? "15px" : "18px",
-                  lineHeight: 1.7,
-                  marginBottom: "24px",
-                  maxWidth: "860px",
-                }}
-              >
-                {TOKEN_CONFIG.subheadline}
+        <section style={styles.buyCard}>
+          <div style={styles.sectionHeaderRow}>
+            <div>
+              <p style={styles.sectionEyebrow}>Token Presale</p>
+              <h2 style={styles.buyTitle}>Buy {TOKEN_SYMBOL}</h2>
+              <p style={styles.buySubtitle}>
+                Stage 1 pricing is live. Connect your wallet and participate directly with ETH.
               </p>
+            </div>
+          </div>
 
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: mobile ? "repeat(2, 1fr)" : "repeat(4, 1fr)",
-                  gap: "12px",
-                  marginBottom: "24px",
-                }}
-              >
-                {[
-                  { label: "Days", value: timeLeft.days },
-                  { label: "Hours", value: timeLeft.hours },
-                  { label: "Minutes", value: timeLeft.minutes },
-                  { label: "Seconds", value: timeLeft.seconds },
-                ].map((item) => (
-                  <div
-                    key={item.label}
-                    style={{
-                      background: "rgba(255,255,255,0.04)",
-                      border: "1px solid rgba(255,255,255,0.08)",
-                      borderRadius: "18px",
-                      padding: mobile ? "14px 10px" : "18px 14px",
-                      textAlign: "center",
-                      boxSizing: "border-box",
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontSize: mobile ? "22px" : "30px",
-                        fontWeight: 900,
-                      }}
-                    >
-                      {String(item.value).padStart(2, "0")}
-                    </div>
-                    <div style={{ color: "#94a3b8", fontSize: "12px" }}>
-                      {item.label}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: mobile ? "repeat(2, 1fr)" : "repeat(4, 1fr)",
-                  gap: "14px",
-                  marginBottom: "24px",
-                }}
-              >
-                <StatCard
-                  label="Already Raised"
-                  value={TOKEN_CONFIG.alreadyRaised}
-                  mobile={mobile}
-                />
-                <StatCard
-                  label="Current Round"
-                  value={TOKEN_CONFIG.prelaunchTarget}
-                  mobile={mobile}
-                />
-                <StatCard
-                  label="Next Stage"
-                  value={TOKEN_CONFIG.stageTwoTarget}
-                  mobile={mobile}
-                />
-                <StatCard
-                  label="Projected Launch"
-                  value={TOKEN_CONFIG.projectedLaunchPrice}
-                  mobile={mobile}
-                />
-              </div>
-
-              <div
-                style={{
-                  background: "rgba(255,255,255,0.04)",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  borderRadius: "20px",
-                  padding: mobile ? "16px" : "18px",
-                  boxSizing: "border-box",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    gap: "12px",
-                    marginBottom: "10px",
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <div style={{ fontWeight: 800 }}>Raise Progress</div>
-                  <div style={{ color: "#93c5fd", fontWeight: 800 }}>
-                    {TOKEN_CONFIG.alreadyRaised} of {TOKEN_CONFIG.overallRaiseTarget}
-                  </div>
-                </div>
-
-                <div
-                  style={{
-                    width: "100%",
-                    height: "14px",
-                    background: "rgba(255,255,255,0.08)",
-                    borderRadius: "999px",
-                    overflow: "hidden",
-                    marginBottom: "10px",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: `${alreadyRaisedPct}%`,
-                      height: "100%",
-                      background:
-                        "linear-gradient(90deg, #2563eb 0%, #22c55e 100%)",
-                      borderRadius: "999px",
-                    }}
-                  />
-                </div>
-
-                <div style={{ color: "#cbd5e1", lineHeight: 1.7, fontSize: "14px" }}>
-                  Current progress: <strong>{alreadyRaisedPct}%</strong> of total raise
-                  target.
-                  <br />
-                  If the current pre-launch round completes, progress would move to{" "}
-                  <strong>{afterCurrentRoundPct}%</strong>.
-                </div>
-              </div>
+          <div style={styles.metricGrid}>
+            <div style={styles.metricBox}>
+              <span style={styles.metricLabel}>Stage 1 Price</span>
+              <span style={styles.metricValue}>US${TOKEN_PRICE_USD.toFixed(2)}</span>
             </div>
 
-            <div
-              style={{
-                background: "linear-gradient(180deg, #ffffff, #f5f8fc)",
-                color: "#0f172a",
-                borderRadius: mobile ? "22px" : "28px",
-                padding: mobile ? "20px 16px" : "28px",
-                boxShadow: "0 22px 60px rgba(0,0,0,0.28)",
-                boxSizing: "border-box",
-                minWidth: 0,
-              }}
-            >
-              <div
-                style={{
-                  fontSize: mobile ? "24px" : "30px",
-                  fontWeight: 900,
-                  marginBottom: "8px",
-                  letterSpacing: "-0.02em",
-                }}
-              >
-                Buy {TOKEN_CONFIG.symbol}
-              </div>
+            <div style={styles.metricBox}>
+              <span style={styles.metricLabel}>Projected Launch</span>
+              <span style={styles.metricValue}>US${PROJECTED_LAUNCH_USD.toFixed(2)}</span>
+            </div>
+          </div>
 
-              <div style={{ color: "#475569", lineHeight: 1.6, marginBottom: "18px" }}>
-                Connect your wallet and purchase directly with{" "}
-                {TOKEN_CONFIG.acceptedCurrency}.
-              </div>
+          <div style={styles.inputSection}>
+            <label style={styles.inputLabel}>Amount in ETH</label>
+            <input
+              type="text"
+              inputMode="decimal"
+              value={ethAmount}
+              onChange={handleEthAmountChange}
+              placeholder={minEthAmount}
+              style={styles.ethInput}
+            />
+          </div>
 
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "12px",
-                  marginBottom: "16px",
-                }}
-              >
-                <div
-                  style={{
-                    background: "#f8fafc",
-                    border: "1px solid #e2e8f0",
-                    borderRadius: "14px",
-                    padding: "12px",
-                    boxSizing: "border-box",
-                  }}
-                >
-                  <div style={{ color: "#64748b", fontSize: "12px" }}>Current Price</div>
-                  <div style={{ fontWeight: 900, marginTop: "4px" }}>
-                    {TOKEN_CONFIG.currentPrice}
-                  </div>
-                </div>
-
-                <div
-                  style={{
-                    background: "#f8fafc",
-                    border: "1px solid #e2e8f0",
-                    borderRadius: "14px",
-                    padding: "12px",
-                    boxSizing: "border-box",
-                  }}
-                >
-                  <div style={{ color: "#64748b", fontSize: "12px" }}>
-                    Projected Launch
-                  </div>
-                  <div style={{ fontWeight: 900, marginTop: "4px" }}>
-                    {TOKEN_CONFIG.projectedLaunchPrice}
-                  </div>
-                </div>
-              </div>
-
-              <label
-                style={{
-                  display: "block",
-                  fontWeight: 800,
-                  marginBottom: "8px",
-                }}
-              >
-                Amount in ETH
-              </label>
-
-              <input
-                type="number"
-                placeholder={MIN_BUY_ETH}
-                value={ethAmount}
-                onChange={(e) => setEthAmount(e.target.value)}
-                step="0.0001"
-                min="0"
-                style={{
-                  width: "100%",
-                  boxSizing: "border-box",
-                  padding: "15px 16px",
-                  borderRadius: "14px",
-                  border: "1px solid #cbd5e1",
-                  fontSize: "16px",
-                  marginBottom: "16px",
-                  outline: "none",
-                }}
-              />
-
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(2, 1fr)",
-                  gap: "10px",
-                  marginBottom: "16px",
-                }}
-              >
-                {[MIN_BUY_ETH, "0.10", "0.25", "0.50"].map((value) => (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => setEthAmount(value)}
-                    style={{
-                      padding: "10px 12px",
-                      borderRadius: "12px",
-                      border: "1px solid #cbd5e1",
-                      background: "#fff",
-                      cursor: "pointer",
-                      fontWeight: 700,
-                      boxSizing: "border-box",
-                    }}
-                  >
-                    {value} ETH
-                  </button>
-                ))}
-              </div>
-
+          <div style={styles.presetGrid}>
+            {PRESET_AMOUNTS.map((amount) => (
               <button
-                onClick={buyTokens}
-                disabled={isBuying}
+                key={amount}
+                onClick={() => handlePresetAmountSelect(amount)}
                 style={{
-                  width: "100%",
-                  padding: "15px 18px",
-                  borderRadius: "14px",
-                  border: "none",
-                  background: "linear-gradient(135deg, #111827, #1f2937)",
-                  color: "#fff",
-                  fontWeight: 900,
-                  fontSize: "16px",
-                  cursor: "pointer",
+                  ...styles.presetButton,
+                  ...(ethAmount === amount ? styles.presetButtonActive : {}),
                 }}
               >
-                {isBuying ? "Processing..." : `Buy ${TOKEN_CONFIG.symbol}`}
+                {amount} ETH
               </button>
-
-              {!hasEthereum && (
-                <button
-                  onClick={openInMetaMask}
-                  type="button"
-                  style={{
-                    width: "100%",
-                    padding: "15px 18px",
-                    borderRadius: "14px",
-                    border: "1px solid #f59e0b",
-                    background: "#f59e0b",
-                    color: "#111827",
-                    fontWeight: 900,
-                    fontSize: "16px",
-                    cursor: "pointer",
-                    marginTop: "12px",
-                  }}
-                >
-                  Open in MetaMask
-                </button>
-              )}
-
-              {walletAddress && (
-                <div
-                  style={{
-                    marginTop: "16px",
-                    background: "#f8fafc",
-                    border: "1px solid #e2e8f0",
-                    borderRadius: "12px",
-                    padding: "12px",
-                    fontSize: "14px",
-                    wordBreak: "break-all",
-                  }}
-                >
-                  <strong>Connected wallet:</strong> {walletAddress}
-                </div>
-              )}
-
-              {success && (
-                <div
-                  style={{
-                    marginTop: "16px",
-                    background: "#dcfce7",
-                    color: "#166534",
-                    borderRadius: "12px",
-                    padding: "14px",
-                    lineHeight: 1.5,
-                  }}
-                >
-                  {success}
-                </div>
-              )}
-
-              {error && (
-                <div
-                  style={{
-                    marginTop: "16px",
-                    background: "#fee2e2",
-                    color: "#991b1b",
-                    borderRadius: "12px",
-                    padding: "14px",
-                    lineHeight: 1.5,
-                    wordBreak: "break-word",
-                  }}
-                >
-                  {error}
-                </div>
-              )}
-
-              {txHash && (
-                <div
-                  style={{
-                    marginTop: "16px",
-                    background: "#eff6ff",
-                    color: "#1d4ed8",
-                    borderRadius: "12px",
-                    padding: "14px",
-                    lineHeight: 1.5,
-                    wordBreak: "break-all",
-                  }}
-                >
-                  <strong>Transaction Hash:</strong>
-                  <br />
-                  {txHash}
-                </div>
-              )}
-
-              <div
-                style={{
-                  marginTop: "18px",
-                  borderTop: "1px solid #e2e8f0",
-                  paddingTop: "16px",
-                  color: "#64748b",
-                  fontSize: "13px",
-                  lineHeight: 1.6,
-                }}
-              >
-                Minimum buy: US${MIN_BUY_USD}
-                <br />
-                Approximate minimum in ETH: {MIN_BUY_ETH} ETH
-                <br />
-                Maximum buy: {TOKEN_CONFIG.maxBuy}
-              </div>
-            </div>
+            ))}
           </div>
 
-          <div style={{ marginTop: "26px" }}>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: mobile ? "1fr" : "repeat(3, 1fr)",
-                gap: "18px",
-              }}
-            >
-              {TOKEN_FEATURES.map((item) => (
-                <div
-                  key={item.title}
-                  style={{
-                    background:
-                      "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    borderRadius: "22px",
-                    padding: mobile ? "18px 16px" : "22px",
-                    boxSizing: "border-box",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: mobile ? "18px" : "20px",
-                      fontWeight: 900,
-                      marginBottom: "10px",
-                    }}
-                  >
-                    {item.title}
-                  </div>
-                  <div style={{ color: "#cbd5e1", lineHeight: 1.7 }}>{item.text}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div style={{ marginTop: "26px" }}>
-            <div
-              style={{
-                background:
-                  "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: "24px",
-                padding: mobile ? "20px 16px" : "24px",
-                boxSizing: "border-box",
-              }}
-            >
-              <SectionTitle mobile={mobile}>Presale Phases</SectionTitle>
-
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: mobile ? "1fr" : "repeat(3, 1fr)",
-                  gap: "16px",
-                }}
-              >
-                {PRESALE_PHASES.map((phase) => (
-                  <div
-                    key={phase.phase}
-                    style={{
-                      background: "rgba(255,255,255,0.04)",
-                      border: "1px solid rgba(255,255,255,0.08)",
-                      borderRadius: "20px",
-                      padding: "20px",
-                      boxSizing: "border-box",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "inline-block",
-                        padding: "7px 12px",
-                        borderRadius: "999px",
-                        background:
-                          phase.status === "Current"
-                            ? "rgba(34,197,94,0.18)"
-                            : phase.status === "Projected"
-                            ? "rgba(168,85,247,0.18)"
-                            : "rgba(59,130,246,0.18)",
-                        color:
-                          phase.status === "Current"
-                            ? "#86efac"
-                            : phase.status === "Projected"
-                            ? "#d8b4fe"
-                            : "#93c5fd",
-                        fontWeight: 800,
-                        fontSize: "12px",
-                        marginBottom: "12px",
-                      }}
-                    >
-                      {phase.status}
-                    </div>
-
-                    <div style={{ fontSize: "24px", fontWeight: 900, marginBottom: "8px" }}>
-                      {phase.phase}
-                    </div>
-                    <div style={{ color: "#94a3b8", marginBottom: "6px" }}>
-                      Price: <strong style={{ color: "#fff" }}>{phase.price}</strong>
-                    </div>
-                    <div style={{ color: "#94a3b8", marginBottom: "6px" }}>
-                      Allocation: <strong style={{ color: "#fff" }}>{phase.allocation}</strong>
-                    </div>
-                    <div style={{ color: "#94a3b8", marginBottom: "12px" }}>
-                      Raise Target:{" "}
-                      <strong style={{ color: "#fff" }}>{phase.raiseTarget}</strong>
-                    </div>
-                    <div style={{ color: "#cbd5e1", lineHeight: 1.65 }}>
-                      {phase.description}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div style={{ marginTop: "26px" }}>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: mobile ? "1fr" : "1fr 1fr",
-                gap: "20px",
-              }}
-            >
-              <div
-                style={{
-                  background:
-                    "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  borderRadius: "24px",
-                  padding: mobile ? "20px 16px" : "24px",
-                  boxSizing: "border-box",
-                }}
-              >
-                <SectionTitle mobile={mobile}>Tokenomics & Raise Structure</SectionTitle>
-
-                <div style={{ display: "grid", gap: "12px" }}>
-                  {[
-                    ["Overall Raise Target", "US$3,000,000"],
-                    ["Already Raised", "US$1,000,000"],
-                    ["Pre-Launch Raise", "US$750,000"],
-                    ["Pre-Launch Price", "US$0.10"],
-                    ["Pre-Launch Allocation", "7,500,000 CLX"],
-                    ["Stage 2 Raise", "US$1,250,000"],
-                    ["Stage 2 Price", "US$0.50"],
-                    ["Stage 2 Allocation", "2,500,000 CLX"],
-                    ["Defined Active Round Tokens", "10,000,000 CLX"],
-                    ["Projected Launch Price", "US$13.50"],
-                  ].map(([label, value]) => (
-                    <div
-                      key={label}
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        gap: "10px",
-                        background: "rgba(255,255,255,0.04)",
-                        borderRadius: "14px",
-                        padding: "14px 16px",
-                        flexWrap: "wrap",
-                        boxSizing: "border-box",
-                      }}
-                    >
-                      <span style={{ color: "#cbd5e1" }}>{label}</span>
-                      <strong>{value}</strong>
-                    </div>
-                  ))}
-                </div>
-
-                <div style={{ color: "#94a3b8", marginTop: "14px", lineHeight: 1.6 }}>
-                  {TOKEN_CONFIG.vestingNote}
-                </div>
-              </div>
-
-              <div
-                style={{
-                  background:
-                    "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  borderRadius: "24px",
-                  padding: mobile ? "20px 16px" : "24px",
-                  boxSizing: "border-box",
-                }}
-              >
-                <SectionTitle mobile={mobile}>Roadmap</SectionTitle>
-
-                <div style={{ display: "grid", gap: "16px" }}>
-                  {ROADMAP.map((item) => (
-                    <div
-                      key={item.stage}
-                      style={{
-                        background: "rgba(255,255,255,0.04)",
-                        borderRadius: "16px",
-                        padding: "16px",
-                        boxSizing: "border-box",
-                      }}
-                    >
-                      <div style={{ color: "#93c5fd", fontWeight: 800, marginBottom: "6px" }}>
-                        {item.stage}
-                      </div>
-                      <div style={{ fontSize: "20px", fontWeight: 900, marginBottom: "8px" }}>
-                        {item.title}
-                      </div>
-                      <div style={{ color: "#cbd5e1", lineHeight: 1.65 }}>{item.text}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div style={{ marginTop: "26px" }}>
-            <div
-              style={{
-                background:
-                  "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: "24px",
-                padding: mobile ? "20px 16px" : "24px",
-                boxSizing: "border-box",
-              }}
-            >
-              <SectionTitle mobile={mobile}>Contact Us</SectionTitle>
-
-              <form onSubmit={submitContactForm}>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: mobile ? "1fr" : "1fr 1fr",
-                    gap: "14px",
-                    marginBottom: "14px",
-                  }}
-                >
-                  <input
-                    type="text"
-                    placeholder="Your name"
-                    value={contactName}
-                    onChange={(e) => setContactName(e.target.value)}
-                    style={contactInputStyle}
-                  />
-
-                  <input
-                    type="email"
-                    placeholder="Your email"
-                    value={contactEmail}
-                    onChange={(e) => setContactEmail(e.target.value)}
-                    style={contactInputStyle}
-                  />
-                </div>
-
-                <textarea
-                  placeholder="Your question"
-                  value={contactQuestion}
-                  onChange={(e) => setContactQuestion(e.target.value)}
-                  rows={6}
-                  style={{
-                    ...contactInputStyle,
-                    minHeight: mobile ? "150px" : "170px",
-                    resize: "vertical",
-                  }}
-                />
-
-                <button
-                  type="submit"
-                  disabled={contactLoading}
-                  style={{
-                    marginTop: "16px",
-                    padding: "15px 22px",
-                    borderRadius: "14px",
-                    border: "none",
-                    background: "#ffffff",
-                    color: "#0f172a",
-                    fontWeight: 900,
-                    fontSize: "16px",
-                    cursor: "pointer",
-                    width: mobile ? "100%" : "auto",
-                  }}
-                >
-                  {contactLoading ? "Sending..." : "Send Message"}
-                </button>
-
-                {contactSuccess && (
-                  <div
-                    style={{
-                      marginTop: "16px",
-                      background: "rgba(34,197,94,0.18)",
-                      color: "#86efac",
-                      borderRadius: "12px",
-                      padding: "14px",
-                      lineHeight: 1.5,
-                    }}
-                  >
-                    {contactSuccess}
-                  </div>
-                )}
-
-                {contactError && (
-                  <div
-                    style={{
-                      marginTop: "16px",
-                      background: "rgba(239,68,68,0.18)",
-                      color: "#fca5a5",
-                      borderRadius: "12px",
-                      padding: "14px",
-                      lineHeight: 1.5,
-                    }}
-                  >
-                    {contactError}
-                  </div>
-                )}
-              </form>
-            </div>
-          </div>
-
-          <div style={{ marginTop: "26px" }}>
-            <div
-              style={{
-                background:
-                  "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: "24px",
-                padding: mobile ? "20px 16px" : "24px",
-                boxSizing: "border-box",
-              }}
-            >
-              <SectionTitle mobile={mobile}>Recent Activity</SectionTitle>
-
-              <div style={{ display: "grid", gap: "12px" }}>
-                {fallbackActivity.map((item, index) => (
-                  <div
-                    key={`${item.buyer}-${index}`}
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: mobile ? "1fr" : "1fr 1fr auto",
-                      gap: "12px",
-                      alignItems: "center",
-                      padding: "14px 16px",
-                      borderRadius: "16px",
-                      background: "rgba(255,255,255,0.04)",
-                      border: "1px solid rgba(255,255,255,0.06)",
-                      boxSizing: "border-box",
-                    }}
-                  >
-                    <div>
-                      <div style={{ color: "#94a3b8", fontSize: "12px" }}>Buyer</div>
-                      <div style={{ fontWeight: 800 }}>{item.buyer}</div>
-                    </div>
-
-                    <div>
-                      <div style={{ color: "#94a3b8", fontSize: "12px" }}>Amount</div>
-                      <div style={{ fontWeight: 800 }}>{item.amount}</div>
-                    </div>
-
-                    <div
-                      style={{
-                        padding: "8px 12px",
-                        borderRadius: "999px",
-                        background: "rgba(59,130,246,0.18)",
-                        color: "#93c5fd",
-                        fontWeight: 800,
-                        fontSize: "12px",
-                        justifySelf: mobile ? "start" : "auto",
-                      }}
-                    >
-                      {item.status}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div style={{ marginTop: "26px" }}>
-            <div
-              style={{
-                background:
-                  "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03))",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: "24px",
-                padding: mobile ? "20px 16px" : "24px",
-                boxSizing: "border-box",
-              }}
-            >
-              <SectionTitle mobile={mobile}>Frequently Asked Questions</SectionTitle>
-
-              <div style={{ display: "grid", gap: "14px" }}>
-                {FAQS.map((item) => (
-                  <div
-                    key={item.q}
-                    style={{
-                      background: "rgba(255,255,255,0.04)",
-                      borderRadius: "16px",
-                      padding: "18px",
-                      boxSizing: "border-box",
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontWeight: 900,
-                        fontSize: mobile ? "17px" : "18px",
-                        marginBottom: "8px",
-                      }}
-                    >
-                      {item.q}
-                    </div>
-                    <div style={{ color: "#cbd5e1", lineHeight: 1.65 }}>{item.a}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div
+          <button
+            onClick={handleBuy}
+            disabled={isBuying || isConnecting}
             style={{
-              marginTop: "34px",
-              color: "rgba(255,255,255,0.34)",
-              textAlign: "center",
-              lineHeight: 1.7,
-              fontSize: "12px",
-              letterSpacing: "0.3px",
+              ...styles.buyButton,
+              opacity: isBuying || isConnecting ? 0.85 : 1,
+              cursor: isBuying || isConnecting ? "not-allowed" : "pointer",
             }}
           >
-            © {new Date().getFullYear()} GDN Enterprise Pty Ltd · Powered by CLX
+            {isBuying ? "Processing..." : `Buy ${TOKEN_SYMBOL}`}
+          </button>
+
+          {statusMessage ? <div style={styles.statusBox}>{statusMessage}</div> : null}
+          {successMessage ? <div style={styles.successBox}>{successMessage}</div> : null}
+          {errorMessage ? <div style={styles.errorBox}>{errorMessage}</div> : null}
+
+          <div style={styles.summarySection}>
+            <div style={styles.summaryRow}>
+              <span style={styles.summaryKey}>Minimum purchase</span>
+              <span style={styles.summaryValue}>US${MIN_BUY_USD}</span>
+            </div>
+
+            <div style={styles.summaryRow}>
+              <span style={styles.summaryKey}>Approximate minimum in ETH</span>
+              <span style={styles.summaryValue}>{minEthAmount} ETH</span>
+            </div>
+
+            <div style={styles.summaryRow}>
+              <span style={styles.summaryKey}>Maximum buy</span>
+              <span style={styles.summaryValue}>{MAX_BUY_TEXT}</span>
+            </div>
+
+            <div style={styles.summaryRow}>
+              <span style={styles.summaryKey}>ETH/USD reference</span>
+              <span style={styles.summaryValue}>
+                {isLoadingPrice ? "Loading..." : `US$${Number(ethPriceUsd).toLocaleString()}`}
+              </span>
+            </div>
+
+            <div style={styles.summaryRow}>
+              <span style={styles.summaryKey}>Estimated value</span>
+              <span style={styles.summaryValue}>
+                {estimatedUsdValue > 0 ? `US$${estimatedUsdValue.toFixed(2)}` : "—"}
+              </span>
+            </div>
+
+            <div style={styles.summaryRow}>
+              <span style={styles.summaryKey}>Estimated {TOKEN_SYMBOL}</span>
+              <span style={styles.summaryValue}>
+                {estimatedTokens > 0
+                  ? Number(estimatedTokens).toLocaleString(undefined, {
+                      maximumFractionDigits: 2,
+                    })
+                  : "—"}
+              </span>
+            </div>
+
+            <div style={styles.summaryRow}>
+              <span style={styles.summaryKey}>Wallet status</span>
+              <span style={styles.summaryValue}>
+                {walletAddress ? `Connected (${formatWallet(walletAddress)})` : "Not connected"}
+              </span>
+            </div>
+
+            <div style={styles.summaryRow}>
+              <span style={styles.summaryKey}>Presale wallet</span>
+              <span style={styles.summaryValueWallet}>{PRESALE_WALLET}</span>
+            </div>
           </div>
-        </div>
-      </div>
-    </>
+        </section>
+
+        <section style={styles.infoGrid}>
+          <div style={styles.infoCard}>
+            <p style={styles.cardEyebrow}>How To Participate</p>
+            <h3 style={styles.infoTitle}>Simple entry flow</h3>
+            <div style={styles.stepsList}>
+              <div style={styles.stepItem}>
+                <span style={styles.stepNumber}>1</span>
+                <span style={styles.stepText}>Download Trust Wallet or MetaMask</span>
+              </div>
+              <div style={styles.stepItem}>
+                <span style={styles.stepNumber}>2</span>
+                <span style={styles.stepText}>Connect and send ETH into the presale flow</span>
+              </div>
+              <div style={styles.stepItem}>
+                <span style={styles.stepNumber}>3</span>
+                <span style={styles.stepText}>CLX tokens are distributed automatically</span>
+              </div>
+            </div>
+          </div>
+
+          <div style={styles.infoCard}>
+            <p style={styles.cardEyebrow}>Roadmap</p>
+            <h3 style={styles.infoTitle}>Execution phases</h3>
+            <div style={styles.roadmapList}>
+              <div style={styles.roadmapItem}>
+                <div style={styles.roadmapDot} />
+                <div>
+                  <div style={styles.roadmapPhase}>Phase 1</div>
+                  <div style={styles.roadmapText}>Token Launch & Presale</div>
+                </div>
+              </div>
+              <div style={styles.roadmapItem}>
+                <div style={styles.roadmapDot} />
+                <div>
+                  <div style={styles.roadmapPhase}>Phase 2</div>
+                  <div style={styles.roadmapText}>Trade Validation Platform</div>
+                </div>
+              </div>
+              <div style={styles.roadmapItem}>
+                <div style={styles.roadmapDot} />
+                <div>
+                  <div style={styles.roadmapPhase}>Phase 3</div>
+                  <div style={styles.roadmapText}>Global Commodity Transaction Network</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section style={styles.visionCard}>
+          <p style={styles.cardEyebrow}>Vision</p>
+          <h3 style={styles.visionTitle}>Infrastructure for global commodity trade</h3>
+          <p style={styles.visionText}>
+            CrossLedger aims to build the infrastructure layer for global commodity trade,
+            enabling secure and transparent transaction verification across oil, sugar,
+            metals and agricultural markets.
+          </p>
+        </section>
+      </main>
+    </div>
   );
 }
 
-const contactInputStyle = {
-  width: "100%",
-  boxSizing: "border-box",
-  padding: "15px 16px",
-  borderRadius: "14px",
-  border: "1px solid rgba(255,255,255,0.12)",
-  background: "rgba(255,255,255,0.04)",
-  color: "#fff",
-  fontSize: "16px",
-  outline: "none",
+const styles = {
+  page: {
+    minHeight: "100vh",
+    width: "100%",
+    background:
+      "radial-gradient(circle at top left, #183b78 0%, #0d2553 30%, #07142d 65%, #051022 100%)",
+    position: "relative",
+    overflow: "hidden",
+    fontFamily:
+      'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    padding: "24px 16px 64px",
+    boxSizing: "border-box",
+  },
+
+  backgroundGlowLeft: {
+    position: "absolute",
+    top: "-120px",
+    left: "-120px",
+    width: "320px",
+    height: "320px",
+    borderRadius: "50%",
+    background: "rgba(88, 137, 255, 0.18)",
+    filter: "blur(60px)",
+    pointerEvents: "none",
+  },
+
+  backgroundGlowRight: {
+    position: "absolute",
+    bottom: "-120px",
+    right: "-120px",
+    width: "340px",
+    height: "340px",
+    borderRadius: "50%",
+    background: "rgba(32, 108, 255, 0.14)",
+    filter: "blur(70px)",
+    pointerEvents: "none",
+  },
+
+  container: {
+    width: "100%",
+    maxWidth: "1180px",
+    margin: "0 auto",
+    position: "relative",
+    zIndex: 2,
+  },
+
+  heroSection: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    textAlign: "center",
+    padding: "24px 0 28px",
+  },
+
+  logoBadge: {
+    width: "84px",
+    height: "84px",
+    borderRadius: "24px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "linear-gradient(135deg, rgba(62,118,255,0.32), rgba(13,27,58,0.92))",
+    border: "1px solid rgba(255,255,255,0.14)",
+    color: "#ffffff",
+    fontSize: "30px",
+    fontWeight: 800,
+    letterSpacing: "0.08em",
+    boxShadow: "0 18px 40px rgba(0,0,0,0.25)",
+    backdropFilter: "blur(10px)",
+    marginBottom: "22px",
+  },
+
+  heroContent: {
+    maxWidth: "860px",
+  },
+
+  kicker: {
+    margin: "0 0 10px",
+    color: "rgba(255,255,255,0.76)",
+    fontSize: "14px",
+    fontWeight: 700,
+    letterSpacing: "0.18em",
+    textTransform: "uppercase",
+  },
+
+  mainTitle: {
+    margin: "0 0 16px",
+    color: "#ffffff",
+    fontSize: "clamp(36px, 7vw, 72px)",
+    lineHeight: 1.02,
+    fontWeight: 800,
+    letterSpacing: "-0.03em",
+  },
+
+  mainSubtitle: {
+    margin: "0 auto",
+    maxWidth: "760px",
+    color: "rgba(255,255,255,0.82)",
+    fontSize: "clamp(17px, 2.8vw, 24px)",
+    lineHeight: 1.6,
+  },
+
+  heroActions: {
+    marginTop: "26px",
+    width: "100%",
+    display: "flex",
+    justifyContent: "center",
+    flexWrap: "wrap",
+    gap: "14px",
+  },
+
+  primaryTopButton: {
+    minWidth: "260px",
+    height: "68px",
+    padding: "0 24px",
+    border: "none",
+    borderRadius: "20px",
+    background: "linear-gradient(135deg, #3f77ff 0%, #2c57e0 100%)",
+    color: "#ffffff",
+    fontWeight: 800,
+    fontSize: "20px",
+    boxShadow: "0 16px 36px rgba(42, 88, 224, 0.35)",
+  },
+
+  secondaryTopButton: {
+    minWidth: "220px",
+    height: "68px",
+    padding: "0 24px",
+    borderRadius: "20px",
+    background: "rgba(255,255,255,0.08)",
+    border: "1px solid rgba(255,255,255,0.12)",
+    color: "#ffffff",
+    fontWeight: 700,
+    fontSize: "18px",
+    backdropFilter: "blur(10px)",
+  },
+
+  progressCard: {
+    margin: "10px auto 28px",
+    maxWidth: "980px",
+    borderRadius: "30px",
+    padding: "24px",
+    background: "rgba(255,255,255,0.07)",
+    border: "1px solid rgba(255,255,255,0.10)",
+    backdropFilter: "blur(14px)",
+    boxShadow: "0 20px 45px rgba(0,0,0,0.15)",
+  },
+
+  progressHeader: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+    gap: "18px",
+    marginBottom: "18px",
+  },
+
+  progressLabel: {
+    color: "rgba(255,255,255,0.68)",
+    fontSize: "14px",
+    marginBottom: "8px",
+  },
+
+  progressValue: {
+    color: "#ffffff",
+    fontSize: "clamp(24px, 4vw, 34px)",
+    fontWeight: 800,
+  },
+
+  progressTrack: {
+    width: "100%",
+    height: "14px",
+    background: "rgba(255,255,255,0.12)",
+    borderRadius: "999px",
+    overflow: "hidden",
+    marginBottom: "16px",
+  },
+
+  progressFill: {
+    height: "100%",
+    borderRadius: "999px",
+    background: "linear-gradient(90deg, #69a6ff 0%, #8be2b5 100%)",
+  },
+
+  progressText: {
+    margin: 0,
+    color: "rgba(255,255,255,0.82)",
+    fontSize: "clamp(15px, 2.4vw, 20px)",
+    lineHeight: 1.7,
+  },
+
+  buyCard: {
+    width: "100%",
+    maxWidth: "860px",
+    margin: "0 auto 28px",
+    background: "#f7f8fb",
+    borderRadius: "34px",
+    padding: "clamp(22px, 4vw, 34px)",
+    boxShadow: "0 24px 60px rgba(0,0,0,0.25)",
+    boxSizing: "border-box",
+  },
+
+  sectionHeaderRow: {
+    marginBottom: "8px",
+  },
+
+  sectionEyebrow: {
+    margin: "0 0 8px",
+    color: "#5f7190",
+    fontSize: "14px",
+    fontWeight: 700,
+    textTransform: "uppercase",
+    letterSpacing: "0.14em",
+  },
+
+  buyTitle: {
+    margin: "0 0 10px",
+    color: "#0a1734",
+    fontWeight: 800,
+    fontSize: "clamp(34px, 6vw, 60px)",
+    lineHeight: 1.05,
+    letterSpacing: "-0.03em",
+  },
+
+  buySubtitle: {
+    margin: "0 0 28px",
+    color: "#4c5d7a",
+    fontSize: "clamp(18px, 3vw, 28px)",
+    lineHeight: 1.55,
+  },
+
+  metricGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+    gap: "18px",
+    marginBottom: "28px",
+  },
+
+  metricBox: {
+    background: "#f3f5f9",
+    border: "2px solid #d8e0ec",
+    borderRadius: "22px",
+    padding: "22px 20px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "10px",
+  },
+
+  metricLabel: {
+    color: "#64748f",
+    fontSize: "clamp(16px, 2.4vw, 21px)",
+  },
+
+  metricValue: {
+    color: "#0a1734",
+    fontSize: "clamp(28px, 4vw, 36px)",
+    fontWeight: 800,
+  },
+
+  inputSection: {
+    marginBottom: "22px",
+  },
+
+  inputLabel: {
+    display: "block",
+    marginBottom: "14px",
+    color: "#0a1734",
+    fontSize: "clamp(24px, 4vw, 34px)",
+    fontWeight: 800,
+  },
+
+  ethInput: {
+    width: "100%",
+    height: "96px",
+    background: "#ffffff",
+    border: "2px solid #d8e0ec",
+    borderRadius: "24px",
+    padding: "0 26px",
+    color: "#0a1734",
+    fontSize: "clamp(24px, 4vw, 34px)",
+    outline: "none",
+    boxSizing: "border-box",
+  },
+
+  presetGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    gap: "18px",
+    marginBottom: "28px",
+  },
+
+  presetButton: {
+    height: "78px",
+    borderRadius: "22px",
+    border: "2px solid #d8e0ec",
+    background: "#ffffff",
+    color: "#0a1734",
+    fontSize: "clamp(20px, 3vw, 28px)",
+    fontWeight: 800,
+  },
+
+  presetButtonActive: {
+    border: "2px solid #2d57e0",
+    boxShadow: "0 10px 22px rgba(45, 87, 224, 0.14)",
+  },
+
+  buyButton: {
+    width: "100%",
+    height: "96px",
+    border: "none",
+    borderRadius: "26px",
+    background: "linear-gradient(90deg, #071225 0%, #162b48 100%)",
+    color: "#ffffff",
+    fontSize: "clamp(24px, 4vw, 38px)",
+    fontWeight: 800,
+    marginBottom: "22px",
+  },
+
+  statusBox: {
+    background: "#e8eefc",
+    color: "#2048a2",
+    borderRadius: "22px",
+    padding: "20px 22px",
+    fontSize: "clamp(16px, 2.4vw, 21px)",
+    lineHeight: 1.6,
+    marginBottom: "18px",
+    wordBreak: "break-word",
+  },
+
+  successBox: {
+    background: "#def4e7",
+    color: "#17623f",
+    borderRadius: "22px",
+    padding: "20px 22px",
+    fontSize: "clamp(16px, 2.4vw, 21px)",
+    lineHeight: 1.6,
+    marginBottom: "18px",
+    wordBreak: "break-word",
+  },
+
+  errorBox: {
+    background: "#f7dddd",
+    color: "#a12626",
+    borderRadius: "22px",
+    padding: "20px 22px",
+    fontSize: "clamp(16px, 2.4vw, 21px)",
+    lineHeight: 1.6,
+    marginBottom: "18px",
+    wordBreak: "break-word",
+  },
+
+  summarySection: {
+    borderTop: "1px solid #d8e0ec",
+    paddingTop: "22px",
+  },
+
+  summaryRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: "18px",
+    padding: "8px 0",
+    flexWrap: "wrap",
+  },
+
+  summaryKey: {
+    color: "#64748f",
+    fontSize: "clamp(16px, 2.3vw, 21px)",
+  },
+
+  summaryValue: {
+    color: "#0a1734",
+    fontSize: "clamp(16px, 2.3vw, 21px)",
+    fontWeight: 700,
+    textAlign: "right",
+  },
+
+  summaryValueWallet: {
+    color: "#0a1734",
+    fontSize: "clamp(14px, 2vw, 18px)",
+    fontWeight: 700,
+    textAlign: "right",
+    wordBreak: "break-all",
+    maxWidth: "100%",
+  },
+
+  infoGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+    gap: "24px",
+    margin: "0 auto 28px",
+    maxWidth: "1100px",
+  },
+
+  infoCard: {
+    background: "rgba(255,255,255,0.07)",
+    border: "1px solid rgba(255,255,255,0.10)",
+    borderRadius: "28px",
+    padding: "26px",
+    backdropFilter: "blur(14px)",
+    boxShadow: "0 20px 45px rgba(0,0,0,0.15)",
+  },
+
+  cardEyebrow: {
+    margin: "0 0 8px",
+    color: "rgba(255,255,255,0.68)",
+    fontSize: "14px",
+    fontWeight: 700,
+    textTransform: "uppercase",
+    letterSpacing: "0.14em",
+  },
+
+  infoTitle: {
+    margin: "0 0 18px",
+    color: "#ffffff",
+    fontSize: "clamp(24px, 4vw, 34px)",
+    fontWeight: 800,
+  },
+
+  stepsList: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "14px",
+  },
+
+  stepItem: {
+    display: "flex",
+    alignItems: "flex-start",
+    gap: "14px",
+  },
+
+  stepNumber: {
+    minWidth: "34px",
+    height: "34px",
+    borderRadius: "50%",
+    background: "rgba(103, 162, 255, 0.16)",
+    border: "1px solid rgba(255,255,255,0.12)",
+    color: "#ffffff",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontWeight: 800,
+  },
+
+  stepText: {
+    color: "rgba(255,255,255,0.84)",
+    fontSize: "18px",
+    lineHeight: 1.6,
+  },
+
+  roadmapList: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "16px",
+  },
+
+  roadmapItem: {
+    display: "flex",
+    gap: "14px",
+    alignItems: "flex-start",
+  },
+
+  roadmapDot: {
+    width: "12px",
+    height: "12px",
+    borderRadius: "50%",
+    background: "linear-gradient(135deg, #69a6ff 0%, #8be2b5 100%)",
+    marginTop: "8px",
+    flexShrink: 0,
+  },
+
+  roadmapPhase: {
+    color: "#ffffff",
+    fontSize: "18px",
+    fontWeight: 800,
+    marginBottom: "4px",
+  },
+
+  roadmapText: {
+    color: "rgba(255,255,255,0.82)",
+    fontSize: "18px",
+    lineHeight: 1.6,
+  },
+
+  visionCard: {
+    maxWidth: "1100px",
+    margin: "0 auto",
+    background: "rgba(255,255,255,0.07)",
+    border: "1px solid rgba(255,255,255,0.10)",
+    borderRadius: "30px",
+    padding: "28px",
+    backdropFilter: "blur(14px)",
+    boxShadow: "0 20px 45px rgba(0,0,0,0.15)",
+  },
+
+  visionTitle: {
+    margin: "0 0 14px",
+    color: "#ffffff",
+    fontSize: "clamp(28px, 4vw, 40px)",
+    fontWeight: 800,
+  },
+
+  visionText: {
+    margin: 0,
+    color: "rgba(255,255,255,0.84)",
+    fontSize: "clamp(18px, 2.6vw, 22px)",
+    lineHeight: 1.8,
+    maxWidth: "980px",
+  },
 };
