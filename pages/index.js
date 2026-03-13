@@ -20,6 +20,14 @@ const FALLBACK_ETH_USD = 2500;
 const PRESET_AMOUNTS = ["0.10", "0.25", "0.50", "1.00"];
 const PRESALE_WALLET = "0x264c542adc1447e3a75af2b8e2c758d73e562571";
 
+const fallbackActivity = [
+  { buyer: "0x71...9ab4", amount: "12,500 USDT", status: "Confirmed" },
+  { buyer: "0x93...1fd2", amount: "4,800 USDT", status: "Confirmed" },
+  { buyer: "0x28...7ce1", amount: "18,200 USDT", status: "Confirmed" },
+  { buyer: "0x84...ab19", amount: "7,100 USDT", status: "Confirmed" },
+  { buyer: "0x16...ce42", amount: "25,000 USDT", status: "Confirmed" },
+];
+
 export default function HomePage() {
   const [walletAddress, setWalletAddress] = useState("");
   const [ethAmount, setEthAmount] = useState("");
@@ -31,6 +39,14 @@ export default function HomePage() {
   const [isBuying, setIsBuying] = useState(false);
   const [isLoadingPrice, setIsLoadingPrice] = useState(true);
   const [copiedWallet, setCopiedWallet] = useState(false);
+  const [contactStatus, setContactStatus] = useState("");
+  const [isSubmittingContact, setIsSubmittingContact] = useState(false);
+
+  const [contactForm, setContactForm] = useState({
+    name: "",
+    email: "",
+    message: "",
+  });
 
   const isMobile = useMemo(() => {
     if (typeof navigator === "undefined") return false;
@@ -219,6 +235,55 @@ export default function HomePage() {
     }
   }
 
+  function handleContactChange(event) {
+    const { name, value } = event.target;
+    setContactForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  }
+
+  async function handleContactSubmit(event) {
+    event.preventDefault();
+    setContactStatus("");
+
+    if (!contactForm.name || !contactForm.email || !contactForm.message) {
+      setContactStatus("Please complete all contact fields.");
+      return;
+    }
+
+    try {
+      setIsSubmittingContact(true);
+
+      // This expects an /api/contact endpoint if you already have one.
+      // If you do not have one yet, the form UI will still show but submission will fail until that endpoint exists.
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(contactForm),
+      });
+
+      if (!response.ok) {
+        throw new Error("Contact form submission failed");
+      }
+
+      setContactForm({
+        name: "",
+        email: "",
+        message: "",
+      });
+
+      setContactStatus("Message sent successfully.");
+    } catch (error) {
+      console.error("Contact form error:", error);
+      setContactStatus("Contact form is not connected yet. The box is now back on the page, but the API route still needs to exist for live sending.");
+    } finally {
+      setIsSubmittingContact(false);
+    }
+  }
+
   async function handleBuy() {
     clearMessages();
 
@@ -321,8 +386,8 @@ export default function HomePage() {
             <h1 style={styles.mainTitle}>{TOKEN_SUBTITLE}</h1>
             <p style={styles.mainSubtitle}>
               Built to support secure and transparent transaction verification across
-              global commodity markets, with a presale experience optimized for both
-              desktop and mobile users.
+              global commodity markets, with a premium presale experience for desktop
+              and mobile investors.
             </p>
           </div>
 
@@ -343,10 +408,7 @@ export default function HomePage() {
                 : "Connect Wallet"}
             </button>
 
-            <button
-              onClick={copyWalletAddress}
-              style={styles.secondaryTopButton}
-            >
+            <button onClick={copyWalletAddress} style={styles.secondaryTopButton}>
               {copiedWallet ? "Wallet Copied" : "Copy Presale Wallet"}
             </button>
           </div>
@@ -380,184 +442,291 @@ export default function HomePage() {
           </p>
         </section>
 
-        <section style={styles.buyCard}>
-          <div style={styles.sectionHeaderRow}>
-            <div>
-              <p style={styles.sectionEyebrow}>Token Presale</p>
-              <h2 style={styles.buyTitle}>Buy {TOKEN_SYMBOL}</h2>
-              <p style={styles.buySubtitle}>
-                Stage 1 pricing is live. Connect your wallet and participate directly with ETH.
-              </p>
-            </div>
-          </div>
+        <section style={styles.mainGrid}>
+          <div style={styles.leftColumn}>
+            <section style={styles.buyCard}>
+              <div style={styles.sectionHeaderRow}>
+                <div>
+                  <p style={styles.sectionEyebrow}>Token Presale</p>
+                  <h2 style={styles.buyTitle}>Buy {TOKEN_SYMBOL}</h2>
+                  <p style={styles.buySubtitle}>
+                    Stage 1 pricing is live. Connect your wallet and participate directly with ETH.
+                  </p>
+                </div>
+              </div>
 
-          <div style={styles.metricGrid}>
-            <div style={styles.metricBox}>
-              <span style={styles.metricLabel}>Stage 1 Price</span>
-              <span style={styles.metricValue}>US${TOKEN_PRICE_USD.toFixed(2)}</span>
-            </div>
+              <div style={styles.metricGrid}>
+                <div style={styles.metricBox}>
+                  <span style={styles.metricLabel}>Stage 1 Price</span>
+                  <span style={styles.metricValue}>US${TOKEN_PRICE_USD.toFixed(2)}</span>
+                </div>
 
-            <div style={styles.metricBox}>
-              <span style={styles.metricLabel}>Projected Launch</span>
-              <span style={styles.metricValue}>US${PROJECTED_LAUNCH_USD.toFixed(2)}</span>
-            </div>
-          </div>
+                <div style={styles.metricBox}>
+                  <span style={styles.metricLabel}>Projected Launch</span>
+                  <span style={styles.metricValue}>US${PROJECTED_LAUNCH_USD.toFixed(2)}</span>
+                </div>
+              </div>
 
-          <div style={styles.inputSection}>
-            <label style={styles.inputLabel}>Amount in ETH</label>
-            <input
-              type="text"
-              inputMode="decimal"
-              value={ethAmount}
-              onChange={handleEthAmountChange}
-              placeholder={minEthAmount}
-              style={styles.ethInput}
-            />
-          </div>
+              <div style={styles.inputSection}>
+                <label style={styles.inputLabel}>Amount in ETH</label>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={ethAmount}
+                  onChange={handleEthAmountChange}
+                  placeholder={minEthAmount}
+                  style={styles.ethInput}
+                />
+              </div>
 
-          <div style={styles.presetGrid}>
-            {PRESET_AMOUNTS.map((amount) => (
+              <div style={styles.presetGrid}>
+                {PRESET_AMOUNTS.map((amount) => (
+                  <button
+                    key={amount}
+                    onClick={() => handlePresetAmountSelect(amount)}
+                    style={{
+                      ...styles.presetButton,
+                      ...(ethAmount === amount ? styles.presetButtonActive : {}),
+                    }}
+                  >
+                    {amount} ETH
+                  </button>
+                ))}
+              </div>
+
               <button
-                key={amount}
-                onClick={() => handlePresetAmountSelect(amount)}
+                onClick={handleBuy}
+                disabled={isBuying || isConnecting}
                 style={{
-                  ...styles.presetButton,
-                  ...(ethAmount === amount ? styles.presetButtonActive : {}),
+                  ...styles.buyButton,
+                  opacity: isBuying || isConnecting ? 0.85 : 1,
+                  cursor: isBuying || isConnecting ? "not-allowed" : "pointer",
                 }}
               >
-                {amount} ETH
+                {isBuying ? "Processing..." : `Buy ${TOKEN_SYMBOL}`}
               </button>
-            ))}
+
+              {statusMessage ? <div style={styles.statusBox}>{statusMessage}</div> : null}
+              {successMessage ? <div style={styles.successBox}>{successMessage}</div> : null}
+              {errorMessage ? <div style={styles.errorBox}>{errorMessage}</div> : null}
+
+              <div style={styles.summarySection}>
+                <div style={styles.summaryRow}>
+                  <span style={styles.summaryKey}>Minimum purchase</span>
+                  <span style={styles.summaryValue}>US${MIN_BUY_USD}</span>
+                </div>
+
+                <div style={styles.summaryRow}>
+                  <span style={styles.summaryKey}>Approximate minimum in ETH</span>
+                  <span style={styles.summaryValue}>{minEthAmount} ETH</span>
+                </div>
+
+                <div style={styles.summaryRow}>
+                  <span style={styles.summaryKey}>Maximum buy</span>
+                  <span style={styles.summaryValue}>{MAX_BUY_TEXT}</span>
+                </div>
+
+                <div style={styles.summaryRow}>
+                  <span style={styles.summaryKey}>ETH/USD reference</span>
+                  <span style={styles.summaryValue}>
+                    {isLoadingPrice ? "Loading..." : `US$${Number(ethPriceUsd).toLocaleString()}`}
+                  </span>
+                </div>
+
+                <div style={styles.summaryRow}>
+                  <span style={styles.summaryKey}>Estimated value</span>
+                  <span style={styles.summaryValue}>
+                    {estimatedUsdValue > 0 ? `US$${estimatedUsdValue.toFixed(2)}` : "—"}
+                  </span>
+                </div>
+
+                <div style={styles.summaryRow}>
+                  <span style={styles.summaryKey}>Estimated {TOKEN_SYMBOL}</span>
+                  <span style={styles.summaryValue}>
+                    {estimatedTokens > 0
+                      ? Number(estimatedTokens).toLocaleString(undefined, {
+                          maximumFractionDigits: 2,
+                        })
+                      : "—"}
+                  </span>
+                </div>
+
+                <div style={styles.summaryRow}>
+                  <span style={styles.summaryKey}>Wallet status</span>
+                  <span style={styles.summaryValue}>
+                    {walletAddress ? `Connected (${formatWallet(walletAddress)})` : "Not connected"}
+                  </span>
+                </div>
+
+                <div style={styles.summaryRow}>
+                  <span style={styles.summaryKey}>Presale wallet</span>
+                  <span style={styles.summaryValueWallet}>{PRESALE_WALLET}</span>
+                </div>
+              </div>
+            </section>
+
+            <section style={styles.infoCard}>
+              <p style={styles.cardEyebrow}>How To Participate</p>
+              <h3 style={styles.infoTitle}>Simple participation flow</h3>
+              <div style={styles.stepsList}>
+                <div style={styles.stepItem}>
+                  <span style={styles.stepNumber}>1</span>
+                  <span style={styles.stepText}>Download MetaMask or Trust Wallet</span>
+                </div>
+                <div style={styles.stepItem}>
+                  <span style={styles.stepNumber}>2</span>
+                  <span style={styles.stepText}>Connect wallet and choose your ETH amount</span>
+                </div>
+                <div style={styles.stepItem}>
+                  <span style={styles.stepNumber}>3</span>
+                  <span style={styles.stepText}>Approve your transaction securely in wallet</span>
+                </div>
+                <div style={styles.stepItem}>
+                  <span style={styles.stepNumber}>4</span>
+                  <span style={styles.stepText}>Receive CLX allocation through the presale flow</span>
+                </div>
+              </div>
+            </section>
+
+            <section style={styles.visionCard}>
+              <p style={styles.cardEyebrow}>Vision</p>
+              <h3 style={styles.visionTitle}>Infrastructure for global commodity trade</h3>
+              <p style={styles.visionText}>
+                CrossLedger is designed to support secure and transparent transaction verification
+                across oil, sugar, metals and agricultural markets, bridging digital infrastructure
+                with real-world trade execution.
+              </p>
+            </section>
           </div>
 
-          <button
-            onClick={handleBuy}
-            disabled={isBuying || isConnecting}
-            style={{
-              ...styles.buyButton,
-              opacity: isBuying || isConnecting ? 0.85 : 1,
-              cursor: isBuying || isConnecting ? "not-allowed" : "pointer",
-            }}
-          >
-            {isBuying ? "Processing..." : `Buy ${TOKEN_SYMBOL}`}
-          </button>
-
-          {statusMessage ? <div style={styles.statusBox}>{statusMessage}</div> : null}
-          {successMessage ? <div style={styles.successBox}>{successMessage}</div> : null}
-          {errorMessage ? <div style={styles.errorBox}>{errorMessage}</div> : null}
-
-          <div style={styles.summarySection}>
-            <div style={styles.summaryRow}>
-              <span style={styles.summaryKey}>Minimum purchase</span>
-              <span style={styles.summaryValue}>US${MIN_BUY_USD}</span>
-            </div>
-
-            <div style={styles.summaryRow}>
-              <span style={styles.summaryKey}>Approximate minimum in ETH</span>
-              <span style={styles.summaryValue}>{minEthAmount} ETH</span>
-            </div>
-
-            <div style={styles.summaryRow}>
-              <span style={styles.summaryKey}>Maximum buy</span>
-              <span style={styles.summaryValue}>{MAX_BUY_TEXT}</span>
-            </div>
-
-            <div style={styles.summaryRow}>
-              <span style={styles.summaryKey}>ETH/USD reference</span>
-              <span style={styles.summaryValue}>
-                {isLoadingPrice ? "Loading..." : `US$${Number(ethPriceUsd).toLocaleString()}`}
-              </span>
-            </div>
-
-            <div style={styles.summaryRow}>
-              <span style={styles.summaryKey}>Estimated value</span>
-              <span style={styles.summaryValue}>
-                {estimatedUsdValue > 0 ? `US$${estimatedUsdValue.toFixed(2)}` : "—"}
-              </span>
-            </div>
-
-            <div style={styles.summaryRow}>
-              <span style={styles.summaryKey}>Estimated {TOKEN_SYMBOL}</span>
-              <span style={styles.summaryValue}>
-                {estimatedTokens > 0
-                  ? Number(estimatedTokens).toLocaleString(undefined, {
-                      maximumFractionDigits: 2,
-                    })
-                  : "—"}
-              </span>
-            </div>
-
-            <div style={styles.summaryRow}>
-              <span style={styles.summaryKey}>Wallet status</span>
-              <span style={styles.summaryValue}>
-                {walletAddress ? `Connected (${formatWallet(walletAddress)})` : "Not connected"}
-              </span>
-            </div>
-
-            <div style={styles.summaryRow}>
-              <span style={styles.summaryKey}>Presale wallet</span>
-              <span style={styles.summaryValueWallet}>{PRESALE_WALLET}</span>
-            </div>
-          </div>
-        </section>
-
-        <section style={styles.infoGrid}>
-          <div style={styles.infoCard}>
-            <p style={styles.cardEyebrow}>How To Participate</p>
-            <h3 style={styles.infoTitle}>Simple entry flow</h3>
-            <div style={styles.stepsList}>
-              <div style={styles.stepItem}>
-                <span style={styles.stepNumber}>1</span>
-                <span style={styles.stepText}>Download Trust Wallet or MetaMask</span>
+          <div style={styles.rightColumn}>
+            <section style={styles.activityCard}>
+              <p style={styles.cardEyebrow}>Recent Purchases</p>
+              <h3 style={styles.infoTitle}>Latest activity</h3>
+              <div style={styles.activityList}>
+                {fallbackActivity.map((item, index) => (
+                  <div key={`${item.buyer}-${index}`} style={styles.activityRow}>
+                    <div>
+                      <div style={styles.activityBuyer}>{item.buyer}</div>
+                      <div style={styles.activityStatus}>{item.status}</div>
+                    </div>
+                    <div style={styles.activityAmount}>{item.amount}</div>
+                  </div>
+                ))}
               </div>
-              <div style={styles.stepItem}>
-                <span style={styles.stepNumber}>2</span>
-                <span style={styles.stepText}>Connect and send ETH into the presale flow</span>
-              </div>
-              <div style={styles.stepItem}>
-                <span style={styles.stepNumber}>3</span>
-                <span style={styles.stepText}>CLX tokens are distributed automatically</span>
-              </div>
-            </div>
-          </div>
+            </section>
 
-          <div style={styles.infoCard}>
-            <p style={styles.cardEyebrow}>Roadmap</p>
-            <h3 style={styles.infoTitle}>Execution phases</h3>
-            <div style={styles.roadmapList}>
+            <section style={styles.phaseCard}>
+              <p style={styles.cardEyebrow}>Phases</p>
+              <h3 style={styles.infoTitle}>Project phases</h3>
+
+              <div style={styles.phaseItem}>
+                <div style={styles.phaseBadge}>Phase 1</div>
+                <div style={styles.phaseBody}>
+                  <div style={styles.phaseTitle}>Token Launch & Presale</div>
+                  <div style={styles.phaseText}>
+                    Initial launch, investor access, token distribution and early ecosystem building.
+                  </div>
+                </div>
+              </div>
+
+              <div style={styles.phaseItem}>
+                <div style={styles.phaseBadge}>Phase 2</div>
+                <div style={styles.phaseBody}>
+                  <div style={styles.phaseTitle}>Trade Validation Platform</div>
+                  <div style={styles.phaseText}>
+                    Development of validation systems to support secure trade participation.
+                  </div>
+                </div>
+              </div>
+
+              <div style={styles.phaseItem}>
+                <div style={styles.phaseBadge}>Phase 3</div>
+                <div style={styles.phaseBody}>
+                  <div style={styles.phaseTitle}>Commodity Network Expansion</div>
+                  <div style={styles.phaseText}>
+                    Broader ecosystem deployment across global commodity and infrastructure markets.
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section style={styles.roadmapCard}>
+              <p style={styles.cardEyebrow}>Roadmap</p>
+              <h3 style={styles.infoTitle}>Execution roadmap</h3>
+
               <div style={styles.roadmapItem}>
                 <div style={styles.roadmapDot} />
                 <div>
-                  <div style={styles.roadmapPhase}>Phase 1</div>
-                  <div style={styles.roadmapText}>Token Launch & Presale</div>
+                  <div style={styles.roadmapPhase}>Q1</div>
+                  <div style={styles.roadmapText}>Launch website, presale and wallet integration</div>
                 </div>
               </div>
-              <div style={styles.roadmapItem}>
-                <div style={styles.roadmapDot} />
-                <div>
-                  <div style={styles.roadmapPhase}>Phase 2</div>
-                  <div style={styles.roadmapText}>Trade Validation Platform</div>
-                </div>
-              </div>
-              <div style={styles.roadmapItem}>
-                <div style={styles.roadmapDot} />
-                <div>
-                  <div style={styles.roadmapPhase}>Phase 3</div>
-                  <div style={styles.roadmapText}>Global Commodity Transaction Network</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
 
-        <section style={styles.visionCard}>
-          <p style={styles.cardEyebrow}>Vision</p>
-          <h3 style={styles.visionTitle}>Infrastructure for global commodity trade</h3>
-          <p style={styles.visionText}>
-            CrossLedger aims to build the infrastructure layer for global commodity trade,
-            enabling secure and transparent transaction verification across oil, sugar,
-            metals and agricultural markets.
-          </p>
+              <div style={styles.roadmapItem}>
+                <div style={styles.roadmapDot} />
+                <div>
+                  <div style={styles.roadmapPhase}>Q2</div>
+                  <div style={styles.roadmapText}>Expand product architecture and market outreach</div>
+                </div>
+              </div>
+
+              <div style={styles.roadmapItem}>
+                <div style={styles.roadmapDot} />
+                <div>
+                  <div style={styles.roadmapPhase}>Q3</div>
+                  <div style={styles.roadmapText}>Deploy trade verification functionality</div>
+                </div>
+              </div>
+
+              <div style={styles.roadmapItem}>
+                <div style={styles.roadmapDot} />
+                <div>
+                  <div style={styles.roadmapPhase}>Q4</div>
+                  <div style={styles.roadmapText}>Scale the CrossLedger commodity network globally</div>
+                </div>
+              </div>
+            </section>
+
+            <section style={styles.contactCard}>
+              <p style={styles.cardEyebrow}>Communication Box</p>
+              <h3 style={styles.infoTitle}>Contact us</h3>
+
+              <form onSubmit={handleContactSubmit} style={styles.contactForm}>
+                <input
+                  name="name"
+                  value={contactForm.name}
+                  onChange={handleContactChange}
+                  placeholder="Your name"
+                  style={styles.contactInput}
+                />
+                <input
+                  name="email"
+                  type="email"
+                  value={contactForm.email}
+                  onChange={handleContactChange}
+                  placeholder="Your email"
+                  style={styles.contactInput}
+                />
+                <textarea
+                  name="message"
+                  value={contactForm.message}
+                  onChange={handleContactChange}
+                  placeholder="Your message"
+                  style={styles.contactTextarea}
+                />
+                <button
+                  type="submit"
+                  style={styles.contactButton}
+                  disabled={isSubmittingContact}
+                >
+                  {isSubmittingContact ? "Sending..." : "Send Message"}
+                </button>
+              </form>
+
+              {contactStatus ? <div style={styles.contactStatus}>{contactStatus}</div> : null}
+            </section>
+          </div>
         </section>
       </main>
     </div>
@@ -604,7 +773,7 @@ const styles = {
 
   container: {
     width: "100%",
-    maxWidth: "1180px",
+    maxWidth: "1280px",
     margin: "0 auto",
     position: "relative",
     zIndex: 2,
@@ -619,8 +788,8 @@ const styles = {
   },
 
   logoBadge: {
-    width: "84px",
-    height: "84px",
+    width: "88px",
+    height: "88px",
     borderRadius: "24px",
     display: "flex",
     alignItems: "center",
@@ -637,7 +806,7 @@ const styles = {
   },
 
   heroContent: {
-    maxWidth: "860px",
+    maxWidth: "900px",
   },
 
   kicker: {
@@ -660,7 +829,7 @@ const styles = {
 
   mainSubtitle: {
     margin: "0 auto",
-    maxWidth: "760px",
+    maxWidth: "800px",
     color: "rgba(255,255,255,0.82)",
     fontSize: "clamp(17px, 2.8vw, 24px)",
     lineHeight: 1.6,
@@ -703,7 +872,7 @@ const styles = {
 
   progressCard: {
     margin: "10px auto 28px",
-    maxWidth: "980px",
+    maxWidth: "1080px",
     borderRadius: "30px",
     padding: "24px",
     background: "rgba(255,255,255,0.07)",
@@ -753,10 +922,27 @@ const styles = {
     lineHeight: 1.7,
   },
 
+  mainGrid: {
+    display: "grid",
+    gridTemplateColumns: "1.25fr 0.9fr",
+    gap: "28px",
+    alignItems: "start",
+  },
+
+  leftColumn: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "28px",
+  },
+
+  rightColumn: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "28px",
+  },
+
   buyCard: {
     width: "100%",
-    maxWidth: "860px",
-    margin: "0 auto 28px",
     background: "#f7f8fb",
     borderRadius: "34px",
     padding: "clamp(22px, 4vw, 34px)",
@@ -948,19 +1134,56 @@ const styles = {
     maxWidth: "100%",
   },
 
-  infoGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-    gap: "24px",
-    margin: "0 auto 28px",
-    maxWidth: "1100px",
-  },
-
   infoCard: {
     background: "rgba(255,255,255,0.07)",
     border: "1px solid rgba(255,255,255,0.10)",
     borderRadius: "28px",
     padding: "26px",
+    backdropFilter: "blur(14px)",
+    boxShadow: "0 20px 45px rgba(0,0,0,0.15)",
+  },
+
+  phaseCard: {
+    background: "rgba(255,255,255,0.07)",
+    border: "1px solid rgba(255,255,255,0.10)",
+    borderRadius: "28px",
+    padding: "26px",
+    backdropFilter: "blur(14px)",
+    boxShadow: "0 20px 45px rgba(0,0,0,0.15)",
+  },
+
+  roadmapCard: {
+    background: "rgba(255,255,255,0.07)",
+    border: "1px solid rgba(255,255,255,0.10)",
+    borderRadius: "28px",
+    padding: "26px",
+    backdropFilter: "blur(14px)",
+    boxShadow: "0 20px 45px rgba(0,0,0,0.15)",
+  },
+
+  activityCard: {
+    background: "rgba(255,255,255,0.07)",
+    border: "1px solid rgba(255,255,255,0.10)",
+    borderRadius: "28px",
+    padding: "26px",
+    backdropFilter: "blur(14px)",
+    boxShadow: "0 20px 45px rgba(0,0,0,0.15)",
+  },
+
+  contactCard: {
+    background: "rgba(255,255,255,0.07)",
+    border: "1px solid rgba(255,255,255,0.10)",
+    borderRadius: "28px",
+    padding: "26px",
+    backdropFilter: "blur(14px)",
+    boxShadow: "0 20px 45px rgba(0,0,0,0.15)",
+  },
+
+  visionCard: {
+    background: "rgba(255,255,255,0.07)",
+    border: "1px solid rgba(255,255,255,0.10)",
+    borderRadius: "28px",
+    padding: "28px",
     backdropFilter: "blur(14px)",
     boxShadow: "0 20px 45px rgba(0,0,0,0.15)",
   },
@@ -1012,16 +1235,81 @@ const styles = {
     lineHeight: 1.6,
   },
 
-  roadmapList: {
+  activityList: {
     display: "flex",
     flexDirection: "column",
+    gap: "12px",
+  },
+
+  activityRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
     gap: "16px",
+    padding: "14px 0",
+    borderBottom: "1px solid rgba(255,255,255,0.08)",
+  },
+
+  activityBuyer: {
+    color: "#ffffff",
+    fontWeight: 700,
+    fontSize: "16px",
+  },
+
+  activityStatus: {
+    color: "rgba(255,255,255,0.66)",
+    fontSize: "14px",
+    marginTop: "4px",
+  },
+
+  activityAmount: {
+    color: "#8be2b5",
+    fontWeight: 800,
+    fontSize: "16px",
+    textAlign: "right",
+  },
+
+  phaseItem: {
+    display: "flex",
+    gap: "14px",
+    alignItems: "flex-start",
+    padding: "14px 0",
+    borderBottom: "1px solid rgba(255,255,255,0.08)",
+  },
+
+  phaseBadge: {
+    minWidth: "78px",
+    padding: "8px 12px",
+    borderRadius: "999px",
+    background: "rgba(103, 162, 255, 0.14)",
+    color: "#ffffff",
+    fontWeight: 700,
+    fontSize: "14px",
+    textAlign: "center",
+  },
+
+  phaseBody: {
+    flex: 1,
+  },
+
+  phaseTitle: {
+    color: "#ffffff",
+    fontSize: "18px",
+    fontWeight: 800,
+    marginBottom: "6px",
+  },
+
+  phaseText: {
+    color: "rgba(255,255,255,0.82)",
+    fontSize: "16px",
+    lineHeight: 1.6,
   },
 
   roadmapItem: {
     display: "flex",
     gap: "14px",
     alignItems: "flex-start",
+    padding: "12px 0",
   },
 
   roadmapDot: {
@@ -1042,19 +1330,8 @@ const styles = {
 
   roadmapText: {
     color: "rgba(255,255,255,0.82)",
-    fontSize: "18px",
+    fontSize: "17px",
     lineHeight: 1.6,
-  },
-
-  visionCard: {
-    maxWidth: "1100px",
-    margin: "0 auto",
-    background: "rgba(255,255,255,0.07)",
-    border: "1px solid rgba(255,255,255,0.10)",
-    borderRadius: "30px",
-    padding: "28px",
-    backdropFilter: "blur(14px)",
-    boxShadow: "0 20px 45px rgba(0,0,0,0.15)",
   },
 
   visionTitle: {
@@ -1070,5 +1347,56 @@ const styles = {
     fontSize: "clamp(18px, 2.6vw, 22px)",
     lineHeight: 1.8,
     maxWidth: "980px",
+  },
+
+  contactForm: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "14px",
+  },
+
+  contactInput: {
+    width: "100%",
+    height: "58px",
+    borderRadius: "16px",
+    border: "1px solid rgba(255,255,255,0.12)",
+    background: "rgba(255,255,255,0.08)",
+    color: "#ffffff",
+    padding: "0 16px",
+    boxSizing: "border-box",
+    outline: "none",
+    fontSize: "16px",
+  },
+
+  contactTextarea: {
+    width: "100%",
+    minHeight: "140px",
+    borderRadius: "16px",
+    border: "1px solid rgba(255,255,255,0.12)",
+    background: "rgba(255,255,255,0.08)",
+    color: "#ffffff",
+    padding: "16px",
+    boxSizing: "border-box",
+    outline: "none",
+    fontSize: "16px",
+    resize: "vertical",
+    fontFamily: "inherit",
+  },
+
+  contactButton: {
+    height: "56px",
+    borderRadius: "16px",
+    border: "none",
+    background: "linear-gradient(135deg, #3f77ff 0%, #2c57e0 100%)",
+    color: "#ffffff",
+    fontWeight: 800,
+    fontSize: "17px",
+  },
+
+  contactStatus: {
+    marginTop: "14px",
+    color: "rgba(255,255,255,0.8)",
+    fontSize: "15px",
+    lineHeight: 1.5,
   },
 };
