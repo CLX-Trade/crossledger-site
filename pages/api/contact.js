@@ -20,9 +20,6 @@ export default async function handler(req, res) {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
       },
-      tls: {
-        ciphers: "SSLv3",
-      },
     });
 
     await transporter.verify();
@@ -33,15 +30,6 @@ export default async function handler(req, res) {
       replyTo: email,
       subject: "New CLX Contact Message",
       text: `Name: ${name}\nEmail: ${email}\n\nQuestion:\n${question}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-          <h2>New CLX Contact Message</h2>
-          <p><strong>Name:</strong> ${name}</p>
-          <p><strong>Email:</strong> ${email}</p>
-          <p><strong>Question:</strong></p>
-          <p>${question.replace(/\n/g, "<br>")}</p>
-        </div>
-      `,
     });
 
     console.log("EMAIL SENT:", info.messageId);
