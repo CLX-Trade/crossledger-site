@@ -211,6 +211,7 @@ export default function Home() {
   const [contactError, setContactError] = useState("");
 
   const [screenWidth, setScreenWidth] = useState(1280);
+  const [hasEthereum, setHasEthereum] = useState(false);
 
   const fallbackActivity = [
     { buyer: "0x71...9ab4", amount: "12,500 CLX", status: "Preview" },
@@ -224,6 +225,8 @@ export default function Home() {
     }
 
     handleResize();
+    setHasEthereum(typeof window !== "undefined" && !!window.ethereum);
+
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -281,6 +284,10 @@ export default function Home() {
     checkExistingWallet();
   }, []);
 
+  function openInMetaMask() {
+    window.location.href = "https://link.metamask.io/dapp/crossledger.trade";
+  }
+
   async function connectWallet() {
     try {
       setError("");
@@ -289,7 +296,9 @@ export default function Home() {
       setIsConnecting(true);
 
       if (!window.ethereum) {
-        setError("MetaMask is not installed");
+        setError(
+          "MetaMask is not installed in this browser. Use the Open in MetaMask button on mobile."
+        );
         return;
       }
 
@@ -304,7 +313,12 @@ export default function Home() {
       setWalletAddress(accounts[0]);
     } catch (err) {
       console.error(err);
-      setError(err?.message || "Wallet connection failed");
+
+      if (err?.code === "ACTION_REJECTED" || err?.code === 4001) {
+        setError("Wallet connection was cancelled.");
+      } else {
+        setError(err?.message || "Wallet connection failed");
+      }
     } finally {
       setIsConnecting(false);
     }
@@ -317,7 +331,9 @@ export default function Home() {
       setTxHash("");
 
       if (!window.ethereum) {
-        setError("MetaMask is not installed");
+        setError(
+          "MetaMask is not installed in this browser. Use the Open in MetaMask button on mobile."
+        );
         return;
       }
 
@@ -367,8 +383,8 @@ export default function Home() {
     } catch (err) {
       console.error(err);
 
-      if (err?.code === "ACTION_REJECTED") {
-        setError("Transaction was rejected in MetaMask");
+      if (err?.code === "ACTION_REJECTED" || err?.code === 4001) {
+        setError("Transaction was cancelled in MetaMask.");
       } else if (err?.reason) {
         setError(err.reason);
       } else if (err?.shortMessage) {
@@ -874,6 +890,27 @@ export default function Home() {
                 {isBuying ? "Processing..." : `Buy ${TOKEN_CONFIG.symbol}`}
               </button>
 
+              {!hasEthereum && (
+                <button
+                  onClick={openInMetaMask}
+                  type="button"
+                  style={{
+                    width: "100%",
+                    padding: "15px 18px",
+                    borderRadius: "14px",
+                    border: "1px solid #f59e0b",
+                    background: "#f59e0b",
+                    color: "#111827",
+                    fontWeight: 900,
+                    fontSize: "16px",
+                    cursor: "pointer",
+                    marginTop: "12px",
+                  }}
+                >
+                  Open in MetaMask
+                </button>
+              )}
+
               {walletAddress && (
                 <div
                   style={{
@@ -914,6 +951,7 @@ export default function Home() {
                     borderRadius: "12px",
                     padding: "14px",
                     lineHeight: 1.5,
+                    wordBreak: "break-word",
                   }}
                 >
                   {error}
