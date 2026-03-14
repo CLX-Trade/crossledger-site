@@ -72,6 +72,38 @@ const TOKEN_ALLOCATION = [
   }
 ];
 
+const SOCIAL_LINKS = [
+  { label: "Website", href: "https://www.crossledger.trade" },
+  { label: "Presale Contract", href: `https://etherscan.io/address/${PRESALE_CONTRACT_ADDRESS}` },
+  { label: "Token Contract", href: `https://etherscan.io/address/${CLX_TOKEN_ADDRESS}` }
+  // Add more when ready:
+  // { label: "X", href: "https://x.com/yourhandle" },
+  // { label: "Telegram", href: "https://t.me/yourgroup" }
+];
+
+const FAQS = [
+  {
+    q: "What token is being sold in this presale?",
+    a: "The presale is for CLXT, the CrossLedger token designed to support global trade infrastructure, platform services, and ecosystem utility."
+  },
+  {
+    q: "What currency do buyers use?",
+    a: "Purchases are made in USDT through the live Ethereum presale contract."
+  },
+  {
+    q: "Can buyers claim immediately?",
+    a: "Claims depend on whether claim functionality has been enabled in the presale contract. The page reads this status live."
+  },
+  {
+    q: "What is the current minimum purchase?",
+    a: "The site reads the minimum purchase from the presale contract so buyers see the live configured threshold."
+  },
+  {
+    q: "Where can I verify the contracts?",
+    a: "The transparency section below provides direct links to the presale contract and token contract on Etherscan."
+  }
+];
+
 export default function HomePage() {
   const [walletAddress, setWalletAddress] = useState("");
   const [networkName, setNetworkName] = useState("");
@@ -548,6 +580,25 @@ export default function HomePage() {
   return (
     <div className="page-shell">
       <main className="container">
+        <section className="topbar">
+          <div className="topbar-left">
+            <div className="topbar-logo">CLXT</div>
+            <div className="topbar-meta">
+              <strong>{TOKEN_NAME}</strong>
+              <span>Ethereum Presale Live</span>
+            </div>
+          </div>
+
+          <div className="topbar-right">
+            <a href={`https://etherscan.io/address/${PRESALE_CONTRACT_ADDRESS}`} target="_blank" rel="noreferrer">
+              Presale
+            </a>
+            <a href={`https://etherscan.io/address/${CLX_TOKEN_ADDRESS}`} target="_blank" rel="noreferrer">
+              Token
+            </a>
+          </div>
+        </section>
+
         <section className="hero">
           <div className="hero-badge">
             <span className="hero-logo">CLXT</span>
@@ -575,6 +626,25 @@ export default function HomePage() {
                 : "Connect Wallet"}
             </button>
           </div>
+
+          <div className="hero-highlights">
+            <div className="highlight-box">
+              <span>Current Price</span>
+              <strong>US${CURRENT_PRICE_USD.toFixed(2)}</strong>
+            </div>
+            <div className="highlight-box">
+              <span>Projected Launch</span>
+              <strong>US${PROJECTED_LAUNCH_USD.toFixed(2)}</strong>
+            </div>
+            <div className="highlight-box">
+              <span>Token</span>
+              <strong>{TOKEN_SYMBOL}</strong>
+            </div>
+            <div className="highlight-box">
+              <span>Network</span>
+              <strong>{networkName || "Ethereum"}</strong>
+            </div>
+          </div>
         </section>
 
         <section className="progress-card glass">
@@ -598,6 +668,32 @@ export default function HomePage() {
             If the current pre-launch round completes, progress would move to{" "}
             <strong>{projectedProgress.toFixed(2)}%</strong>.
           </p>
+        </section>
+
+        <section className="transparency-strip">
+          <div className="transparency-box glass">
+            <span className="mini-label">Presale Contract</span>
+            <strong>{formatWallet(PRESALE_CONTRACT_ADDRESS)}</strong>
+            <a href={`https://etherscan.io/address/${PRESALE_CONTRACT_ADDRESS}`} target="_blank" rel="noreferrer">
+              View on Etherscan
+            </a>
+          </div>
+
+          <div className="transparency-box glass">
+            <span className="mini-label">Token Contract</span>
+            <strong>{formatWallet(CLX_TOKEN_ADDRESS)}</strong>
+            <a href={`https://etherscan.io/address/${CLX_TOKEN_ADDRESS}`} target="_blank" rel="noreferrer">
+              View on Etherscan
+            </a>
+          </div>
+
+          <div className="transparency-box glass">
+            <span className="mini-label">Payment Token</span>
+            <strong>USDT</strong>
+            <a href={`https://etherscan.io/address/${USDT_TOKEN_ADDRESS}`} target="_blank" rel="noreferrer">
+              View Token
+            </a>
+          </div>
         </section>
 
         <section className="main-grid">
@@ -821,6 +917,29 @@ export default function HomePage() {
             </section>
 
             <section className="content-card glass">
+              <p className="section-kicker light">Why CrossLedger</p>
+              <h3>Infrastructure with real commercial use case</h3>
+              <div className="adv-grid">
+                <div className="adv-box">
+                  <strong>Trade Utility</strong>
+                  <p>Designed around real-world global trade activity rather than short-term hype alone.</p>
+                </div>
+                <div className="adv-box">
+                  <strong>Transparent Access</strong>
+                  <p>Contract references and investor-facing information are placed clearly on the website.</p>
+                </div>
+                <div className="adv-box">
+                  <strong>On-Chain Workflow</strong>
+                  <p>Approval, purchase and claim flow are all tied directly to your live contract logic.</p>
+                </div>
+                <div className="adv-box">
+                  <strong>Scalable Platform Vision</strong>
+                  <p>Built to grow into broader settlement, verification and trade support infrastructure.</p>
+                </div>
+              </div>
+            </section>
+
+            <section className="content-card glass">
               <p className="section-kicker light">Product Advantages</p>
               <h3>Why CrossLedger is differentiated</h3>
               <div className="adv-grid">
@@ -869,6 +988,19 @@ export default function HomePage() {
                 ))}
               </div>
             </section>
+
+            <section className="content-card glass">
+              <p className="section-kicker light">FAQ</p>
+              <h3>Frequently asked questions</h3>
+              <div className="faq-list">
+                {FAQS.map((item) => (
+                  <details key={item.q} className="faq-item">
+                    <summary>{item.q}</summary>
+                    <p>{item.a}</p>
+                  </details>
+                ))}
+              </div>
+            </section>
           </div>
 
           <div className="right-col">
@@ -884,6 +1016,19 @@ export default function HomePage() {
                     </div>
                     <div className="activity-amount">{item.amount}</div>
                   </div>
+                ))}
+              </div>
+            </section>
+
+            <section className="content-card glass">
+              <p className="section-kicker light">Transparency</p>
+              <h3>Project references</h3>
+              <div className="link-card-list">
+                {SOCIAL_LINKS.map((item) => (
+                  <a key={item.label} href={item.href} target="_blank" rel="noreferrer" className="link-card">
+                    <span>{item.label}</span>
+                    <strong>Open</strong>
+                  </a>
                 ))}
               </div>
             </section>
@@ -1052,6 +1197,64 @@ export default function HomePage() {
           box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
         }
 
+        .topbar {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 20px;
+          padding: 8px 0 18px;
+        }
+
+        .topbar-left {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .topbar-logo {
+          width: 42px;
+          height: 42px;
+          border-radius: 14px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(135deg, #2b63ff, #123a8c);
+          font-weight: 800;
+          font-size: 13px;
+        }
+
+        .topbar-meta {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+
+        .topbar-meta strong {
+          font-size: 15px;
+        }
+
+        .topbar-meta span {
+          color: rgba(255, 255, 255, 0.6);
+          font-size: 13px;
+        }
+
+        .topbar-right {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+
+        .topbar-right a {
+          color: rgba(255, 255, 255, 0.82);
+          text-decoration: none;
+          padding: 10px 14px;
+          border-radius: 999px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: rgba(255, 255, 255, 0.05);
+          font-size: 14px;
+          font-weight: 600;
+        }
+
         .hero {
           text-align: center;
           padding: 18px 0 28px;
@@ -1117,6 +1320,33 @@ export default function HomePage() {
           gap: 14px;
         }
 
+        .hero-highlights {
+          margin-top: 22px;
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 14px;
+        }
+
+        .highlight-box {
+          padding: 16px;
+          border-radius: 20px;
+          background: rgba(255, 255, 255, 0.06);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          text-align: center;
+        }
+
+        .highlight-box span {
+          display: block;
+          color: rgba(255, 255, 255, 0.62);
+          font-size: 13px;
+          margin-bottom: 6px;
+        }
+
+        .highlight-box strong {
+          font-size: 20px;
+          font-weight: 800;
+        }
+
         .primary-btn,
         .buy-btn,
         .approve-btn,
@@ -1149,7 +1379,7 @@ export default function HomePage() {
         .progress-card {
           border-radius: 28px;
           padding: 24px;
-          margin-bottom: 28px;
+          margin-bottom: 24px;
         }
 
         .progress-top {
@@ -1187,6 +1417,33 @@ export default function HomePage() {
           margin: 0;
           color: rgba(255, 255, 255, 0.83);
           line-height: 1.7;
+        }
+
+        .transparency-strip {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 16px;
+          margin-bottom: 28px;
+        }
+
+        .transparency-box {
+          border-radius: 22px;
+          padding: 18px;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .transparency-box strong {
+          font-size: 18px;
+          font-weight: 800;
+        }
+
+        .transparency-box a {
+          color: #9fd0ff;
+          text-decoration: none;
+          font-weight: 700;
+          font-size: 14px;
         }
 
         .main-grid {
@@ -1469,7 +1726,8 @@ export default function HomePage() {
         .team-item p,
         .roadmap-item p,
         .adv-box p,
-        .allocation-box p {
+        .allocation-box p,
+        .faq-item p {
           margin: 6px 0 0;
           color: rgba(255, 255, 255, 0.82);
           line-height: 1.65;
@@ -1549,6 +1807,28 @@ export default function HomePage() {
           text-align: right;
         }
 
+        .link-card-list {
+          display: grid;
+          gap: 12px;
+        }
+
+        .link-card {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 12px;
+          padding: 16px 18px;
+          border-radius: 18px;
+          background: rgba(255, 255, 255, 0.06);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          text-decoration: none;
+          color: #fff;
+        }
+
+        .link-card strong {
+          color: #9fd0ff;
+        }
+
         .phase-item,
         .roadmap-item,
         .team-item {
@@ -1584,6 +1864,25 @@ export default function HomePage() {
           background: linear-gradient(135deg, #69a6ff, #8be2b5);
           margin-top: 8px;
           flex-shrink: 0;
+        }
+
+        .faq-list {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .faq-item {
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: rgba(255, 255, 255, 0.04);
+          border-radius: 18px;
+          padding: 16px 18px;
+        }
+
+        .faq-item summary {
+          cursor: pointer;
+          font-weight: 700;
+          list-style: none;
         }
 
         .contact-form {
@@ -1641,6 +1940,11 @@ export default function HomePage() {
           .main-grid {
             grid-template-columns: 1fr;
           }
+
+          .transparency-strip,
+          .hero-highlights {
+            grid-template-columns: 1fr 1fr;
+          }
         }
 
         @media (max-width: 760px) {
@@ -1648,12 +1952,19 @@ export default function HomePage() {
             padding: 18px 12px 32px;
           }
 
+          .topbar {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+
           .progress-top,
           .metric-grid,
           .adv-grid,
           .allocation-grid,
           .preset-grid,
-          .action-grid {
+          .action-grid,
+          .transparency-strip,
+          .hero-highlights {
             grid-template-columns: 1fr;
           }
 
