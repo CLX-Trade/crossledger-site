@@ -1,40 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
 import { ethers } from "ethers";
 
-/*
-  =========================================================
-  REPLACE THESE 3 ADDRESSES WITH YOUR REAL DEPLOYED VALUES
-  =========================================================
-*/
-const PRESALE_CONTRACT_ADDRESS = "PASTE_YOUR_DEPLOYED_PRESALE_CONTRACT_ADDRESS";
-const USDT_TOKEN_ADDRESS = "PASTE_YOUR_USDT_TOKEN_ADDRESS";
-const CLX_TOKEN_ADDRESS = "PASTE_YOUR_CLX_TOKEN_ADDRESS";
-
-/*
-  =================
-  FORMSPREE CONTACT
-  =================
-*/
+const PRESALE_CONTRACT_ADDRESS = "0x264C542aDC1447E3a75aF2B8e2C758D73E562571";
+const USDT_TOKEN_ADDRESS = "0xdAC17F958D2ee523a2206206994597C13D831ec7";
+const CLX_TOKEN_ADDRESS = "0xA7C28478DD998999e7bE84DDDa305B413A7bFA30";
 const FORMSPREE_ENDPOINT = "https://formspree.io/f/mlgpnvbk";
 
-/*
-  =========================
-  TOKEN / PAGE INFORMATION
-  =========================
-*/
 const TOKEN_NAME = "CrossLedger";
-const TOKEN_SYMBOL = "CLX";
+const TOKEN_SYMBOL = "CLXT";
 const TAGLINE = "Global Trade Infrastructure Token";
 const CURRENT_PRICE_USD = 0.1;
 const PROJECTED_LAUNCH_USD = 13.5;
 const MIN_PURCHASE_USD = 300;
-const MAX_PURCHASE_TEXT = "TBA";
 
-/*
-  =========================
-  ABI
-  =========================
-*/
 const PRESALE_ABI = [
   "function buyTokens(uint256 usdtAmount) external",
   "function claimTokens() external",
@@ -44,17 +22,13 @@ const PRESALE_ABI = [
   "function stage() view returns (uint256)",
   "function salePaused() view returns (bool)",
   "function claimEnabled() view returns (bool)",
-  "function buyerInfo(address account) view returns (uint256 usdtSpent, uint256 totalPurchased, uint256 totalClaimed, uint256 claimable)",
-  "function purchasedCLX(address account) view returns (uint256)",
-  "function spentUSDT(address account) view returns (uint256)",
-  "function claimedCLX(address account) view returns (uint256)"
+  "function buyerInfo(address account) view returns (uint256 usdtSpent, uint256 totalPurchased, uint256 totalClaimed, uint256 claimable)"
 ];
 
 const ERC20_ABI = [
   "function approve(address spender, uint256 amount) external returns (bool)",
   "function allowance(address owner, address spender) external view returns (uint256)",
-  "function balanceOf(address account) external view returns (uint256)",
-  "function decimals() external view returns (uint8)"
+  "function balanceOf(address account) external view returns (uint256)"
 ];
 
 const RECENT_ACTIVITY = [
@@ -112,9 +86,6 @@ export default function HomePage() {
   const [isBuying, setIsBuying] = useState(false);
   const [isClaiming, setIsClaiming] = useState(false);
 
-  const [copiedPresale, setCopiedPresale] = useState(false);
-  const [copiedUsdt, setCopiedUsdt] = useState(false);
-
   const [contactStatus, setContactStatus] = useState("");
   const [isSubmittingContact, setIsSubmittingContact] = useState(false);
   const [contactForm, setContactForm] = useState({
@@ -165,11 +136,9 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
+    loadPresaleInfo();
     if (walletAddress) {
-      loadPresaleInfo();
       loadWalletData();
-    } else {
-      loadPresaleInfo();
     }
   }, [walletAddress]);
 
@@ -207,7 +176,7 @@ export default function HomePage() {
   function savePendingAmount(value) {
     if (typeof window === "undefined") return;
     try {
-      localStorage.setItem("clx_pending_usdt_amount", value);
+      localStorage.setItem("clxt_pending_usdt_amount", value);
     } catch (error) {
       console.error(error);
     }
@@ -216,7 +185,7 @@ export default function HomePage() {
   function restorePendingAmount() {
     if (typeof window === "undefined") return;
     try {
-      const saved = localStorage.getItem("clx_pending_usdt_amount");
+      const saved = localStorage.getItem("clxt_pending_usdt_amount");
       if (saved) setUsdtAmount(saved);
     } catch (error) {
       console.error(error);
@@ -253,7 +222,7 @@ export default function HomePage() {
         setWalletAddress(accounts[0]);
       }
 
-      setNetworkName(network?.name || "");
+      setNetworkName(network?.name || "Ethereum");
     } catch (error) {
       console.error("Wallet restore failed:", error);
     }
@@ -285,7 +254,7 @@ export default function HomePage() {
         setSuccessMessage("Wallet connected successfully");
       }
 
-      setNetworkName(network?.name || "");
+      setNetworkName(network?.name || "Ethereum");
     } catch (error) {
       if (error?.code === 4001) return;
       console.error("Connect wallet error:", error);
@@ -297,7 +266,6 @@ export default function HomePage() {
 
   async function loadPresaleInfo() {
     try {
-      if (!PRESALE_CONTRACT_ADDRESS || PRESALE_CONTRACT_ADDRESS.includes("PASTE_")) return;
       if (typeof window === "undefined" || !window.ethereum) return;
 
       const provider = await getProvider();
@@ -328,14 +296,6 @@ export default function HomePage() {
   async function loadWalletData() {
     try {
       if (!walletAddress) return;
-      if (
-        !PRESALE_CONTRACT_ADDRESS ||
-        PRESALE_CONTRACT_ADDRESS.includes("PASTE_") ||
-        !USDT_TOKEN_ADDRESS ||
-        USDT_TOKEN_ADDRESS.includes("PASTE_")
-      ) {
-        return;
-      }
 
       const provider = await getProvider();
       const presale = new ethers.Contract(PRESALE_CONTRACT_ADDRESS, PRESALE_ABI, provider);
@@ -531,24 +491,6 @@ export default function HomePage() {
     }
   }
 
-  async function copyAddress(value, type) {
-    try {
-      await navigator.clipboard.writeText(value);
-
-      if (type === "presale") {
-        setCopiedPresale(true);
-        setTimeout(() => setCopiedPresale(false), 2000);
-      }
-
-      if (type === "usdt") {
-        setCopiedUsdt(true);
-        setTimeout(() => setCopiedUsdt(false), 2000);
-      }
-    } catch (error) {
-      console.error("Copy failed:", error);
-    }
-  }
-
   function handleContactChange(event) {
     const { name, value } = event.target;
     setContactForm((prev) => ({
@@ -608,11 +550,11 @@ export default function HomePage() {
       <main className="container">
         <section className="hero">
           <div className="hero-badge">
-            <span className="hero-logo">CLX</span>
+            <span className="hero-logo">CLXT</span>
             <span>CrossLedger</span>
           </div>
 
-          <p className="eyebrow">CrossLedger & CLX</p>
+          <p className="eyebrow">CrossLedger & CLXT</p>
           <h1>{TAGLINE}</h1>
           <p className="hero-copy">
             A blockchain-powered platform designed to modernise cross-border commodity trade
@@ -631,13 +573,6 @@ export default function HomePage() {
                 : isConnecting
                 ? "Connecting..."
                 : "Connect Wallet"}
-            </button>
-
-            <button
-              className="secondary-btn"
-              onClick={() => copyAddress(PRESALE_CONTRACT_ADDRESS, "presale")}
-            >
-              {copiedPresale ? "Presale Copied" : "Copy Presale Contract"}
             </button>
           </div>
         </section>
@@ -672,7 +607,7 @@ export default function HomePage() {
                 <p className="section-kicker">USDT Presale</p>
                 <h2>Buy {TOKEN_SYMBOL}</h2>
                 <p className="section-copy">
-                  This presale contract purchases CLX using USDT. Connect your wallet, approve USDT,
+                  This presale purchases {TOKEN_SYMBOL} using USDT. Connect your wallet, approve USDT,
                   commit the purchase, and claim tokens once claims are enabled.
                 </p>
               </div>
@@ -695,7 +630,7 @@ export default function HomePage() {
 
                 <div className="metric-box">
                   <span className="metric-label">Remaining This Stage</span>
-                  <span className="metric-value small">{presaleInfo.remainingInStage} CLX</span>
+                  <span className="metric-value small">{presaleInfo.remainingInStage} {TOKEN_SYMBOL}</span>
                 </div>
               </div>
 
@@ -759,7 +694,7 @@ export default function HomePage() {
                 </div>
 
                 <div className="summary-row">
-                  <span>Estimated CLX</span>
+                  <span>Estimated {TOKEN_SYMBOL}</span>
                   <strong>
                     {estimatedTokens > 0
                       ? Number(estimatedTokens).toLocaleString(undefined, {
@@ -776,7 +711,7 @@ export default function HomePage() {
 
                 <div className="summary-row">
                   <span>Network</span>
-                  <strong>{networkName || "—"}</strong>
+                  <strong>{networkName || "Ethereum"}</strong>
                 </div>
 
                 <div className="summary-row">
@@ -805,33 +740,18 @@ export default function HomePage() {
                 </div>
 
                 <div className="summary-row">
-                  <span>Total CLX purchased</span>
+                  <span>Total {TOKEN_SYMBOL} purchased</span>
                   <strong>{walletData.totalPurchased}</strong>
                 </div>
 
                 <div className="summary-row">
-                  <span>Total CLX claimed</span>
+                  <span>Total {TOKEN_SYMBOL} claimed</span>
                   <strong>{walletData.totalClaimed}</strong>
                 </div>
 
                 <div className="summary-row">
-                  <span>Claimable CLX</span>
+                  <span>Claimable {TOKEN_SYMBOL}</span>
                   <strong>{walletData.claimable}</strong>
-                </div>
-
-                <div className="summary-row wallet-row">
-                  <span>Presale contract</span>
-                  <strong>{PRESALE_CONTRACT_ADDRESS}</strong>
-                </div>
-
-                <div className="summary-row wallet-row">
-                  <span>USDT token</span>
-                  <strong>{USDT_TOKEN_ADDRESS}</strong>
-                </div>
-
-                <div className="summary-row wallet-row">
-                  <span>CLX token</span>
-                  <strong>{CLX_TOKEN_ADDRESS}</strong>
                 </div>
               </div>
             </section>
@@ -851,14 +771,14 @@ export default function HomePage() {
                   <span>2</span>
                   <div>
                     <strong>Enter USDT amount</strong>
-                    <p>The contract accepts USDT, not ETH, with a minimum purchase threshold.</p>
+                    <p>The contract accepts USDT with a minimum purchase threshold.</p>
                   </div>
                 </div>
                 <div className="step">
                   <span>3</span>
                   <div>
                     <strong>Approve USDT</strong>
-                    <p>The user authorises the presale contract to spend the chosen amount of USDT.</p>
+                    <p>The user authorises the presale contract to spend the selected amount of USDT.</p>
                   </div>
                 </div>
                 <div className="step">
@@ -871,8 +791,8 @@ export default function HomePage() {
                 <div className="step">
                   <span>5</span>
                   <div>
-                    <strong>Claim tokens later</strong>
-                    <p>When claims are enabled, the buyer can claim purchased CLX from the website.</p>
+                    <strong>Claim later</strong>
+                    <p>When claims are enabled, the buyer can claim purchased tokens directly from the site.</p>
                   </div>
                 </div>
               </div>
@@ -891,12 +811,12 @@ export default function HomePage() {
 
             <section className="content-card glass">
               <p className="section-kicker light">The Solution</p>
-              <h3>CrossLedger Platform + CLX Utility</h3>
+              <h3>CrossLedger Platform + {TOKEN_SYMBOL} Utility</h3>
               <div className="bullet-list">
                 <div>Smart escrow and conditional release of funds.</div>
                 <div>Blockchain-backed document integrity and visibility.</div>
                 <div>Tiered wallets and tools for trade participants.</div>
-                <div>CLX utility across fees, services, incentives and platform access.</div>
+                <div>{TOKEN_SYMBOL} utility across fees, services, incentives and platform access.</div>
               </div>
             </section>
 
@@ -1095,6 +1015,11 @@ export default function HomePage() {
             </section>
           </div>
         </section>
+
+        <footer className="footer">
+          <div>© GDN Enterprise Pty Ltd</div>
+          <div>Powered by Ethereum</div>
+        </footer>
       </main>
 
       <style jsx>{`
@@ -1106,7 +1031,7 @@ export default function HomePage() {
             linear-gradient(180deg, #081226 0%, #07142d 45%, #061a3f 100%);
           color: #fff;
           font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-          padding: 24px 16px 72px;
+          padding: 24px 16px 40px;
         }
 
         .container {
@@ -1193,7 +1118,6 @@ export default function HomePage() {
         }
 
         .primary-btn,
-        .secondary-btn,
         .buy-btn,
         .approve-btn,
         .claim-btn,
@@ -1202,7 +1126,6 @@ export default function HomePage() {
         }
 
         .primary-btn:hover,
-        .secondary-btn:hover,
         .buy-btn:hover,
         .approve-btn:hover,
         .claim-btn:hover,
@@ -1221,18 +1144,6 @@ export default function HomePage() {
           font-size: 18px;
           font-weight: 800;
           box-shadow: 0 16px 36px rgba(42, 88, 224, 0.35);
-        }
-
-        .secondary-btn {
-          min-width: 220px;
-          height: 66px;
-          padding: 0 22px;
-          border-radius: 18px;
-          border: 1px solid rgba(255, 255, 255, 0.14);
-          background: rgba(255, 255, 255, 0.08);
-          color: #fff;
-          font-size: 17px;
-          font-weight: 700;
         }
 
         .progress-card {
@@ -1505,11 +1416,6 @@ export default function HomePage() {
           text-align: right;
         }
 
-        .wallet-row strong {
-          word-break: break-all;
-          max-width: 100%;
-        }
-
         .bullet-list {
           display: flex;
           flex-direction: column;
@@ -1719,6 +1625,18 @@ export default function HomePage() {
           line-height: 1.6;
         }
 
+        .footer {
+          margin-top: 36px;
+          padding: 24px 8px 8px;
+          display: flex;
+          justify-content: space-between;
+          gap: 16px;
+          flex-wrap: wrap;
+          color: rgba(255, 255, 255, 0.62);
+          font-size: 14px;
+          border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
         @media (max-width: 1080px) {
           .main-grid {
             grid-template-columns: 1fr;
@@ -1727,7 +1645,7 @@ export default function HomePage() {
 
         @media (max-width: 760px) {
           .page-shell {
-            padding: 18px 12px 56px;
+            padding: 18px 12px 32px;
           }
 
           .progress-top,
@@ -1747,8 +1665,7 @@ export default function HomePage() {
             border-radius: 24px;
           }
 
-          .primary-btn,
-          .secondary-btn {
+          .primary-btn {
             width: 100%;
             min-width: 0;
           }
@@ -1772,6 +1689,11 @@ export default function HomePage() {
 
           .claim-btn {
             height: 72px;
+          }
+
+          .footer {
+            flex-direction: column;
+            gap: 8px;
           }
         }
       `}</style>
