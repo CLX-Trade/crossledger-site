@@ -11,7 +11,7 @@ const TOKEN_SYMBOL = "CLXT";
 const TAGLINE = "Global Trade Infrastructure Token";
 const CURRENT_PRICE_USD = 0.1;
 const PROJECTED_LAUNCH_USD = 13.5;
-const MIN_PURCHASE_USD = 300;
+const MIN_PURCHASE_USD = 200;
 
 const PRESALE_ABI = [
   "function buyTokens(uint256 usdtAmount) external",
@@ -741,7 +741,7 @@ export default function HomePage() {
               />
 
               <div className="preset-grid">
-                {["300", "500", "1000", "2500"].map((amount) => (
+                {["200", "500", "1000", "2500"].map((amount) => (
                   <button
                     key={amount}
                     type="button"
