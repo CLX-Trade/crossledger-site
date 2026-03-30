@@ -1,0 +1,116 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "/workspaces/crossledger-site/contracts/contracts/CLXToken.sol": {
+      "lastModificationDate": 1774853300674,
+      "contentHash": "0c5c03a0f0b20b86b134c0b6ead01f14",
+      "sourceName": "contracts/CLXToken.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "CLXToken",
+        "IERC20"
+      ]
+    },
+    "/workspaces/crossledger-site/contracts/contracts/CrossLedgerEscrow.sol": {
+      "lastModificationDate": 1774853371298,
+      "contentHash": "2d11ecec38590aec33b1fa2e56dfed40",
+      "sourceName": "contracts/CrossLedgerEscrow.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "CrossLedgerEscrow",
+        "ICLXToken",
+        "IDocumentRegistry"
+      ]
+    },
+    "/workspaces/crossledger-site/contracts/contracts/DocumentRegistry.sol": {
+      "lastModificationDate": 1774853443417,
+      "contentHash": "e602b30f6687f0da81df7457de635ed4",
+      "sourceName": "contracts/DocumentRegistry.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "DocumentRegistry"
+      ]
+    }
+  }
+}

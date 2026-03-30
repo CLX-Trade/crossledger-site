@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CrossLedger — Secure Onboarding | crossledger.trade</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0A1628; --navy-mid: #0F2040; --navy-light: #162d55;
+  --teal: #00C2D4; --teal-dark: #0099aa; --teal-glow: rgba(0,194,212,0.1);
+  --white: #fff; --grey: #7a8fa6; --grey-light: #b8cad8;
+  --success: #22c55e; --warning: #f59e0b; --error: #ef4444;
+  --border: rgba(0,194,212,0.15); --card: rgba(15,32,64,0.92);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--navy); color: var(--white); min-height: 100vh; }
+body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse 70% 50% at 10% 0%, rgba(0,194,212,0.07) 0%, transparent 60%), radial-gradient(ellipse 50% 60% at 90% 100%, rgba(0,80,140,0.08) 0%, transparent 60%); pointer-events: none; z-index: 0; }
+body::after { content: ''; position: fixed; inset: 0; background-image: linear-gradient(rgba(0,194,212,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(0,194,212,0.025) 1px, transparent 1px); background-size: 60px 60px; pointer-events: none; z-index: 0; }
+ 
+.app { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
+ 
+/* HEADER */
+header { padding: 18px 40px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: rgba(8,14,28,0.9); backdrop-filter: blur(20px); }
+.logo { display: flex; align-items: center; gap: 10px; font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 1.1rem; letter-spacing: -0.3px; }
+.logo-mark { width: 34px; height: 34px; background: linear-gradient(135deg, var(--teal), #005fa3); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; box-shadow: 0 0 14px rgba(0,194,212,0.3); }
+.header-domain { font-size: 0.72rem; color: var(--grey); font-family: 'Montserrat', sans-serif; letter-spacing: 1px; }
+.security-badge { display: flex; align-items: center; gap: 6px; padding: 5px 12px; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.25); border-radius: 20px; font-size: 0.7rem; color: var(--success); font-weight: 600; }
+ 
+/* PROGRESS */
+.progress-wrap { max-width: 700px; margin: 0 auto; padding: 28px 20px 0; width: 100%; }
+.progress-steps { display: flex; align-items: center; }
+.step-wrap { display: flex; align-items: center; flex: 1; }
+.step-circle { width: 34px; height: 34px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; font-family: 'Montserrat', sans-serif; color: var(--grey); background: var(--navy-mid); transition: all 0.4s; flex-shrink: 0; }
+.step-circle.active { border-color: var(--teal); color: var(--teal); background: var(--teal-glow); box-shadow: 0 0 14px rgba(0,194,212,0.25); }
+.step-circle.done { border-color: var(--success); background: var(--success); color: var(--white); }
+.step-line { flex: 1; height: 2px; background: rgba(255,255,255,0.06); }
+.step-line.done { background: var(--teal); }
+.step-labels { display: flex; justify-content: space-between; padding: 8px 0 0; }
+.step-lbl { font-size: 0.62rem; color: var(--grey); text-align: center; flex: 1; font-weight: 500; }
+.step-lbl.active { color: var(--teal); font-weight: 700; }
+.step-lbl.done { color: var(--grey-light); }
+ 
+/* MAIN */
+main { flex: 1; display: flex; align-items: flex-start; justify-content: center; padding: 32px 20px 60px; }
+.panel { width: 100%; max-width: 680px; animation: fadeUp 0.4s ease; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+ 
+.panel-tag { font-size: 0.65rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--teal); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.panel-tag::before { content: ''; display: block; width: 16px; height: 2px; background: var(--teal); }
+.panel-title { font-family: 'Montserrat', sans-serif; font-size: 1.7rem; font-weight: 900; line-height: 1.2; margin-bottom: 8px; letter-spacing: -0.5px; }
+.panel-title span { color: var(--teal); }
+.panel-desc { color: var(--grey-light); font-size: 0.88rem; line-height: 1.6; margin-bottom: 28px; }
+ 
+/* CARDS */
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; backdrop-filter: blur(10px); margin-bottom: 16px; }
+.card-title { font-family: 'Montserrat', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--grey); margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+.card-title::before { content: ''; width: 4px; height: 12px; background: var(--teal); border-radius: 2px; }
+ 
+/* FORMS */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.full { grid-column: span 2; }
+label { font-size: 0.7rem; font-weight: 700; color: var(--grey-light); text-transform: uppercase; letter-spacing: 0.5px; }
+input, select, textarea { background: rgba(10,22,40,0.8); border: 1px solid var(--border); border-radius: 8px; padding: 11px 14px; color: var(--white); font-family: 'DM Sans', sans-serif; font-size: 0.88rem; outline: none; transition: all 0.2s; width: 100%; }
+input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(0,194,212,0.1); }
+select option { background: var(--navy-mid); }
+input::placeholder, textarea::placeholder { color: rgba(136,153,170,0.4); }
+.input-with-icon { position: relative; }
+.input-with-icon input { padding-left: 40px; }
+.input-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--grey); font-size: 0.95rem; }
+.input-suffix { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 0.72rem; color: var(--teal); font-weight: 700; cursor: pointer; }
+ 
+/* INFO PILLS */
+.info-pill { background: rgba(0,100,160,0.12); border: 1px solid rgba(0,150,200,0.25); border-radius: 9px; padding: 11px 14px; font-size: 0.76rem; color: #7dd3fc; display: flex; align-items: flex-start; gap: 8px; margin-bottom: 16px; line-height: 1.5; }
+.warning-pill { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); border-radius: 9px; padding: 11px 14px; font-size: 0.76rem; color: #fcd34d; display: flex; gap: 8px; margin-bottom: 16px; line-height: 1.5; }
+ 
+/* DOCUMENT UPLOAD */
+.doc-upload-zone { border: 2px dashed rgba(0,194,212,0.2); border-radius: 12px; padding: 28px; text-align: center; cursor: pointer; transition: all 0.3s; background: rgba(0,194,212,0.02); margin-bottom: 12px; }
+.doc-upload-zone:hover { border-color: var(--teal); background: var(--teal-glow); }
+.upload-icon { font-size: 2rem; margin-bottom: 8px; }
+.upload-text { font-size: 0.82rem; color: var(--grey-light); margin-bottom: 4px; font-weight: 500; }
+.upload-sub { font-size: 0.7rem; color: var(--grey); }
+.upload-types { font-size: 0.68rem; color: var(--teal); margin-top: 6px; }
+ 
+.doc-required-list { display: flex; flex-direction: column; gap: 8px; }
+.doc-req-item { display: flex; align-items: center; gap: 10px; padding: 11px 14px; background: rgba(10,22,40,0.6); border: 1px solid var(--border); border-radius: 9px; }
+.doc-req-icon { font-size: 1.1rem; flex-shrink: 0; }
+.doc-req-name { flex: 1; font-size: 0.82rem; font-weight: 500; }
+.doc-req-desc { font-size: 0.68rem; color: var(--grey); }
+.doc-req-status { font-size: 0.68rem; font-weight: 700; padding: 3px 10px; border-radius: 10px; flex-shrink: 0; cursor: pointer; transition: all 0.2s; }
+.status-required { background: rgba(245,158,11,0.12); color: var(--warning); border: 1px solid rgba(245,158,11,0.25); }
+.status-uploaded { background: rgba(34,197,94,0.12); color: var(--success); border: 1px solid rgba(34,197,94,0.25); }
+.status-optional { background: rgba(156,163,175,0.1); color: var(--grey); border: 1px solid rgba(156,163,175,0.15); }
+ 
+/* EMAIL VERIFY */
+.email-verify-box { background: rgba(0,194,212,0.05); border: 1px solid var(--teal); border-radius: 12px; padding: 24px; text-align: center; }
+.verify-icon { font-size: 2.5rem; margin-bottom: 12px; }
+.verify-title { font-family: 'Montserrat', sans-serif; font-size: 1rem; font-weight: 800; margin-bottom: 6px; }
+.verify-desc { font-size: 0.82rem; color: var(--grey-light); line-height: 1.6; margin-bottom: 20px; }
+.code-inputs { display: flex; gap: 10px; justify-content: center; margin-bottom: 16px; }
+.code-input { width: 48px; height: 56px; border-radius: 10px; background: rgba(10,22,40,0.8); border: 2px solid var(--border); text-align: center; font-family: 'Montserrat', sans-serif; font-size: 1.4rem; font-weight: 800; color: var(--teal); outline: none; transition: all 0.2s; }
+.code-input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(0,194,212,0.15); }
+.resend-link { font-size: 0.76rem; color: var(--grey); cursor: pointer; }
+.resend-link span { color: var(--teal); text-decoration: underline; cursor: pointer; }
+ 
+/* WALLETS */
+.wallet-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+.wallet-card { border: 2px solid var(--border); border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.2s; text-align: center; background: rgba(10,22,40,0.4); position: relative; }
+.wallet-card:hover, .wallet-card.selected { border-color: var(--teal); background: var(--teal-glow); }
+.wallet-card .wcheck { position: absolute; top: 8px; right: 8px; width: 18px; height: 18px; border-radius: 50%; background: var(--teal); font-size: 0.6rem; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; }
+.wallet-card.selected .wcheck { opacity: 1; }
+.wallet-icon { font-size: 1.6rem; margin-bottom: 6px; }
+.wallet-name { font-size: 0.78rem; font-weight: 700; margin-bottom: 2px; }
+.wallet-sub { font-size: 0.65rem; color: var(--grey); }
+ 
+/* TIER CARDS */
+.tier-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.tier-card { border: 2px solid var(--border); border-radius: 14px; padding: 20px 16px; cursor: pointer; transition: all 0.2s; background: rgba(10,22,40,0.4); position: relative; }
+.tier-card:hover, .tier-card.selected { border-color: var(--teal); background: var(--teal-glow); }
+.tier-badge { position: absolute; top: -9px; left: 50%; transform: translateX(-50%); background: var(--teal); color: var(--navy); font-size: 0.6rem; font-weight: 700; padding: 2px 10px; border-radius: 8px; white-space: nowrap; letter-spacing: 0.5px; }
+.tier-name { font-family: 'Montserrat', sans-serif; font-size: 1rem; font-weight: 800; margin-bottom: 4px; }
+.tier-price { font-family: 'Montserrat', sans-serif; font-size: 1.3rem; font-weight: 900; color: var(--teal); margin: 8px 0 4px; }
+.tier-limit { font-size: 0.7rem; color: var(--grey); margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.tier-features { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.tier-features li { font-size: 0.72rem; color: var(--grey-light); display: flex; align-items: flex-start; gap: 6px; line-height: 1.3; }
+.tier-features li::before { content: '✓'; color: var(--teal); font-weight: 700; flex-shrink: 0; }
+ 
+/* BENEFICIARY BUILDER */
+.beneficiary-row { display: flex; align-items: center; gap: 10px; padding: 14px; background: rgba(10,22,40,0.6); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; }
+.beneficiary-num { width: 28px; height: 28px; border-radius: 50%; background: var(--teal-glow); border: 1px solid var(--teal); display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 700; color: var(--teal); flex-shrink: 0; }
+.beneficiary-inputs { flex: 1; display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 8px; }
+.beneficiary-inputs input, .beneficiary-inputs select { font-size: 0.8rem; padding: 8px 10px; }
+.beneficiary-share { display: flex; align-items: center; gap: 6px; }
+.share-total { padding: 10px 14px; background: rgba(0,194,212,0.08); border: 1px solid var(--border); border-radius: 8px; font-family: 'Montserrat', sans-serif; font-weight: 700; color: var(--teal); font-size: 0.88rem; text-align: center; }
+.share-total.valid { color: var(--success); border-color: rgba(34,197,94,0.3); background: rgba(34,197,94,0.08); }
+.share-total.invalid { color: var(--error); border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.08); }
+ 
+/* CHECKBOX */
+.checkbox-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; cursor: pointer; }
+.custom-check { width: 18px; height: 18px; border-radius: 4px; border: 2px solid var(--border); flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.custom-check.checked { background: var(--teal); border-color: var(--teal); }
+.check-label { font-size: 0.8rem; color: var(--grey-light); line-height: 1.5; }
+.check-label a { color: var(--teal); }
+ 
+/* TERMS BOX */
+.terms-scroll { background: rgba(10,22,40,0.7); border: 1px solid var(--border); border-radius: 10px; padding: 16px; font-size: 0.74rem; color: var(--grey); line-height: 1.7; max-height: 140px; overflow-y: auto; margin-bottom: 14px; }
+.terms-scroll strong { color: var(--grey-light); }
+ 
+/* BUTTONS */
+.btn-row { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; gap: 12px; }
+.btn { padding: 13px 26px; border-radius: 10px; font-family: 'Montserrat', sans-serif; font-size: 0.8rem; font-weight: 700; cursor: pointer; border: none; transition: all 0.25s; text-transform: uppercase; letter-spacing: 0.3px; }
+.btn-primary { background: linear-gradient(135deg, var(--teal), var(--teal-dark)); color: var(--navy); min-width: 160px; box-shadow: 0 4px 18px rgba(0,194,212,0.25); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 26px rgba(0,194,212,0.38); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+.btn-ghost { background: transparent; color: var(--grey-light); border: 1px solid var(--border); }
+.btn-ghost:hover { border-color: var(--grey); color: var(--white); }
+.btn-sm { padding: 8px 16px; font-size: 0.72rem; }
+ 
+/* SUCCESS */
+.success-wrap { text-align: center; padding: 32px 20px; }
+.success-glow { width: 80px; height: 80px; border-radius: 50%; background: rgba(34,197,94,0.12); border: 2px solid var(--success); display: flex; align-items: center; justify-content: center; font-size: 2.2rem; margin: 0 auto 22px; animation: pulse 2s ease infinite; }
+@keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,0.3)} 50%{box-shadow:0 0 0 18px rgba(34,197,94,0)} }
+.success-title { font-family: 'Montserrat', sans-serif; font-size: 1.6rem; font-weight: 900; margin-bottom: 10px; }
+.success-desc { color: var(--grey-light); max-width: 460px; margin: 0 auto 28px; line-height: 1.7; font-size: 0.88rem; }
+.wallet-reveal { background: var(--teal-glow); border: 1px solid var(--teal); border-radius: 12px; padding: 18px 22px; display: flex; align-items: center; justify-content: space-between; max-width: 460px; margin: 0 auto 28px; }
+.wallet-reveal-label { font-size: 0.65rem; color: var(--grey); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+.wallet-reveal-id { font-family: 'Montserrat', sans-serif; font-size: 0.95rem; font-weight: 800; color: var(--teal); letter-spacing: 1px; }
+.copy-btn { background: var(--teal-glow); border: 1px solid var(--teal); color: var(--teal); padding: 6px 14px; border-radius: 7px; cursor: pointer; font-size: 0.72rem; font-weight: 700; font-family: 'Montserrat', sans-serif; }
+.next-steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 600px; margin: 0 auto; text-align: left; }
+.next-step { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px 16px; }
+.ns-num { font-family: 'Montserrat', sans-serif; font-size: 1.4rem; font-weight: 900; color: var(--teal); opacity: 0.35; line-height: 1; margin-bottom: 6px; }
+.ns-title { font-size: 0.82rem; font-weight: 700; margin-bottom: 3px; }
+.ns-desc { font-size: 0.7rem; color: var(--grey); line-height: 1.4; }
+ 
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--teal-dark); border-radius: 2px; }
+</style>
+</head>
+<body>
+<div class="app">
+ 
+  <!-- HEADER -->
+  <header>
+    <div>
+      <div class="logo"><div class="logo-mark">⛓</div>CrossLedger</div>
+      <div class="header-domain" style="padding-left:44px;margin-top:2px;">crossledger.trade/onboard</div>
+    </div>
+    <div class="security-badge">🔒 256-bit Encrypted · Bank-Grade KYC</div>
+  </header>
+ 
+  <!-- PROGRESS -->
+  <div class="progress-wrap">
+    <div class="progress-steps" id="progressSteps"></div>
+    <div class="step-labels" id="stepLabels"></div>
+  </div>
+ 
+  <!-- MAIN PANEL -->
+  <main>
+    <div class="panel" id="panelContent"></div>
+  </main>
+</div>
+ 
+<script>
+const steps = ['Email', 'Verify', 'Profile', 'KYC Docs', 'Wallet', 'Terms', 'Complete'];
+let state = {
+  step: 0,
+  email: '',
+  emailVerified: false,
+  company: '',
+  fullName: '',
+  country: '',
+  phone: '',
+  role: '',
+  volume: '',
+  commodities: [],
+  kycMethod: null,
+  docs: { passport: false, companyReg: false, bankRef: false, utilityBill: false, directorId: false },
+  walletTier: null,
+  walletConnection: null,
+  beneficiaries: [
+    { role: 'Seller', wallet: '', share: 100 }
+  ],
+  terms1: false, terms2: false, terms3: false,
+  walletId: null
+};
+ 
+function generateWalletId() {
+  const c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let id = 'CLXT-';
+  for (let i=0;i<3;i++) {
+    for(let j=0;j<4;j++) id += c[Math.floor(Math.random()*c.length)];
+    if(i<2) id+='-';
+  }
+  return id;
+}
+ 
+function renderProgress() {
+  const st = document.getElementById('progressSteps');
+  const sl = document.getElementById('stepLabels');
+  st.innerHTML = steps.map((s,i) => `
+    <div style="display:flex;align-items:center;flex:1;">
+      <div class="step-circle ${i<state.step?'done':i===state.step?'active':''}">${i<state.step?'✓':i+1}</div>
+      ${i<steps.length-1?`<div class="step-line ${i<state.step?'done':''}"></div>`:''}
+    </div>`).join('');
+  sl.innerHTML = steps.map((s,i)=>`<div class="step-lbl ${i<state.step?'done':i===state.step?'active':''}" style="flex:1;">${s}</div>`).join('');
+}
+ 
+function render() {
+  renderProgress();
+  const panel = document.getElementById('panelContent');
+  panel.style.animation='none';
+  requestAnimationFrame(()=>{
+    panel.style.animation='';
+    const renders = [
+      renderEmailStep,
+      renderVerifyStep,
+      renderProfileStep,
+      renderKYCDocsStep,
+      renderWalletStep,
+      renderTermsStep,
+      renderCompleteStep
+    ];
+    panel.innerHTML = renders[state.step]();
+  });
+}
+ 
+// ── STEP 1: EMAIL ─────────────────────────────────────────────────
+function renderEmailStep() {
+  return `
+    <div class="panel-tag">Step 1 of 7 — Account Creation</div>
+    <h1 class="panel-title">Start Your <span>Secure</span> Application</h1>
+    <p class="panel-desc">CrossLedger operates as a regulated trade finance platform. We'll send a verification code to confirm your email before proceeding.</p>
+ 
+    <div class="info-pill">
+      ℹ️ Your email is used for trade confirmations, document alerts, KYC approval notifications, and compliance communications. It cannot be changed after verification.
+    </div>
+ 
+    <div class="card">
+      <div class="card-title">Account Email</div>
+      <div class="form-group" style="margin-bottom:16px;">
+        <label>Business Email Address</label>
+        <div class="input-with-icon">
+          <span class="input-icon">✉️</span>
+          <input type="email" id="emailInput" placeholder="director@yourcompany.com" value="${state.email}" oninput="state.email=this.value">
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:16px;">
+        <label>Confirm Email</label>
+        <div class="input-with-icon">
+          <span class="input-icon">✉️</span>
+          <input type="email" id="emailConfirm" placeholder="Retype your email">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <div class="input-with-icon">
+          <span class="input-icon">🔒</span>
+          <input type="password" placeholder="Minimum 12 characters">
+        </div>
+      </div>
+    </div>
+ 
+    <div class="card">
+      <div class="card-title">Primary Role on Platform</div>
+      <div class="form-grid">
+        ${[
+          ['🏭','Seller / Exporter','Export commodities, receive CLXT on delivery'],
+          ['🌐','Buyer / Importer','Fund escrow, release CLXT on receipt'],
+          ['🔄','Trader (Both)','Buy and sell across corridors'],
+          ['🤝','Broker / Agent','Facilitate trades, receive commission split']
+        ].map(([icon,name,desc])=>`
+          <div onclick="state.role='${name}';render()" style="border:2px solid ${state.role===name?'var(--teal)':'var(--border)'};border-radius:10px;padding:14px;cursor:pointer;background:${state.role===name?'var(--teal-glow)':'rgba(10,22,40,0.4)'};transition:all 0.2s;display:flex;align-items:center;gap:10px;">
+            <span style="font-size:1.4rem;">${icon}</span>
+            <div>
+              <div style="font-size:0.82rem;font-weight:600;margin-bottom:2px;">${name}</div>
+              <div style="font-size:0.68rem;color:var(--grey);">${desc}</div>
+            </div>
+            ${state.role===name?'<span style="margin-left:auto;color:var(--teal);font-size:1rem;">✓</span>':''}
+          </div>`).join('')}
+      </div>
+    </div>
+ 
+    <div class="btn-row">
+      <div></div>
+      <button class="btn btn-primary" onclick="sendVerification()" ${!state.email||!state.role?'disabled':''}>
+        Send Verification Code →
+      </button>
+    </div>
+  `;
+}
+ 
+// ── STEP 2: EMAIL VERIFY ──────────────────────────────────────────
+function renderVerifyStep() {
+  return `
+    <div class="panel-tag">Step 2 of 7 — Email Verification</div>
+    <h1 class="panel-title">Verify Your <span>Email</span></h1>
+    <p class="panel-desc">We've sent a 6-digit code to <strong style="color:var(--white)">${state.email}</strong>. This confirms your email is real before we proceed with KYC.</p>
+ 
+    <div class="email-verify-box">
+      <div class="verify-icon">📧</div>
+      <div class="verify-title">Check your inbox</div>
+      <div class="verify-desc">Enter the 6-digit code sent to ${state.email}. The code expires in 10 minutes. Check your spam folder if you don't see it.</div>
+ 
+      <div class="code-inputs">
+        ${[1,2,3,4,5,6].map(i=>`<input class="code-input" id="code${i}" maxlength="1" type="text" oninput="moveCode(this,${i})" onkeydown="backCode(event,${i})">`).join('')}
+      </div>
+ 
+      <button class="btn btn-primary" style="width:auto;margin-bottom:14px;" onclick="verifyCode()">
+        Verify Email →
+      </button>
+ 
+      <div class="resend-link">
+        Didn't receive it? <span onclick="resendCode()">Resend code</span> · 
+        <span onclick="state.step=0;render()">Change email</span>
+      </div>
+    </div>
+ 
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="state.step=0;render()">← Back</button>
+      <div style="font-size:0.72rem;color:var(--grey);">Demo: enter any 6 digits to proceed</div>
+    </div>
+  `;
+}
+ 
+// ── STEP 3: PROFILE ────────────────────────────────────────────────
+function renderProfileStep() {
+  return `
+    <div class="panel-tag">Step 3 of 7 — Business Profile</div>
+    <h1 class="panel-title">Business <span>Details</span></h1>
+    <p class="panel-desc">CrossLedger operates like a banking system with full visibility. Your company details are used for trade contracts, compliance, and on-chain transaction records.</p>
+ 
+    <div class="card">
+      <div class="card-title">Company Information</div>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Registered Company / Legal Entity Name</label>
+          <input type="text" placeholder="Exact name as on company registration" value="${state.company}" oninput="state.company=this.value">
+        </div>
+        <div class="form-group">
+          <label>Country of Registration</label>
+          <select onchange="state.country=this.value">
+            <option>Select country</option>
+            ${['🇦🇪 United Arab Emirates','🇧🇷 Brazil','🇨🇳 China','🇦🇺 Australia','🇵🇬 Papua New Guinea','🇺🇸 United States','🇸🇬 Singapore','🇬🇧 United Kingdom','🇿🇦 South Africa','🇮🇳 India'].map(c=>`<option ${state.country===c?'selected':''}>${c}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Business Registration Number</label>
+          <input type="text" placeholder="e.g. CNPJ / Trade Licence No.">
+        </div>
+        <div class="form-group">
+          <label>Annual Trade Volume</label>
+          <select onchange="state.volume=this.value">
+            <option>Select range</option>
+            <option>Under $1M USD</option>
+            <option>$1M – $10M USD</option>
+            <option>$10M – $50M USD</option>
+            <option>$50M – $200M USD</option>
+            <option>$200M+ USD</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Industry / Sector</label>
+          <select>
+            <option>Commodity Trading</option>
+            <option>Agricultural Products</option>
+            <option>Energy & Petroleum</option>
+            <option>Mining & Metals</option>
+            <option>Food & Beverage</option>
+            <option>Logistics & Freight</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Tax ID / VAT Number</label>
+          <input type="text" placeholder="Country-specific format">
+        </div>
+      </div>
+    </div>
+ 
+    <div class="card">
+      <div class="card-title">Director / Authorised Signatory</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Full Legal Name</label>
+          <input type="text" placeholder="As on passport" value="${state.fullName}" oninput="state.fullName=this.value">
+        </div>
+        <div class="form-group">
+          <label>Job Title</label>
+          <input type="text" placeholder="e.g. Managing Director">
+        </div>
+        <div class="form-group">
+          <label>Date of Birth</label>
+          <input type="date">
+        </div>
+        <div class="form-group">
+          <label>Nationality</label>
+          <select>
+            <option>🇧🇷 Brazilian</option>
+            <option>🇦🇺 Australian</option>
+            <option>🇦🇪 Emirati</option>
+            <option>🇨🇳 Chinese</option>
+            <option>🇵🇬 Papua New Guinean</option>
+            <option>🇺🇸 American</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Phone (with country code)</label>
+          <input type="tel" placeholder="+61 4 0000 0000" value="${state.phone}" oninput="state.phone=this.value">
+        </div>
+        <div class="form-group">
+          <label>LinkedIn / Website</label>
+          <input type="text" placeholder="linkedin.com/in/yourname">
+        </div>
+      </div>
+    </div>
+ 
+    <div class="card">
+      <div class="card-title">Commodities Traded</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+        ${[['🌾','Grains'],['🛢️','Oil/Petroleum'],['⚙️','Metals/Ore'],['🍬','Sugar ICUMSA'],['🐔','Halal Poultry'],['☕','Coffee/Cocoa'],['🪵','Timber'],['💊','Fertilisers'],['🔵','LNG/Gas'],['🌰','Soybeans'],['🐄','Livestock'],['💎','Copper']].map(([icon,name])=>`
+          <div onclick="toggleCommodity('${name}')" style="border:1px solid ${state.commodities.includes(name)?'var(--teal)':'var(--border)'};border-radius:8px;padding:8px 6px;text-align:center;cursor:pointer;background:${state.commodities.includes(name)?'var(--teal-glow)':'rgba(10,22,40,0.4)'};transition:all 0.15s;">
+            <div style="font-size:1.2rem;margin-bottom:3px;">${icon}</div>
+            <div style="font-size:0.66rem;font-weight:${state.commodities.includes(name)?700:400};color:${state.commodities.includes(name)?'var(--teal)':'var(--grey-light)'};">${name}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+ 
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="prevStep()">← Back</button>
+      <button class="btn btn-primary" onclick="nextStep()" ${!state.company||!state.fullName?'disabled':''}>Continue →</button>
+    </div>
+  `;
+}
+ 
+// ── STEP 4: KYC DOCS ──────────────────────────────────────────────
+function renderKYCDocsStep() {
+  const allRequired = state.docs.passport && state.docs.companyReg && state.docs.bankRef;
+  return `
+    <div class="panel-tag">Step 4 of 7 — Identity & Compliance</div>
+    <h1 class="panel-title">KYC <span>Documents</span></h1>
+    <p class="panel-desc">CrossLedger operates like a regulated financial institution. All documents are encrypted, stored securely, and never shared without your consent. Document hashes are anchored to Polygon blockchain.</p>
+ 
+    <div class="warning-pill">
+      ⚠️ <div><strong>Bank-Level Security:</strong> Your documents are encrypted with AES-256 before upload. Only compliance officers with 2FA access can view originals. Document hashes (not files) are stored on-chain for audit purposes.</div>
+    </div>
+ 
+    <div class="card">
+      <div class="card-title">Required Documents — Must Upload All</div>
+      <div class="doc-required-list">
+        <div class="doc-req-item">
+          <span class="doc-req-icon">🪪</span>
+          <div style="flex:1;">
+            <div class="doc-req-name">Passport or National ID</div>
+            <div class="doc-req-desc">Front and back · Must be valid (not expired) · JPG, PNG or PDF</div>
+          </div>
+          <span class="doc-req-status ${state.docs.passport?'status-uploaded':'status-required'}" onclick="uploadDoc('passport')">${state.docs.passport?'✓ Uploaded':'Upload'}</span>
+        </div>
+        <div class="doc-req-item">
+          <span class="doc-req-icon">📋</span>
+          <div style="flex:1;">
+            <div class="doc-req-name">Company Registration Certificate</div>
+            <div class="doc-req-desc">Issued by government authority · Must show registered name and number</div>
+          </div>
+          <span class="doc-req-status ${state.docs.companyReg?'status-uploaded':'status-required'}" onclick="uploadDoc('companyReg')">${state.docs.companyReg?'✓ Uploaded':'Upload'}</span>
+        </div>
+        <div class="doc-req-item">
+          <span class="doc-req-icon">🏦</span>
+          <div style="flex:1;">
+            <div class="doc-req-name">Bank Reference Letter</div>
+            <div class="doc-req-desc">On bank letterhead · Dated within 90 days · Confirms account in good standing</div>
+          </div>
+          <span class="doc-req-status ${state.docs.bankRef?'status-uploaded':'status-required'}" onclick="uploadDoc('bankRef')">${state.docs.bankRef?'✓ Uploaded':'Upload'}</span>
+        </div>
+      </div>
+    </div>
+ 
+    <div class="card">
+      <div class="card-title">Additional Documents — Strongly Recommended</div>
+      <div class="doc-required-list">
+        <div class="doc-req-item">
+          <span class="doc-req-icon">📄</span>
+          <div style="flex:1;">
+            <div class="doc-req-name">Director / Second ID</div>
+            <div class="doc-req-desc">If company has multiple directors — all must be verified</div>
+          </div>
+          <span class="doc-req-status ${state.docs.directorId?'status-uploaded':'status-optional'}" onclick="uploadDoc('directorId')">${state.docs.directorId?'✓ Uploaded':'Optional'}</span>
+        </div>
+        <div class="doc-req-item">
+          <span class="doc-req-icon">🏠</span>
+          <div style="flex:1;">
+            <div class="doc-req-name">Proof of Address</div>
+            <div class="doc-req-desc">Utility bill or bank statement · Dated within 90 days</div>
+          </div>
+          <span class="doc-req-status ${state.docs.utilityBill?'status-uploaded':'status-optional'}" onclick="uploadDoc('utilityBill')">${state.docs.utilityBill?'✓ Uploaded':'Optional'}</span>
+        </div>
+      </div>
+    </div>
+ 
+    <div class="card">
+      <div class="card-title">AML / Compliance Declaration</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Source of Funds</label>
+          <select>
+            <option>Business Revenue / Trade Operations</option>
+            <option>Investment Returns</option>
+            <option>Financing / Credit Facility</option>
+            <option>Asset Sale</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>PEP Declaration</label>
+          <select>
+            <option>Not a Politically Exposed Person</option>
+            <option>PEP — Full disclosure required</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Sanctions Check</label>
+          <select>
+            <option>No sanctions / restrictions apply</option>
+            <option>Subject to sanctions — contact compliance</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>AML Risk Self-Assessment</label>
+          <select>
+            <option>Standard Risk</option>
+            <option>Enhanced Due Diligence Required</option>
+          </select>
+        </div>
+      </div>
+    </div>
+ 
+    <div class="doc-upload-zone" onclick="uploadAll()">
+      <div class="upload-icon">📁</div>
+      <div class="upload-text">Drag & drop files here or click to browse</div>
+      <div class="upload-sub">All files encrypted in transit and at rest</div>
+      <div class="upload-types">PDF · JPG · PNG · Max 20MB per file · AES-256 encrypted</div>
+    </div>
+ 
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="prevStep()">← Back</button>
+      <button class="btn btn-primary" onclick="nextStep()" ${!allRequired?'disabled':''}>
+        ${!allRequired?'Upload Required Docs to Continue':'Continue →'}
+      </button>
+    </div>
+  `;
+}
+ 
+// ── STEP 5: WALLET + BENEFICIARIES ────────────────────────────────
+function renderWalletStep() {
+  const totalShares = state.beneficiaries.reduce((s,b)=>s+parseInt(b.share||0),0);
+  const sharesValid = totalShares === 100;
+ 
+  return `
+    <div class="panel-tag">Step 5 of 7 — Wallet & Payment Split</div>
+    <h1 class="panel-title">CLXT Wallet & <span>Beneficiaries</span></h1>
+    <p class="panel-desc">Set up your CLXT wallet and define how trade payments are split. Up to 3 wallets can receive funds — producer, seller, broker, trading agent, etc. Funds are held in smart escrow until SGS certificate or bill of lading is verified.</p>
+ 
+    <div class="info-pill">
+      ⛓ <div>When a trade completes, CLXT is automatically split to all beneficiary wallets in a single on-chain transaction. This replaces manual bank transfers and removes the need for a confirming bank.</div>
+    </div>
+ 
+    <div class="card">
+      <div class="card-title">Wallet Tier</div>
+      <div class="tier-grid">
+        ${[
+          {id:'basic',name:'Basic',price:'Free',limit:'Up to $500K per trade',badge:null,features:['Smart escrow up to $500K','5 trades/month','CLXT wallet included','Standard KYC (auto-approved)','Email support']},
+          {id:'pro',name:'Professional',price:'$299/mo',limit:'Up to $5M per trade',badge:'Most Popular',features:['Smart escrow up to $5M','Unlimited trades','Multi-party split (3 wallets)','SGS cert verification','Priority compliance review','API access']},
+          {id:'enterprise',name:'Enterprise',price:'Custom',limit:'Unlimited',badge:null,features:['Unlimited escrow value','Dedicated compliance officer','Custom smart contracts','Bank & customs API','White-label option','SLA guarantee']}
+        ].map(t=>`
+          <div class="tier-card ${state.walletTier===t.id?'selected':''}" onclick="state.walletTier='${t.id}';render()">
+            ${t.badge?`<div class="tier-badge">${t.badge}</div>`:''}
+            <div class="tier-name">${t.name}</div>
+            <div class="tier-price">${t.price}</div>
+            <div class="tier-limit">${t.limit}</div>
+            <ul class="tier-features">${t.features.map(f=>`<li>${f}</li>`).join('')}</ul>
+          </div>`).join('')}
+      </div>
+    </div>
+ 
+    <div class="card">
+      <div class="card-title">Connect Wallet</div>
+      <div class="wallet-grid">
+        ${[
+          {id:'metamask',icon:'🦊',name:'MetaMask',sub:'Browser extension'},
+          {id:'walletconnect',icon:'🔗',name:'WalletConnect',sub:'Mobile wallet'},
+          {id:'crossledger',icon:'⛓',name:'Create New',sub:'CrossLedger wallet'},
+        ].map(w=>`
+          <div class="wallet-card ${state.walletConnection===w.id?'selected':''}" onclick="state.walletConnection='${w.id}';render()">
+            <div class="wcheck">✓</div>
+            <div class="wallet-icon">${w.icon}</div>
+            <div class="wallet-name">${w.name}</div>
+            <div class="wallet-sub">${w.sub}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+ 
+    <div class="card">
+      <div class="card-title">Payment Beneficiaries — CLXT Split on Release</div>
+ 
+      <div class="info-pill" style="margin-bottom:16px;">
+        💡 <div>Define who receives CLXT when funds are released. Shares must total 100%. Examples: Producer 70% + Seller 20% + Agent 10%. This replaces manual inter-bank transfers.</div>
+      </div>
+ 
+      <div id="beneficiaryRows">
+        ${state.beneficiaries.map((b,i)=>`
+          <div class="beneficiary-row" id="brow_${i}">
+            <div class="beneficiary-num">${i+1}</div>
+            <div class="beneficiary-inputs">
+              <select onchange="state.beneficiaries[${i}].role=this.value">
+                ${['Producer/Refinery','Seller/Exporter','Broker','Trading Agent','Freight Forwarder','Other'].map(r=>`<option ${b.role===r?'selected':''}>${r}</option>`).join('')}
+              </select>
+              <input type="text" placeholder="0x... wallet address" value="${b.wallet}" oninput="state.beneficiaries[${i}].wallet=this.value">
+              <div class="beneficiary-share">
+                <input type="number" min="1" max="100" placeholder="%" value="${b.share}" oninput="state.beneficiaries[${i}].share=parseInt(this.value)||0;updateShareTotal()" style="width:60px;">
+                <span style="font-size:0.8rem;color:var(--grey);">%</span>
+              </div>
+            </div>
+            ${i>0?`<span onclick="removeBeneficiary(${i})" style="cursor:pointer;color:var(--error);font-size:1rem;padding:4px;">✕</span>`:'<div style="width:24px;"></div>'}
+          </div>`).join('')}
+      </div>
+ 
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;">
+        ${state.beneficiaries.length<3?`<button onclick="addBeneficiary()" style="background:none;border:1px dashed var(--border);color:var(--grey-light);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.78rem;">+ Add Beneficiary (${3-state.beneficiaries.length} remaining)</button>`:'<div></div>'}
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:0.72rem;color:var(--grey);">Total:</span>
+          <div class="share-total ${sharesValid?'valid':totalShares>0?'invalid':''}">${totalShares}%</div>
+        </div>
+      </div>
+      ${!sharesValid&&totalShares>0?`<div style="font-size:0.72rem;color:var(--error);margin-top:8px;">⚠️ Shares must total exactly 100% (currently ${totalShares}%)</div>`:''}
+    </div>
+ 
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="prevStep()">← Back</button>
+      <button class="btn btn-primary" onclick="nextStep()" ${!state.walletTier||!state.walletConnection||!sharesValid?'disabled':''}>Continue →</button>
+    </div>
+  `;
+}
+ 
+// ── STEP 6: TERMS ─────────────────────────────────────────────────
+function renderTermsStep() {
+  return `
+    <div class="panel-tag">Step 6 of 7 — Legal Agreements</div>
+    <h1 class="panel-title">Review & <span>Agree</span></h1>
+    <p class="panel-desc">CrossLedger's smart escrow system holds funds on Polygon blockchain. Funds are released only when SGS inspection certificates or bills of lading are verified on-chain — replicating SBLC/DLC functionality with greater transparency.</p>
+ 
+    <div class="card">
+      <div class="card-title">Platform Agreement</div>
+      <div class="terms-scroll">
+        <strong>CrossLedger Trade Platform — Terms of Use</strong><br><br>
+        CrossLedger operates a blockchain-based trade finance platform at crossledger.trade. By registering you acknowledge:<br><br>
+        <strong>1. CLXT Token Utility:</strong> CLXT tokens are utility tokens used exclusively for platform transaction fees, escrow deposits, and service payments. They do not constitute securities, investment instruments, or legal tender.<br><br>
+        <strong>2. Smart Escrow Mechanism:</strong> Funds held in CrossLedger smart escrow contracts are locked on the Polygon blockchain and cannot be accessed by either party until verified release conditions are met. CrossLedger acts as technical infrastructure, not a financial intermediary or bank.<br><br>
+        <strong>3. SGS & Document Release Conditions:</strong> Funds are released upon verification of SGS inspection certificates, bills of lading, certificates of origin, or other agreed trade documents as specified in each trade contract. CrossLedger compliance officers verify document hashes on-chain.<br><br>
+        <strong>4. Multi-Party Payment Splits:</strong> Beneficiary payment instructions entered during onboarding are embedded in smart contract logic. CrossLedger cannot modify these instructions once a trade is funded.<br><br>
+        <strong>5. KYC/AML Compliance:</strong> All users must complete identity verification. CrossLedger reserves the right to suspend accounts that fail ongoing compliance checks.<br><br>
+        <strong>6. Dispute Resolution:</strong> Disputes are handled by CrossLedger compliance team within 5 business days. Compliance decisions on document validity are final.<br><br>
+        <strong>7. Jurisdiction:</strong> Platform operates under Australian law. Trade contracts may reference UAE (ADGM), Singapore (MAS), or Brazilian regulations as applicable.
+      </div>
+      <div class="checkbox-row" onclick="state.terms1=!state.terms1;render()">
+        <div class="custom-check ${state.terms1?'checked':''}">${state.terms1?'✓':''}</div>
+        <span class="check-label">I agree to the <a href="#">Platform Terms of Service</a> and <a href="#">Smart Escrow Agreement</a></span>
+      </div>
+      <div class="checkbox-row" onclick="state.terms2=!state.terms2;render()">
+        <div class="custom-check ${state.terms2?'checked':''}">${state.terms2?'✓':''}</div>
+        <span class="check-label">I agree to the <a href="#">Privacy Policy</a> and consent to KYC/AML data processing under applicable data protection law</span>
+      </div>
+      <div class="checkbox-row" onclick="state.terms3=!state.terms3;render()">
+        <div class="custom-check ${state.terms3?'checked':''}">${state.terms3?'✓':''}</div>
+        <span class="check-label">I confirm all information provided is accurate and I am authorised to act on behalf of the stated company. I understand that CrossLedger is not a bank and CLXT tokens are utility tokens, not deposits.</span>
+      </div>
+    </div>
+ 
+    <div class="card">
+      <div class="card-title">Approval Process</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;font-size:0.78rem;">
+        <div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:9px;padding:14px;text-align:center;">
+          <div style="font-size:1.3rem;margin-bottom:6px;">⚡</div>
+          <div style="font-weight:700;color:var(--success);margin-bottom:4px;">Basic Tier</div>
+          <div style="color:var(--grey);">Auto-approved after KYC — instant platform access</div>
+        </div>
+        <div style="background:rgba(0,194,212,0.08);border:1px solid rgba(0,194,212,0.2);border-radius:9px;padding:14px;text-align:center;">
+          <div style="font-size:1.3rem;margin-bottom:6px;">🔍</div>
+          <div style="font-weight:700;color:var(--teal);margin-bottom:4px;">Professional Tier</div>
+          <div style="color:var(--grey);">Manual review by compliance team — 24-48h</div>
+        </div>
+        <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:9px;padding:14px;text-align:center;">
+          <div style="font-size:1.3rem;margin-bottom:6px;">🏦</div>
+          <div style="font-weight:700;color:var(--warning);margin-bottom:4px;">Enterprise Tier</div>
+          <div style="color:var(--grey);">Full due diligence — 3-5 business days</div>
+        </div>
+      </div>
+    </div>
+ 
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="prevStep()">← Back</button>
+      <button class="btn btn-primary" onclick="submitApplication()" ${!state.terms1||!state.terms2||!state.terms3?'disabled':''}>
+        🚀 Submit Application
+      </button>
+    </div>
+  `;
+}
+ 
+// ── STEP 7: COMPLETE ──────────────────────────────────────────────
+function renderCompleteStep() {
+  const isBasic = state.walletTier === 'basic';
+  state.walletId = state.walletId || generateWalletId();
+  return `
+    <div class="success-wrap">
+      <div class="success-glow">${isBasic?'✓':'⏳'}</div>
+      <div class="success-title">${isBasic?'Welcome to CrossLedger!':'Application Submitted'}</div>
+      <p class="success-desc">
+        ${isBasic
+          ? 'Your Basic tier account is active. Your CLXT wallet has been created and you can access the platform now.'
+          : 'Your Professional/Enterprise application is under review. Our compliance team will contact you within 24-48 hours with next steps.'}
+      </p>
+ 
+      <div class="wallet-reveal">
+        <div>
+          <div class="wallet-reveal-label">Your CLXT Wallet ID</div>
+          <div class="wallet-reveal-id">${state.walletId}</div>
+        </div>
+        <button class="copy-btn" onclick="copyWallet()">Copy</button>
+      </div>
+ 
+      <div style="background:rgba(0,194,212,0.06);border:1px solid var(--border);border-radius:10px;padding:14px 18px;max-width:460px;margin:0 auto 24px;font-size:0.78rem;color:var(--grey-light);line-height:1.6;text-align:left;">
+        📧 <strong style="color:var(--white);">Confirmation sent to ${state.email}</strong><br>
+        You'll receive: account confirmation, KYC approval status, login credentials for crossledger.trade/platform, and your CLXT welcome allocation.
+      </div>
+ 
+      <div class="next-steps-grid">
+        <div class="next-step">
+          <div class="ns-num">01</div>
+          <div class="ns-title">Email Confirmation</div>
+          <div class="ns-desc">Check ${state.email} for login credentials and KYC status</div>
+        </div>
+        <div class="next-step">
+          <div class="ns-num">02</div>
+          <div class="ns-title">KYC Approval</div>
+          <div class="ns-desc">${isBasic?'Instant — account already active':'Compliance review within 24-48h'}</div>
+        </div>
+        <div class="next-step">
+          <div class="ns-num">03</div>
+          <div class="ns-title">First Trade</div>
+          <div class="ns-desc">Create your first smart escrow trade — replacing SBLC with blockchain</div>
+        </div>
+      </div>
+ 
+      ${isBasic?`<div style="margin-top:28px;"><button class="btn btn-primary" onclick="goToPlatform()">Go to Platform →</button></div>`:''}
+    </div>
+  `;
+}
+ 
+// ── HELPERS ───────────────────────────────────────────────────────
+function sendVerification() {
+  if (!state.email || !state.role) return;
+  state.step = 1;
+  render();
+}
+ 
+function moveCode(el, i) {
+  if (el.value && i < 6) document.getElementById(`code${i+1}`)?.focus();
+}
+ 
+function backCode(e, i) {
+  if (e.key === 'Backspace' && !document.getElementById(`code${i}`).value && i > 1) {
+    document.getElementById(`code${i-1}`).focus();
+  }
+}
+ 
+function getCode() {
+  return [1,2,3,4,5,6].map(i=>document.getElementById(`code${i}`)?.value||'').join('');
+}
+ 
+function verifyCode() {
+  const code = getCode();
+  if (code.length === 6) {
+    state.emailVerified = true;
+    state.step = 2;
+    render();
+  }
+}
+ 
+function resendCode() {
+  alert(`Verification code resent to ${state.email}`);
+}
+ 
+function goToPlatform() {
+  alert('🚀 Redirecting to crossledger.trade/platform\n\nIn production this opens the gated trade dashboard with your verified account.');
+}
+ 
+function uploadDoc(key) {
+  state.docs[key] = true;
+  render();
+}
+ 
+function uploadAll() {
+  Object.keys(state.docs).forEach(k => state.docs[k] = true);
+  render();
+}
+ 
+function toggleCommodity(name) {
+  const idx = state.commodities.indexOf(name);
+  if (idx === -1) state.commodities.push(name);
+  else state.commodities.splice(idx, 1);
+  render();
+}
+ 
+function addBeneficiary() {
+  if (state.beneficiaries.length >= 3) return;
+  state.beneficiaries.push({ role: 'Broker', wallet: '', share: 0 });
+  render();
+}
+ 
+function removeBeneficiary(i) {
+  state.beneficiaries.splice(i, 1);
+  render();
+}
+ 
+function updateShareTotal() {
+  const total = state.beneficiaries.reduce((s,b)=>s+parseInt(b.share||0),0);
+  const el = document.querySelector('.share-total');
+  if (el) {
+    el.textContent = total + '%';
+    el.className = `share-total ${total===100?'valid':total>0?'invalid':''}`;
+  }
+}
+ 
+function submitApplication() {
+  state.step = 6;
+  render();
+}
+ 
+function copyWallet() {
+  navigator.clipboard?.writeText(state.walletId);
+  const btn = document.querySelector('.copy-btn');
+  if (btn) { btn.textContent='Copied!'; setTimeout(()=>btn.textContent='Copy',2000); }
+}
+ 
+function nextStep() { state.step++; render(); }
+function prevStep() { state.step--; render(); }
+ 
+// INIT
+render();
+</script>
+</body>
+</html>

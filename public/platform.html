@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CrossLedger Platform — crossledger.trade</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0A1628;
+  --navy-mid: #0F2040;
+  --navy-light: #162d55;
+  --teal: #00C2D4;
+  --teal-dark: #0099aa;
+  --teal-glow: rgba(0,194,212,0.12);
+  --white: #ffffff;
+  --grey: #7a8fa6;
+  --grey-light: #b8cad8;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --border: rgba(0,194,212,0.15);
+  --card: rgba(15,32,64,0.9);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--navy); color: var(--white); min-height: 100vh; }
+body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse 70% 50% at 15% 0%, rgba(0,194,212,0.07) 0%, transparent 60%), radial-gradient(ellipse 50% 60% at 85% 90%, rgba(0,80,140,0.09) 0%, transparent 60%), linear-gradient(180deg, rgba(10,22,40,0.95) 0%, rgba(8,16,32,0.98) 100%); pointer-events: none; z-index: 0; }
+body::after { content: ''; position: fixed; inset: 0; background-image: linear-gradient(rgba(0,194,212,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(0,194,212,0.025) 1px, transparent 1px); background-size: 60px 60px; pointer-events: none; z-index: 0; }
+ 
+/* ═══════════════════════════════
+   SCREENS
+═══════════════════════════════ */
+.screen { display: none; min-height: 100vh; position: relative; z-index: 1; }
+.screen.active { display: flex; }
+ 
+/* ═══════════════════════════════
+   GATE SCREEN
+═══════════════════════════════ */
+#screen-gate { align-items: center; justify-content: center; flex-direction: column; padding: 40px 20px; }
+ 
+.gate-logo { display: flex; align-items: center; gap: 14px; font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 2rem; margin-bottom: 8px; letter-spacing: -1px; }
+.gate-logo-mark { width: 52px; height: 52px; background: linear-gradient(135deg, var(--teal), #005fa3); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; box-shadow: 0 0 30px rgba(0,194,212,0.35); }
+.gate-domain { font-size: 0.8rem; color: var(--grey); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 48px; font-family: 'Montserrat', sans-serif; }
+ 
+.gate-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 40px; width: 100%; max-width: 440px; backdrop-filter: blur(20px); text-align: center; }
+.gate-title { font-family: 'Montserrat', sans-serif; font-size: 1.4rem; font-weight: 800; margin-bottom: 8px; }
+.gate-title span { color: var(--teal); }
+.gate-sub { font-size: 0.85rem; color: var(--grey-light); margin-bottom: 28px; line-height: 1.6; }
+ 
+.gate-tabs { display: flex; background: rgba(0,0,0,0.3); border-radius: 10px; padding: 4px; margin-bottom: 24px; }
+.gate-tab { flex: 1; padding: 9px; border-radius: 7px; font-size: 0.8rem; font-weight: 700; font-family: 'Montserrat', sans-serif; cursor: pointer; transition: all 0.2s; color: var(--grey); border: none; background: none; }
+.gate-tab.active { background: var(--teal); color: var(--navy); }
+ 
+.form-group { margin-bottom: 14px; text-align: left; }
+.form-label { font-size: 0.72rem; font-weight: 700; color: var(--grey-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: block; }
+.form-input { width: 100%; background: rgba(10,22,40,0.8); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; color: var(--white); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; outline: none; transition: all 0.2s; }
+.form-input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(0,194,212,0.1); }
+.form-input option { background: #0F2040; }
+ 
+.btn { padding: 13px 24px; border-radius: 10px; font-family: 'Montserrat', sans-serif; font-size: 0.82rem; font-weight: 700; cursor: pointer; border: none; transition: all 0.25s; letter-spacing: 0.3px; text-transform: uppercase; width: 100%; }
+.btn-primary { background: linear-gradient(135deg, var(--teal), var(--teal-dark)); color: var(--navy); box-shadow: 0 4px 20px rgba(0,194,212,0.25); margin-top: 8px; }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,194,212,0.4); }
+.btn-ghost { background: transparent; color: var(--grey-light); border: 1px solid var(--border); }
+.btn-ghost:hover { border-color: var(--teal); color: var(--teal); }
+.btn-sm { width: auto; padding: 8px 18px; font-size: 0.75rem; }
+ 
+.gate-divider { display: flex; align-items: center; gap: 12px; margin: 18px 0; }
+.gate-divider::before, .gate-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.gate-divider span { font-size: 0.72rem; color: var(--grey); }
+ 
+.gate-info { background: rgba(0,194,212,0.06); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-top: 20px; font-size: 0.76rem; color: var(--grey-light); line-height: 1.6; text-align: left; }
+.gate-info strong { color: var(--teal); }
+ 
+/* PENDING SCREEN */
+#screen-pending { align-items: center; justify-content: center; flex-direction: column; padding: 40px 20px; text-align: center; }
+.pending-icon { width: 80px; height: 80px; border-radius: 50%; background: rgba(245,158,11,0.1); border: 2px solid var(--warning); display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 24px; animation: pendingPulse 2s ease infinite; }
+@keyframes pendingPulse { 0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,0.3)} 50%{box-shadow:0 0 0 16px rgba(245,158,11,0)} }
+.pending-title { font-family: 'Montserrat', sans-serif; font-size: 1.6rem; font-weight: 800; margin-bottom: 12px; }
+.pending-steps { display: flex; flex-direction: column; gap: 12px; max-width: 420px; margin: 24px auto; text-align: left; }
+.pending-step { display: flex; align-items: center; gap: 14px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px; }
+.pending-step-icon { font-size: 1.3rem; flex-shrink: 0; }
+.pending-step-title { font-size: 0.85rem; font-weight: 600; margin-bottom: 2px; }
+.pending-step-desc { font-size: 0.73rem; color: var(--grey); }
+.pending-step.done .pending-step-title { color: var(--success); }
+.pending-step.active .pending-step-title { color: var(--teal); }
+ 
+/* ═══════════════════════════════
+   PLATFORM SCREEN
+═══════════════════════════════ */
+#screen-platform { flex-direction: row; }
+ 
+.sidebar { width: 230px; min-height: 100vh; background: rgba(6,14,28,0.98); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; left: 0; top: 0; bottom: 0; z-index: 100; }
+.sidebar-logo { padding: 20px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 1rem; letter-spacing: -0.3px; }
+.logo-mark { width: 32px; height: 32px; background: linear-gradient(135deg, var(--teal), #005fa3); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; box-shadow: 0 0 12px rgba(0,194,212,0.3); flex-shrink: 0; }
+.sidebar-domain { font-size: 0.6rem; color: var(--grey); font-family: 'Montserrat', sans-serif; letter-spacing: 1px; padding: 4px 18px 10px; border-bottom: 1px solid var(--border); }
+.sidebar-user { padding: 14px 18px; border-bottom: 1px solid var(--border); }
+.user-tier { display: inline-flex; align-items: center; gap: 5px; font-size: 0.65rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 3px 8px; border-radius: 10px; margin-bottom: 6px; }
+.tier-basic { background: rgba(156,163,175,0.15); color: #9ca3af; border: 1px solid rgba(156,163,175,0.3); }
+.tier-pro { background: rgba(0,194,212,0.15); color: var(--teal); border: 1px solid rgba(0,194,212,0.3); }
+.tier-enterprise { background: rgba(245,158,11,0.15); color: var(--warning); border: 1px solid rgba(245,158,11,0.3); }
+.user-name { font-size: 0.88rem; font-weight: 600; margin-bottom: 2px; }
+.user-company { font-size: 0.72rem; color: var(--grey); }
+nav { flex: 1; padding: 10px 0; overflow-y: auto; }
+.nav-section { padding: 10px 18px 4px; font-size: 0.6rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--grey); }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 18px; font-size: 0.82rem; color: var(--grey-light); cursor: pointer; transition: all 0.2s; border-left: 3px solid transparent; }
+.nav-item:hover { background: var(--teal-glow); color: var(--white); }
+.nav-item.active { background: var(--teal-glow); color: var(--teal); border-left-color: var(--teal); font-weight: 600; }
+.nav-icon { font-size: 0.95rem; width: 18px; text-align: center; flex-shrink: 0; }
+.nav-badge { margin-left: auto; background: var(--teal); color: var(--navy); font-size: 0.6rem; font-weight: 700; padding: 1px 6px; border-radius: 8px; }
+.sidebar-wallet { padding: 14px 18px; border-top: 1px solid var(--border); }
+.wallet-card { background: var(--teal-glow); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+.wallet-label { font-size: 0.6rem; color: var(--grey); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
+.wallet-claxt { font-family: 'Montserrat', sans-serif; font-size: 1.1rem; font-weight: 900; color: var(--teal); }
+.wallet-usd { font-size: 0.7rem; color: var(--grey); margin-bottom: 6px; }
+.wallet-addr { font-size: 0.62rem; color: var(--grey); font-family: 'Montserrat', sans-serif; }
+ 
+/* MAIN */
+.platform-main { margin-left: 230px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+.topbar { padding: 14px 28px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: rgba(8,14,28,0.9); backdrop-filter: blur(20px); position: sticky; top: 0; z-index: 50; }
+.topbar-left { display: flex; align-items: center; gap: 16px; }
+.topbar-title { font-family: 'Montserrat', sans-serif; font-size: 1rem; font-weight: 800; }
+.topbar-title span { color: var(--teal); }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.ticker { display: flex; align-items: center; gap: 6px; padding: 5px 12px; background: var(--teal-glow); border: 1px solid var(--border); border-radius: 20px; font-size: 0.72rem; }
+.ticker-token { font-weight: 700; color: var(--grey-light); }
+.ticker-price { font-family: 'Montserrat', sans-serif; font-weight: 800; color: var(--teal); }
+.ticker-change { color: var(--success); font-weight: 600; }
+.notif-btn { width: 34px; height: 34px; border-radius: 8px; background: var(--teal-glow); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; font-size: 0.9rem; }
+.notif-dot { position: absolute; top: 5px; right: 5px; width: 6px; height: 6px; background: var(--error); border-radius: 50%; }
+.topbar-btn { padding: 8px 16px; border-radius: 8px; font-family: 'Montserrat', sans-serif; font-size: 0.75rem; font-weight: 700; cursor: pointer; border: none; letter-spacing: 0.3px; text-transform: uppercase; transition: all 0.2s; }
+.topbar-btn-primary { background: linear-gradient(135deg, var(--teal), var(--teal-dark)); color: var(--navy); box-shadow: 0 3px 12px rgba(0,194,212,0.25); }
+.topbar-btn-primary:hover { transform: translateY(-1px); }
+ 
+/* CONTENT */
+.platform-content { padding: 24px 28px; flex: 1; }
+.view { display: none; }
+.view.active { display: block; }
+ 
+/* STATS */
+.stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 22px; }
+.stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 13px; padding: 18px; position: relative; overflow: hidden; backdrop-filter: blur(10px); }
+.stat-card::after { content: ''; position: absolute; top: 0; right: 0; width: 50px; height: 50px; background: var(--teal-glow); border-radius: 0 13px 0 50px; }
+.stat-icon { position: absolute; top: 14px; right: 14px; font-size: 1.2rem; z-index: 1; }
+.stat-label { font-size: 0.66rem; color: var(--grey); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-bottom: 6px; }
+.stat-value { font-family: 'Montserrat', sans-serif; font-size: 1.5rem; font-weight: 900; margin-bottom: 3px; }
+.stat-sub { font-size: 0.7rem; color: var(--grey); }
+.stat-up { font-size: 0.7rem; font-weight: 600; color: var(--success); }
+ 
+/* CARDS */
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 13px; backdrop-filter: blur(10px); margin-bottom: 20px; }
+.card-header { padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(0,194,212,0.06); }
+.card-title { font-family: 'Montserrat', sans-serif; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--grey-light); display: flex; align-items: center; gap: 8px; }
+.card-title::before { content: ''; width: 3px; height: 12px; background: var(--teal); border-radius: 2px; flex-shrink: 0; }
+.card-body { padding: 18px 20px; }
+ 
+/* GRID */
+.grid-3-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 18px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+ 
+/* TABLE */
+.trade-table { width: 100%; border-collapse: collapse; }
+.trade-table th { font-size: 0.63rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--grey); padding: 0 10px 10px; text-align: left; }
+.trade-table td { padding: 11px 10px; font-size: 0.8rem; border-top: 1px solid rgba(0,194,212,0.05); vertical-align: middle; }
+.trade-table tr:hover td { background: rgba(0,194,212,0.02); }
+.trade-id { font-family: 'Montserrat', sans-serif; font-size: 0.72rem; font-weight: 700; color: var(--teal); }
+.trade-route { display: flex; align-items: center; gap: 5px; font-size: 0.78rem; }
+.commodity-tag { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 0.66rem; font-weight: 600; background: rgba(0,194,212,0.08); color: var(--teal); border: 1px solid rgba(0,194,212,0.18); }
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 20px; font-size: 0.65rem; font-weight: 700; }
+.badge::before { content: ''; width: 4px; height: 4px; border-radius: 50%; }
+.badge-funded { background: rgba(59,130,246,0.12); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); } .badge-funded::before { background: #60a5fa; }
+.badge-transit { background: rgba(245,158,11,0.12); color: var(--warning); border: 1px solid rgba(245,158,11,0.25); } .badge-transit::before { background: var(--warning); }
+.badge-complete { background: rgba(34,197,94,0.12); color: var(--success); border: 1px solid rgba(34,197,94,0.25); } .badge-complete::before { background: var(--success); }
+.badge-docs { background: rgba(139,92,246,0.12); color: #a78bfa; border: 1px solid rgba(139,92,246,0.25); } .badge-docs::before { background: #a78bfa; }
+.badge-created { background: rgba(156,163,175,0.12); color: #9ca3af; border: 1px solid rgba(156,163,175,0.25); } .badge-created::before { background: #9ca3af; }
+.claxt-val { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 0.82rem; color: var(--teal); }
+.usd-val { font-size: 0.68rem; color: var(--grey); }
+ 
+/* ESCROW ITEMS */
+.escrow-item { display: flex; align-items: center; gap: 12px; padding: 13px 0; border-bottom: 1px solid rgba(0,194,212,0.05); }
+.escrow-item:last-child { border-bottom: none; }
+.escrow-dot { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; flex-shrink: 0; }
+.escrow-name { font-size: 0.8rem; font-weight: 600; margin-bottom: 2px; }
+.escrow-detail { font-size: 0.7rem; color: var(--grey); }
+.escrow-right { margin-left: auto; text-align: right; }
+ 
+/* CORRIDORS */
+.corridor-item { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid rgba(0,194,212,0.05); }
+.corridor-item:last-child { border-bottom: none; }
+.corridor-flags { font-size: 1.1rem; letter-spacing: -2px; flex-shrink: 0; width: 36px; }
+.corridor-info { flex-shrink: 0; min-width: 120px; }
+.corridor-name { font-size: 0.78rem; font-weight: 500; }
+.corridor-vol { font-size: 0.68rem; color: var(--grey); }
+.bar-wrap { flex: 1; height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; }
+.bar { height: 100%; background: linear-gradient(90deg, var(--teal), var(--teal-dark)); border-radius: 2px; transition: width 1.2s ease; }
+.bar-pct { font-size: 0.7rem; font-weight: 700; color: var(--teal); min-width: 30px; text-align: right; }
+ 
+/* ═══════════════════════════════
+   TOKEN SWAP WIDGET
+═══════════════════════════════ */
+.swap-widget { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; max-width: 420px; backdrop-filter: blur(10px); }
+.swap-title { font-family: 'Montserrat', sans-serif; font-size: 1rem; font-weight: 800; margin-bottom: 4px; }
+.swap-sub { font-size: 0.76rem; color: var(--grey-light); margin-bottom: 20px; }
+.swap-box { background: rgba(10,22,40,0.7); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 4px; }
+.swap-box-label { font-size: 0.66rem; color: var(--grey); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.swap-row { display: flex; align-items: center; gap: 10px; }
+.swap-input { flex: 1; background: none; border: none; font-family: 'Montserrat', sans-serif; font-size: 1.4rem; font-weight: 800; color: var(--white); outline: none; width: 100%; }
+.swap-input::placeholder { color: rgba(255,255,255,0.2); }
+.token-selector { display: flex; align-items: center; gap: 6px; background: rgba(0,194,212,0.1); border: 1px solid var(--border); border-radius: 20px; padding: 6px 12px; cursor: pointer; font-size: 0.82rem; font-weight: 700; flex-shrink: 0; transition: all 0.2s; }
+.token-selector:hover { border-color: var(--teal); }
+.token-icon { font-size: 1rem; }
+.swap-balance { font-size: 0.68rem; color: var(--grey); margin-top: 6px; }
+.swap-balance span { color: var(--grey-light); font-weight: 600; }
+ 
+.swap-arrow-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--teal-glow); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; margin: 6px auto; font-size: 1rem; transition: all 0.2s; }
+.swap-arrow-btn:hover { border-color: var(--teal); transform: rotate(180deg); }
+ 
+.swap-rate { display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem; color: var(--grey); margin: 12px 0; padding: 8px 12px; background: rgba(0,0,0,0.2); border-radius: 8px; }
+.swap-rate span { color: var(--grey-light); font-weight: 600; }
+.swap-tokens-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 16px; }
+.swap-token-btn { border: 1px solid var(--border); border-radius: 8px; padding: 8px 4px; text-align: center; cursor: pointer; font-size: 0.72rem; font-weight: 600; transition: all 0.2s; background: rgba(0,0,0,0.2); }
+.swap-token-btn:hover, .swap-token-btn.selected { border-color: var(--teal); background: var(--teal-glow); color: var(--teal); }
+.swap-token-icon { font-size: 1.1rem; display: block; margin-bottom: 3px; }
+.swap-btn { width: 100%; padding: 14px; border: none; border-radius: 10px; background: linear-gradient(135deg, var(--teal), var(--teal-dark)); color: var(--navy); font-family: 'Montserrat', sans-serif; font-size: 0.85rem; font-weight: 800; cursor: pointer; transition: all 0.25s; letter-spacing: 0.3px; margin-top: 4px; }
+.swap-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,194,212,0.35); }
+.swap-info-row { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--grey); margin-top: 12px; }
+.swap-info-row span { color: var(--grey-light); }
+ 
+/* QUICK ACTIONS */
+.qa-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.qa-btn { border: 1px solid var(--border); border-radius: 10px; padding: 13px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.2s; background: rgba(0,194,212,0.03); }
+.qa-btn:hover { border-color: var(--teal); background: var(--teal-glow); }
+.qa-icon { font-size: 1.2rem; }
+.qa-title { font-size: 0.78rem; font-weight: 600; }
+.qa-sub { font-size: 0.66rem; color: var(--grey); }
+ 
+/* TIMELINE */
+.tl-item { display: flex; gap: 12px; padding: 10px 0; position: relative; }
+.tl-item:not(:last-child)::after { content: ''; position: absolute; left: 13px; top: 34px; bottom: 0; width: 1px; background: var(--border); }
+.tl-dot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; flex-shrink: 0; z-index: 1; }
+.tl-dot.done { background: rgba(34,197,94,0.15); border: 2px solid var(--success); }
+.tl-dot.live { background: rgba(0,194,212,0.15); border: 2px solid var(--teal); box-shadow: 0 0 8px rgba(0,194,212,0.3); }
+.tl-dot.pending { background: rgba(255,255,255,0.04); border: 2px solid rgba(255,255,255,0.1); }
+.tl-body { flex: 1; padding-top: 3px; }
+.tl-title { font-size: 0.8rem; font-weight: 600; margin-bottom: 1px; }
+.tl-desc { font-size: 0.7rem; color: var(--grey); }
+.tl-time { font-size: 0.66rem; color: var(--grey); margin-top: 2px; }
+ 
+/* DOCS */
+.doc-row { display: flex; align-items: center; gap: 10px; padding: 11px 14px; background: rgba(10,22,40,0.5); border: 1px solid var(--border); border-radius: 9px; margin-bottom: 8px; }
+.doc-icon { font-size: 1rem; flex-shrink: 0; }
+.doc-name { flex: 1; font-size: 0.8rem; }
+.doc-hash { font-family: 'Montserrat', sans-serif; font-size: 0.62rem; color: var(--grey); margin-top: 1px; }
+.doc-badge { font-size: 0.66rem; font-weight: 700; padding: 3px 9px; border-radius: 10px; flex-shrink: 0; }
+.doc-verified { background: rgba(34,197,94,0.12); color: var(--success); border: 1px solid rgba(34,197,94,0.25); }
+.doc-pending { background: rgba(245,158,11,0.12); color: var(--warning); border: 1px solid rgba(245,158,11,0.25); }
+ 
+/* MODAL */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); z-index: 300; display: none; align-items: center; justify-content: center; padding: 20px; }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--navy-mid); border: 1px solid var(--border); border-radius: 18px; padding: 30px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; animation: modalIn 0.3s ease; }
+@keyframes modalIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+.modal-title { font-family: 'Montserrat', sans-serif; font-size: 1.1rem; font-weight: 800; margin-bottom: 4px; }
+.modal-sub { font-size: 0.8rem; color: var(--grey-light); margin-bottom: 22px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+ 
+/* Scrollbar */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--teal-dark); border-radius: 2px; }
+</style>
+</head>
+<body>
+ 
+<!-- ═══════════════════════════════════════
+     SCREEN 1: GATE (Login / Register)
+═══════════════════════════════════════ -->
+<div class="screen active" id="screen-gate">
+  <div class="gate-logo">
+    <div class="gate-logo-mark">⛓</div>
+    CrossLedger
+  </div>
+  <div class="gate-domain">crossledger.trade · Secured Platform</div>
+ 
+  <div class="gate-card">
+    <div class="gate-title">Access the <span>Trade Platform</span></div>
+    <div class="gate-sub">Full KYC verification required. Your identity and wallet are verified before platform access is granted.</div>
+ 
+    <div class="gate-tabs">
+      <button class="gate-tab active" onclick="switchTab('login', this)">Sign In</button>
+      <button class="gate-tab" onclick="switchTab('register', this)">Apply for Access</button>
+    </div>
+ 
+    <!-- LOGIN FORM -->
+    <div id="tab-login">
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input class="form-input" type="email" placeholder="you@yourcompany.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" type="password" placeholder="••••••••••••">
+      </div>
+      <button class="btn btn-primary" onclick="tryLogin()">Sign In to Platform →</button>
+ 
+      <div class="gate-divider"><span>or connect wallet</span></div>
+ 
+      <button class="btn btn-ghost" onclick="tryLogin()" style="margin-top:0;">
+        🦊 Connect MetaMask Wallet
+      </button>
+ 
+      <div class="gate-info">
+        <strong>🔒 Gated Access:</strong> crossledger.trade/platform is only accessible to KYC-verified traders. New? Click "Apply for Access" to begin onboarding.
+      </div>
+    </div>
+ 
+    <!-- REGISTER FORM -->
+    <div id="tab-register" style="display:none;">
+      <div class="form-group">
+        <label class="form-label">Company Name</label>
+        <input class="form-input" placeholder="Registered company name">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input class="form-input" placeholder="Director / authorised signatory">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" type="email" placeholder="you@yourcompany.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Country</label>
+        <select class="form-input">
+          <option>🇦🇪 United Arab Emirates</option>
+          <option>🇧🇷 Brazil</option>
+          <option>🇨🇳 China</option>
+          <option>🇦🇺 Australia</option>
+          <option>🇵🇬 Papua New Guinea</option>
+          <option>🇺🇸 United States</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Wallet Tier</label>
+        <select class="form-input" id="regTier">
+          <option value="basic">Basic — Free (auto-approved after KYC)</option>
+          <option value="pro">Professional — $299/mo (manual review)</option>
+          <option value="enterprise">Enterprise — Custom (manual review)</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="applyAccess()">Begin KYC & Apply →</button>
+      <div class="gate-info" style="margin-top:16px;">
+        <strong>Basic tier:</strong> Auto-approved instantly after KYC ✓<br>
+        <strong>Pro / Enterprise:</strong> Manual review by CrossLedger team (24-48h)
+      </div>
+    </div>
+  </div>
+</div>
+ 
+<!-- ═══════════════════════════════════════
+     SCREEN 2: PENDING APPROVAL
+═══════════════════════════════════════ -->
+<div class="screen" id="screen-pending" style="flex-direction:column;">
+  <div style="margin-bottom:12px;">
+    <div style="font-family:Montserrat,sans-serif;font-size:1.4rem;font-weight:900;display:flex;align-items:center;gap:10px;justify-content:center;">
+      <div style="width:36px;height:36px;background:linear-gradient(135deg,var(--teal),#005fa3);border-radius:8px;display:flex;align-items:center;justify-content:center;">⛓</div>
+      CrossLedger
+    </div>
+  </div>
+  <div class="pending-icon">⏳</div>
+  <div class="pending-title">Application Under Review</div>
+  <p style="color:var(--grey-light);font-size:0.85rem;max-width:380px;line-height:1.6;">Your Pro/Enterprise application is being reviewed by the CrossLedger compliance team. You'll receive an email within 24-48 hours.</p>
+ 
+  <div class="pending-steps">
+    <div class="pending-step done">
+      <span class="pending-step-icon">✅</span>
+      <div><div class="pending-step-title">KYC Documents Submitted</div><div class="pending-step-desc">Identity and company documents uploaded</div></div>
+    </div>
+    <div class="pending-step active">
+      <span class="pending-step-icon">🔍</span>
+      <div><div class="pending-step-title">Compliance Review — In Progress</div><div class="pending-step-desc">CrossLedger team verifying AML/KYC data</div></div>
+    </div>
+    <div class="pending-step">
+      <span class="pending-step-icon">🪙</span>
+      <div><div class="pending-step-title">CLXT Wallet Activation</div><div class="pending-step-desc">Wallet created and CLXT allocation sent</div></div>
+    </div>
+    <div class="pending-step">
+      <span class="pending-step-icon">🚀</span>
+      <div><div class="pending-step-title">Platform Access Granted</div><div class="pending-step-desc">Login link sent to your email</div></div>
+    </div>
+  </div>
+ 
+  <button class="btn btn-ghost btn-sm" onclick="goBack()" style="width:auto;margin-top:8px;">← Back to Login</button>
+</div>
+ 
+<!-- ═══════════════════════════════════════
+     SCREEN 3: PLATFORM (Gated Dashboard)
+═══════════════════════════════════════ -->
+<div class="screen" id="screen-platform">
+ 
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">⛓</div>
+      CrossLedger
+    </div>
+    <div class="sidebar-domain">crossledger.trade/platform</div>
+    <div class="sidebar-user">
+      <div class="user-tier tier-pro">⭐ Professional</div>
+      <div class="user-name">🇧🇷 Gui Di Nardo</div>
+      <div class="user-company">CrossLedger Pty Ltd</div>
+    </div>
+    <nav>
+      <div class="nav-section">Platform</div>
+      <div class="nav-item active" onclick="showView('dashboard',this)"><span class="nav-icon">📊</span>Dashboard</div>
+      <div class="nav-item" onclick="showView('trades',this)"><span class="nav-icon">🔄</span>Active Trades<span class="nav-badge">6</span></div>
+      <div class="nav-item" onclick="showView('newtrade',this)"><span class="nav-icon">➕</span>New Trade</div>
+      <div class="nav-item" onclick="showView('docs',this)"><span class="nav-icon">📄</span>Documents</div>
+      <div class="nav-section">Finance</div>
+      <div class="nav-item" onclick="showView('swap',this)"><span class="nav-icon">🔁</span>Swap to CLXT</div>
+      <div class="nav-item"><span class="nav-icon">📈</span>Analytics</div>
+      <div class="nav-item"><span class="nav-icon">🔒</span>Escrow History</div>
+      <div class="nav-section">Network</div>
+      <div class="nav-item" onclick="showView('corridors',this)"><span class="nav-icon">🌏</span>Trade Corridors</div>
+      <div class="nav-item" onclick="showView('partners',this)"><span class="nav-icon">🤝</span>Partners</div>
+      <div class="nav-section">Account</div>
+      <div class="nav-item"><span class="nav-icon">⚙️</span>Settings</div>
+      <div class="nav-item" onclick="signOut()"><span class="nav-icon">🚪</span>Sign Out</div>
+    </nav>
+    <div class="sidebar-wallet">
+      <div class="wallet-card">
+        <div class="wallet-label">CLXT Balance</div>
+        <div class="wallet-claxt">12,450 CLXT</div>
+        <div class="wallet-usd">≈ $523.00 USD</div>
+        <div class="wallet-addr">0xA7C2...FA30</div>
+      </div>
+    </div>
+  </aside>
+ 
+  <!-- MAIN -->
+  <main class="platform-main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-title">Trade <span>Platform</span></div>
+      </div>
+      <div class="topbar-right">
+        <div class="ticker">
+          <span class="ticker-token">CLXT</span>
+          <span class="ticker-price">$0.042</span>
+          <span class="ticker-change">▲ 3.2%</span>
+        </div>
+        <div class="ticker" style="margin-left:2px;">
+          <span class="ticker-token">BTC</span>
+          <span class="ticker-price">$82,400</span>
+        </div>
+        <div class="ticker" style="margin-left:2px;">
+          <span class="ticker-token">ETH</span>
+          <span class="ticker-price">$1,960</span>
+        </div>
+        <div class="notif-btn">🔔<span class="notif-dot"></span></div>
+        <button class="topbar-btn topbar-btn-primary" onclick="showView('newtrade', null)">+ New Trade</button>
+      </div>
+    </div>
+ 
+    <div class="platform-content">
+ 
+      <!-- DASHBOARD VIEW -->
+      <div class="view active" id="view-dashboard">
+        <div class="stats-row">
+          <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-label">Escrow Value</div><div class="stat-value" style="color:var(--teal)">$2.4M</div><div class="stat-sub">6 active trades</div><div class="stat-up">▲ 18% this month</div></div>
+          <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-label">Completed</div><div class="stat-value" style="color:var(--success)">24</div><div class="stat-sub">Zero disputes</div><div class="stat-up">▲ 6 this week</div></div>
+          <div class="stat-card"><div class="stat-icon">⏱️</div><div class="stat-label">Avg Settlement</div><div class="stat-value" style="color:var(--warning)">4.2d</div><div class="stat-sub">vs 45d traditional</div><div class="stat-up">▼ 91% faster</div></div>
+          <div class="stat-card"><div class="stat-icon">🪙</div><div class="stat-label">CLXT Staked</div><div class="stat-value">8,200</div><div class="stat-sub">Earning 5% APY</div><div class="stat-up">+41 CLXT reward</div></div>
+        </div>
+ 
+        <div class="grid-3-1">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Active Trades</div><button style="background:none;border:1px solid var(--border);color:var(--grey-light);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:0.7rem;font-family:Montserrat,sans-serif;font-weight:700;" onclick="showView('trades',null)">VIEW ALL</button></div>
+            <div style="padding:0 20px 16px;">
+              <table class="trade-table">
+                <thead><tr><th>ID</th><th>Route</th><th>Commodity</th><th>CLXT Value</th><th>Status</th></tr></thead>
+                <tbody>
+                  <tr><td><div class="trade-id">CX-001</div></td><td><div class="trade-route">🇧🇷→🇦🇪</div></td><td><span class="commodity-tag">Sugar ICUMSA 45</span></td><td><div class="claxt-val">4.17M CLXT</div><div class="usd-val">$175,000</div></td><td><span class="badge badge-transit">In Transit</span></td></tr>
+                  <tr><td><div class="trade-id">CX-002</div></td><td><div class="trade-route">🇦🇺→🇨🇳</div></td><td><span class="commodity-tag">Iron Ore 62%</span></td><td><div class="claxt-val">21.2M CLXT</div><div class="usd-val">$890,000</div></td><td><span class="badge badge-docs">Docs Lodged</span></td></tr>
+                  <tr><td><div class="trade-id">CX-003</div></td><td><div class="trade-route">🇵🇬→🇨🇳</div></td><td><span class="commodity-tag">LNG / Gas</span></td><td><div class="claxt-val">28.6M CLXT</div><div class="usd-val">$1,200,000</div></td><td><span class="badge badge-funded">Funded</span></td></tr>
+                  <tr><td><div class="trade-id">CX-004</div></td><td><div class="trade-route">🇺🇸→🇦🇪</div></td><td><span class="commodity-tag">Soybeans</span></td><td><div class="claxt-val">7.62M CLXT</div><div class="usd-val">$320,000</div></td><td><span class="badge badge-transit">In Transit</span></td></tr>
+                  <tr><td><div class="trade-id">CX-005</div></td><td><div class="trade-route">🇧🇷→🇨🇳</div></td><td><span class="commodity-tag">Halal Poultry</span></td><td><div class="claxt-val">5.71M CLXT</div><div class="usd-val">$240,000</div></td><td><span class="badge badge-complete">Completed ✓</span></td></tr>
+                  <tr><td><div class="trade-id">CX-006</div></td><td><div class="trade-route">🇦🇺→🇦🇪</div></td><td><span class="commodity-tag">Premium Wheat</span></td><td><div class="claxt-val">2.26M CLXT</div><div class="usd-val">$95,000</div></td><td><span class="badge badge-created">Created</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+ 
+          <div style="display:flex;flex-direction:column;gap:18px;">
+            <div class="card">
+              <div class="card-header"><div class="card-title">Live Escrow</div></div>
+              <div style="padding:0 20px 14px;">
+                <div class="escrow-item"><div class="escrow-dot" style="background:rgba(245,158,11,0.12);">🚢</div><div><div class="escrow-name">Brazil → UAE</div><div class="escrow-detail">Santos → Jebel Ali · 14d ETA</div></div><div class="escrow-right"><div class="claxt-val" style="font-size:0.82rem;">4.17M CLXT</div><div class="usd-val">$175K locked</div></div></div>
+                <div class="escrow-item"><div class="escrow-dot" style="background:rgba(139,92,246,0.12);">📋</div><div><div class="escrow-name">Australia → China</div><div class="escrow-detail">BoL verified on-chain ✓</div></div><div class="escrow-right"><div class="claxt-val" style="font-size:0.82rem;">21.2M CLXT</div><div class="usd-val">$890K locked</div></div></div>
+                <div class="escrow-item"><div class="escrow-dot" style="background:rgba(59,130,246,0.12);">💎</div><div><div class="escrow-name">PNG → China LNG</div><div class="escrow-detail">Funded · Awaiting docs</div></div><div class="escrow-right"><div class="claxt-val" style="font-size:0.82rem;">28.6M CLXT</div><div class="usd-val">$1.2M locked</div></div></div>
+              </div>
+            </div>
+ 
+            <div class="card">
+              <div class="card-header"><div class="card-title">Quick Actions</div></div>
+              <div style="padding:14px 20px;">
+                <div class="qa-grid">
+                  <div class="qa-btn" onclick="showView('newtrade',null)"><span class="qa-icon">📝</span><div><div class="qa-title">New Trade</div><div class="qa-sub">Smart escrow</div></div></div>
+                  <div class="qa-btn" onclick="showView('swap',null)"><span class="qa-icon">🔁</span><div><div class="qa-title">Swap → CLXT</div><div class="qa-sub">USDT·ETH·BTC·POL</div></div></div>
+                  <div class="qa-btn" onclick="showView('docs',null)"><span class="qa-icon">📤</span><div><div class="qa-title">Upload Doc</div><div class="qa-sub">Hash on-chain</div></div></div>
+                  <div class="qa-btn"><span class="qa-icon">📈</span><div><div class="qa-title">Stake CLXT</div><div class="qa-sub">Earn 5% APY</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+ 
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Trade Corridors</div><span style="font-size:0.68rem;color:var(--grey);">by volume</span></div>
+            <div class="card-body">
+              <div class="corridor-item"><div class="corridor-flags">🇧🇷🇨🇳</div><div class="corridor-info"><div class="corridor-name">Brazil → China</div><div class="corridor-vol">$2.8B corridor</div></div><div class="bar-wrap"><div class="bar" style="width:0%" data-w="92%"></div></div><div class="bar-pct">92%</div></div>
+              <div class="corridor-item"><div class="corridor-flags">🇦🇺🇨🇳</div><div class="corridor-info"><div class="corridor-name">Australia → China</div><div class="corridor-vol">$1.9B corridor</div></div><div class="bar-wrap"><div class="bar" style="width:0%" data-w="78%"></div></div><div class="bar-pct">78%</div></div>
+              <div class="corridor-item"><div class="corridor-flags">🇵🇬🇨🇳</div><div class="corridor-info"><div class="corridor-name">PNG → China</div><div class="corridor-vol">$890M corridor</div></div><div class="bar-wrap"><div class="bar" style="width:0%" data-w="64%"></div></div><div class="bar-pct">64%</div></div>
+              <div class="corridor-item"><div class="corridor-flags">🇧🇷🇦🇪</div><div class="corridor-info"><div class="corridor-name">Brazil → UAE</div><div class="corridor-vol">$620M corridor</div></div><div class="bar-wrap"><div class="bar" style="width:0%" data-w="51%"></div></div><div class="bar-pct">51%</div></div>
+              <div class="corridor-item"><div class="corridor-flags">🇺🇸🇦🇪</div><div class="corridor-info"><div class="corridor-name">USA → UAE</div><div class="corridor-vol">$480M corridor</div></div><div class="bar-wrap"><div class="bar" style="width:0%" data-w="40%"></div></div><div class="bar-pct">40%</div></div>
+              <div class="corridor-item"><div class="corridor-flags">🇦🇺🇦🇪</div><div class="corridor-info"><div class="corridor-name">Australia → UAE</div><div class="corridor-vol">$310M corridor</div></div><div class="bar-wrap"><div class="bar" style="width:0%" data-w="28%"></div></div><div class="bar-pct">28%</div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Recent Activity</div></div>
+            <div class="card-body">
+              <div class="tl-item"><div class="tl-dot done">✓</div><div class="tl-body"><div class="tl-title">Payment released — CX-005</div><div class="tl-desc">🇧🇷→🇨🇳 Halal Poultry · $240K to seller</div><div class="tl-time">2 hours ago</div></div></div>
+              <div class="tl-item"><div class="tl-dot done">✓</div><div class="tl-body"><div class="tl-title">Bill of Lading verified on-chain</div><div class="tl-desc">🇦🇺→🇨🇳 Iron Ore · Hash anchored to Polygon</div><div class="tl-time">5 hours ago</div></div></div>
+              <div class="tl-item"><div class="tl-dot live">⚡</div><div class="tl-body"><div class="tl-title">Vessel departed Santos</div><div class="tl-desc">🇧🇷→🇦🇪 Sugar ICUMSA 45 · ETA 14 days</div><div class="tl-time">Yesterday</div></div></div>
+              <div class="tl-item"><div class="tl-dot pending">○</div><div class="tl-body"><div class="tl-title">Docs pending — PNG LNG trade</div><div class="tl-desc">🇵🇬→🇨🇳 Escrow funded · Seller to lodge docs</div><div class="tl-time">2 days ago</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+ 
+      <!-- SWAP VIEW -->
+      <div class="view" id="view-swap">
+        <div style="max-width:860px;">
+          <h2 style="font-family:Montserrat,sans-serif;font-size:1.2rem;font-weight:800;margin-bottom:6px;">Swap to <span style="color:var(--teal)">CLXT</span></h2>
+          <p style="font-size:0.82rem;color:var(--grey-light);margin-bottom:24px;">Convert USDT, ETH, BTC or MATIC/POL into CLXT to fund your trade escrow. All swaps settle on Polygon.</p>
+          <div class="grid-2" style="align-items:start;">
+            <div class="swap-widget">
+              <div class="swap-title">Token Exchange</div>
+              <div class="swap-sub">Powered by crossledger.trade · 0x Protocol</div>
+ 
+              <div style="margin-bottom:12px;">
+                <div style="font-size:0.7rem;color:var(--grey);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-weight:700;">Select token to swap from:</div>
+                <div class="swap-tokens-grid">
+                  <div class="swap-token-btn selected" onclick="selectToken(this,'USDT','💵','1.00')"><span class="swap-token-icon">💵</span>USDT</div>
+                  <div class="swap-token-btn" onclick="selectToken(this,'ETH','⟠','1960')"><span class="swap-token-icon">⟠</span>ETH</div>
+                  <div class="swap-token-btn" onclick="selectToken(this,'BTC','₿','82400')"><span class="swap-token-icon">₿</span>BTC</div>
+                  <div class="swap-token-btn" onclick="selectToken(this,'POL','🔷','0.28')"><span class="swap-token-icon">🔷</span>POL</div>
+                </div>
+              </div>
+ 
+              <div class="swap-box">
+                <div class="swap-box-label">You Pay</div>
+                <div class="swap-row">
+                  <input class="swap-input" id="swapFrom" type="number" placeholder="0.00" oninput="calcSwap()">
+                  <div class="token-selector" id="fromToken"><span class="token-icon">💵</span> USDT</div>
+                </div>
+                <div class="swap-balance">Balance: <span id="fromBalance">24,500.00 USDT</span></div>
+              </div>
+ 
+              <div class="swap-arrow-btn" onclick="flipSwap()">⇅</div>
+ 
+              <div class="swap-box">
+                <div class="swap-box-label">You Receive</div>
+                <div class="swap-row">
+                  <input class="swap-input" id="swapTo" placeholder="0.00" readonly style="color:var(--teal);">
+                  <div class="token-selector" style="background:rgba(0,194,212,0.15);border-color:rgba(0,194,212,0.4);color:var(--teal);"><span class="token-icon">⛓</span> CLXT</div>
+                </div>
+                <div class="swap-balance">Balance: <span>12,450.00 CLXT</span></div>
+              </div>
+ 
+              <div class="swap-rate">
+                <span>Rate</span>
+                <span id="swapRate">1 USDT = 23.81 CLXT</span>
+              </div>
+ 
+              <button class="swap-btn" onclick="doSwap()">🔁 Swap to CLXT</button>
+ 
+              <div class="swap-info-row">
+                <div>Platform fee <span>0.3%</span></div>
+                <div>Network <span>Polygon (fast)</span></div>
+                <div>Slippage <span>0.5%</span></div>
+              </div>
+            </div>
+ 
+            <div style="display:flex;flex-direction:column;gap:16px;">
+              <div class="card">
+                <div class="card-header"><div class="card-title">Why CLXT?</div></div>
+                <div class="card-body" style="font-size:0.8rem;color:var(--grey-light);line-height:1.8;">
+                  <div style="margin-bottom:8px;">🔒 <strong style="color:var(--white)">Escrow currency</strong> — CLXT is locked in smart contracts replacing SBLC/DLC</div>
+                  <div style="margin-bottom:8px;">💸 <strong style="color:var(--white)">Fee discounts</strong> — Pay platform fees in CLXT and save up to 30%</div>
+                  <div style="margin-bottom:8px;">📈 <strong style="color:var(--white)">Stake for yield</strong> — Stake CLXT and earn 5% APY on idle holdings</div>
+                  <div style="margin-bottom:8px;">🌏 <strong style="color:var(--white)">Global settlement</strong> — Instant cross-border settlement across 6 countries</div>
+                  <div>⚡ <strong style="color:var(--white)">Polygon network</strong> — Near-zero gas fees vs Ethereum</div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-header"><div class="card-title">Recent Swaps</div></div>
+                <div class="card-body" style="font-size:0.78rem;">
+                  <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span style="color:var(--grey)">5,000 USDT → CLXT</span><span style="color:var(--success)">119,047 CLXT</span></div>
+                  <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span style="color:var(--grey)">0.5 ETH → CLXT</span><span style="color:var(--success)">23,333 CLXT</span></div>
+                  <div style="display:flex;justify-content:space-between;padding:6px 0;"><span style="color:var(--grey)">1,000 POL → CLXT</span><span style="color:var(--success)">6,667 CLXT</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+ 
+      <!-- TRADES VIEW -->
+      <div class="view" id="view-trades">
+        <div class="card">
+          <div class="card-header"><div class="card-title">All Active Trades</div><button class="topbar-btn topbar-btn-primary" onclick="showView('newtrade',null)">+ New Trade</button></div>
+          <div style="padding:0 20px 16px;">
+            <table class="trade-table">
+              <thead><tr><th>Trade ID</th><th>Route</th><th>Commodity</th><th>Quantity</th><th>CLXT Escrow</th><th>USD Value</th><th>Deadline</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td><div class="trade-id">CX-2024-001</div></td><td><div class="trade-route">🇧🇷 Santos → 🇦🇪 Jebel Ali</div></td><td><span class="commodity-tag">Sugar ICUMSA 45</span></td><td>500 MT</td><td class="claxt-val">4.17M CLXT</td><td class="usd-val" style="font-size:0.8rem;">$175,000</td><td style="font-size:0.72rem;color:var(--grey)">Apr 28</td><td><span class="badge badge-transit">In Transit</span></td></tr>
+                <tr><td><div class="trade-id">CX-2024-002</div></td><td><div class="trade-route">🇦🇺 Hedland → 🇨🇳 Qingdao</div></td><td><span class="commodity-tag">Iron Ore 62%</span></td><td>8,200 MT</td><td class="claxt-val">21.2M CLXT</td><td class="usd-val" style="font-size:0.8rem;">$890,000</td><td style="font-size:0.72rem;color:var(--grey)">May 15</td><td><span class="badge badge-docs">Docs Lodged</span></td></tr>
+                <tr><td><div class="trade-id">CX-2024-003</div></td><td><div class="trade-route">🇵🇬 Moresby → 🇨🇳 Shanghai</div></td><td><span class="commodity-tag">LNG / Natural Gas</span></td><td>12,000 MT</td><td class="claxt-val">28.6M CLXT</td><td class="usd-val" style="font-size:0.8rem;">$1,200,000</td><td style="font-size:0.72rem;color:var(--grey)">Jun 1</td><td><span class="badge badge-funded">Funded</span></td></tr>
+                <tr><td><div class="trade-id">CX-2024-004</div></td><td><div class="trade-route">🇺🇸 New Orleans → 🇦🇪 Dubai</div></td><td><span class="commodity-tag">Soybeans</span></td><td>3,100 MT</td><td class="claxt-val">7.62M CLXT</td><td class="usd-val" style="font-size:0.8rem;">$320,000</td><td style="font-size:0.72rem;color:var(--grey)">Apr 30</td><td><span class="badge badge-transit">In Transit</span></td></tr>
+                <tr><td><div class="trade-id">CX-2024-005</div></td><td><div class="trade-route">🇧🇷 São Paulo → 🇨🇳 Beijing</div></td><td><span class="commodity-tag">Halal Poultry A-Grade</span></td><td>180 MT</td><td class="claxt-val">5.71M CLXT</td><td class="usd-val" style="font-size:0.8rem;">$240,000</td><td style="font-size:0.72rem;color:var(--grey)">Done</td><td><span class="badge badge-complete">Completed ✓</span></td></tr>
+                <tr><td><div class="trade-id">CX-2024-006</div></td><td><div class="trade-route">🇦🇺 Melbourne → 🇦🇪 Abu Dhabi</div></td><td><span class="commodity-tag">Premium Wheat</span></td><td>950 MT</td><td class="claxt-val">2.26M CLXT</td><td class="usd-val" style="font-size:0.8rem;">$95,000</td><td style="font-size:0.72rem;color:var(--grey)">May 20</td><td><span class="badge badge-created">Created</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+ 
+      <!-- DOCS VIEW -->
+      <div class="view" id="view-docs">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Document Registry — Polygon Blockchain</div>
+            <button class="topbar-btn topbar-btn-primary">+ Upload & Hash</button>
+          </div>
+          <div class="card-body">
+            <div style="background:rgba(0,194,212,0.05);border:1px solid var(--border);border-radius:9px;padding:12px 16px;margin-bottom:18px;font-size:0.76rem;color:var(--grey-light);">
+              ⛓ Registry Contract: <span style="color:var(--teal);font-family:Montserrat,sans-serif;font-weight:700;">0xCA30Cbe4D511Dd283e0FDe62d2215c42C358Ba4c</span> · Polygon Amoy Testnet
+            </div>
+            <div class="doc-row"><span class="doc-icon">📋</span><div style="flex:1;"><div class="doc-name">Bill of Lading — CX-002 Iron Ore (AU→CN)</div><div class="doc-hash">SHA-256: 0x7f3a9c2b4e1d8f6a...</div></div><span class="doc-badge doc-verified">✓ On-Chain</span></div>
+            <div class="doc-row"><span class="doc-icon">📄</span><div style="flex:1;"><div class="doc-name">Certificate of Origin — CX-001 Sugar (BR→UAE)</div><div class="doc-hash">SHA-256: 0x2d8b4f1c9e3a7b5d...</div></div><span class="doc-badge doc-verified">✓ On-Chain</span></div>
+            <div class="doc-row"><span class="doc-icon">🧾</span><div style="flex:1;"><div class="doc-name">Commercial Invoice — CX-003 LNG (PNG→CN)</div><div class="doc-hash">SHA-256: Pending...</div></div><span class="doc-badge doc-pending">⏳ Pending</span></div>
+            <div class="doc-row"><span class="doc-icon">📦</span><div style="flex:1;"><div class="doc-name">Packing List — CX-004 Soybeans (US→UAE)</div><div class="doc-hash">SHA-256: 0x9c1d7e4b2f8a3c6e...</div></div><span class="doc-badge doc-verified">✓ On-Chain</span></div>
+            <div class="doc-row"><span class="doc-icon">🛡️</span><div style="flex:1;"><div class="doc-name">Insurance Certificate — CX-001 Sugar</div><div class="doc-hash">SHA-256: 0x4a8f2c1b9d7e3f5a...</div></div><span class="doc-badge doc-verified">✓ On-Chain</span></div>
+            <div class="doc-row"><span class="doc-icon">🌿</span><div style="flex:1;"><div class="doc-name">Phytosanitary Certificate — CX-005 Poultry</div><div class="doc-hash">SHA-256: 0x6b3d9f2e1c8a4b7d...</div></div><span class="doc-badge doc-verified">✓ On-Chain</span></div>
+            <div class="doc-row"><span class="doc-icon">📋</span><div style="flex:1;"><div class="doc-name">Customs Declaration — CX-003 LNG</div><div class="doc-hash">SHA-256: Pending...</div></div><span class="doc-badge doc-pending">⏳ Pending</span></div>
+          </div>
+        </div>
+      </div>
+ 
+      <!-- NEW TRADE VIEW -->
+      <div class="view" id="view-newtrade">
+        <div style="max-width:580px;">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Create Smart Escrow Trade</div></div>
+            <div class="card-body">
+              <div style="background:rgba(0,194,212,0.05);border:1px solid var(--border);border-radius:9px;padding:12px;margin-bottom:20px;font-size:0.76rem;color:var(--grey-light);">
+                🔒 Replaces SBLC/DLC — CLXT locked on Polygon until delivery confirmed by all parties
+              </div>
+              <div class="form-row" style="margin-bottom:14px;">
+                <div><label class="form-label" style="display:block;margin-bottom:6px;font-size:0.7rem;font-weight:700;color:var(--grey-light);text-transform:uppercase;letter-spacing:0.5px;">Your Role</label><select class="form-input"><option>Seller (Exporter)</option><option>Buyer (Importer)</option></select></div>
+                <div><label class="form-label" style="display:block;margin-bottom:6px;font-size:0.7rem;font-weight:700;color:var(--grey-light);text-transform:uppercase;letter-spacing:0.5px;">Commodity</label><select class="form-input"><option>Sugar ICUMSA 45</option><option>Iron Ore</option><option>LNG / Natural Gas</option><option>Soybeans</option><option>Halal Poultry</option><option>Wheat</option><option>Copper</option></select></div>
+              </div>
+              <div class="form-row" style="margin-bottom:14px;">
+                <div><label class="form-label" style="display:block;margin-bottom:6px;font-size:0.7rem;font-weight:700;color:var(--grey-light);text-transform:uppercase;letter-spacing:0.5px;">Origin</label><select class="form-input"><option>🇧🇷 Brazil</option><option>🇦🇺 Australia</option><option>🇵🇬 PNG</option><option>🇺🇸 USA</option><option>🇨🇳 China</option><option>🇦🇪 UAE</option></select></div>
+                <div><label class="form-label" style="display:block;margin-bottom:6px;font-size:0.7rem;font-weight:700;color:var(--grey-light);text-transform:uppercase;letter-spacing:0.5px;">Destination</label><select class="form-input"><option>🇨🇳 China</option><option>🇦🇪 UAE</option><option>🇦🇺 Australia</option><option>🇧🇷 Brazil</option><option>🇺🇸 USA</option><option>🇵🇬 PNG</option></select></div>
+              </div>
+              <div class="form-row" style="margin-bottom:14px;">
+                <div><label class="form-label" style="display:block;margin-bottom:6px;font-size:0.7rem;font-weight:700;color:var(--grey-light);text-transform:uppercase;letter-spacing:0.5px;">Quantity (MT)</label><input class="form-input" type="number" placeholder="500"></div>
+                <div><label class="form-label" style="display:block;margin-bottom:6px;font-size:0.7rem;font-weight:700;color:var(--grey-light);text-transform:uppercase;letter-spacing:0.5px;">Value (USD)</label><input class="form-input" type="number" placeholder="175000" id="tradeUSD" oninput="calcTradeCLXT()"></div>
+              </div>
+              <div style="margin-bottom:14px;"><label class="form-label" style="display:block;margin-bottom:6px;font-size:0.7rem;font-weight:700;color:var(--grey-light);text-transform:uppercase;letter-spacing:0.5px;">CLXT Equivalent (auto-calculated)</label><input class="form-input" id="tradeCLXT" readonly style="color:var(--teal);font-weight:700;" placeholder="Enter USD value above"></div>
+              <div style="margin-bottom:14px;"><label class="form-label" style="display:block;margin-bottom:6px;font-size:0.7rem;font-weight:700;color:var(--grey-light);text-transform:uppercase;letter-spacing:0.5px;">Counterparty CLXT Wallet</label><input class="form-input" placeholder="0x... their CrossLedger wallet address"></div>
+              <div style="margin-bottom:20px;"><label class="form-label" style="display:block;margin-bottom:6px;font-size:0.7rem;font-weight:700;color:var(--grey-light);text-transform:uppercase;letter-spacing:0.5px;">Delivery Deadline</label><input class="form-input" type="date"></div>
+              <div style="display:flex;gap:10px;">
+                <button style="flex:1;padding:13px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:var(--navy);font-family:Montserrat,sans-serif;font-weight:800;font-size:0.82rem;cursor:pointer;letter-spacing:0.3px;" onclick="createTrade()">🔒 Lock CLXT in Escrow</button>
+                <button style="padding:13px 18px;border:1px solid var(--border);border-radius:10px;background:none;color:var(--grey-light);cursor:pointer;font-family:Montserrat,sans-serif;font-size:0.78rem;font-weight:700;" onclick="showView('dashboard',null)">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+ 
+      <!-- CORRIDORS VIEW -->
+      <div class="view" id="view-corridors">
+        <div class="stats-row" style="grid-template-columns:repeat(3,1fr);">
+          <div class="stat-card"><div class="stat-icon">🇧🇷</div><div class="stat-label">Brazil</div><div class="stat-value" style="color:var(--teal)">$415K</div><div class="stat-sub">Sugar · Poultry · Soy</div></div>
+          <div class="stat-card"><div class="stat-icon">🇦🇺</div><div class="stat-label">Australia</div><div class="stat-value" style="color:var(--teal)">$985K</div><div class="stat-sub">Iron Ore · Wheat · Coal</div></div>
+          <div class="stat-card"><div class="stat-icon">🇵🇬</div><div class="stat-label">Papua New Guinea</div><div class="stat-value" style="color:var(--teal)">$1.2M</div><div class="stat-sub">LNG · Copper · Timber</div></div>
+          <div class="stat-card"><div class="stat-icon">🇨🇳</div><div class="stat-label">China</div><div class="stat-value" style="color:var(--success)">$2.33M</div><div class="stat-sub">Primary buyer · 3 trades</div></div>
+          <div class="stat-card"><div class="stat-icon">🇦🇪</div><div class="stat-label">UAE (Dubai Hub)</div><div class="stat-value" style="color:var(--success)">$590K</div><div class="stat-sub">Trade hub · Sugar · Soy</div></div>
+          <div class="stat-card"><div class="stat-icon">🇺🇸</div><div class="stat-label">United States</div><div class="stat-value" style="color:var(--teal)">$320K</div><div class="stat-sub">Soybeans · Grains</div></div>
+        </div>
+      </div>
+ 
+      <!-- PARTNERS VIEW -->
+      <div class="view" id="view-partners">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Verified Trade Partners</div><button class="topbar-btn topbar-btn-primary">+ Invite Partner</button></div>
+          <div style="padding:0 20px 16px;">
+            <table class="trade-table">
+              <thead><tr><th>Company</th><th>Country</th><th>Commodities</th><th>Trades</th><th>CLXT Volume</th><th>KYC Status</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Agrimed Solutions Ltd</strong></td><td>🇦🇪 UAE</td><td><span class="commodity-tag">Sugar</span> <span class="commodity-tag">Grains</span></td><td>8</td><td class="claxt-val">28.6M CLXT</td><td><span class="badge badge-complete">KYC Verified</span></td></tr>
+                <tr><td><strong>Shenzhen Pacific Trade Co.</strong></td><td>🇨🇳 China</td><td><span class="commodity-tag">Iron Ore</span> <span class="commodity-tag">LNG</span></td><td>5</td><td class="claxt-val">50M CLXT</td><td><span class="badge badge-complete">KYC Verified</span></td></tr>
+                <tr><td><strong>PNG Resources Pty Ltd</strong></td><td>🇵🇬 PNG</td><td><span class="commodity-tag">LNG</span> <span class="commodity-tag">Copper</span></td><td>3</td><td class="claxt-val">33.3M CLXT</td><td><span class="badge badge-complete">KYC Verified</span></td></tr>
+                <tr><td><strong>Midwest Grain Export LLC</strong></td><td>🇺🇸 USA</td><td><span class="commodity-tag">Soybeans</span> <span class="commodity-tag">Wheat</span></td><td>4</td><td class="claxt-val">16.2M CLXT</td><td><span class="badge badge-complete">KYC Verified</span></td></tr>
+                <tr><td><strong>BHP Commodities AU</strong></td><td>🇦🇺 Australia</td><td><span class="commodity-tag">Iron Ore</span> <span class="commodity-tag">Wheat</span></td><td>6</td><td class="claxt-val">42.9M CLXT</td><td><span class="badge badge-complete">KYC Verified</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+ 
+    </div>
+  </main>
+</div>
+ 
+<!-- NEW TRADE MODAL (triggered from topbar) -->
+<div class="modal-overlay" id="tradeModal">
+  <div class="modal">
+    <div class="modal-title">🔒 New Smart Escrow</div>
+    <div class="modal-sub">CLXT locked on Polygon — released on delivery. Replaces SBLC/DLC.</div>
+    <div class="form-row" style="margin-bottom:12px;">
+      <div><label style="display:block;margin-bottom:5px;font-size:0.7rem;font-weight:700;color:var(--grey-light);text-transform:uppercase;letter-spacing:0.5px;">Origin</label><select class="form-input"><option>🇧🇷 Brazil</option><option>🇦🇺 Australia</option><option>🇵🇬 PNG</option><option>🇺🇸 USA</option><option>🇨🇳 China</option><option>🇦🇪 UAE</option></select></div>
+      <div><label style="display:block;margin-bottom:5px;font-size:0.7rem;font-weight:700;color:var(--grey-light);text-transform:uppercase;letter-spacing:0.5px;">Destination</label><select class="form-input"><option>🇨🇳 China</option><option>🇦🇪 UAE</option><option>🇦🇺 Australia</option><option>🇧🇷 Brazil</option><option>🇺🇸 USA</option><option>🇵🇬 PNG</option></select></div>
+    </div>
+    <div style="margin-bottom:12px;"><label style="display:block;margin-bottom:5px;font-size:0.7rem;font-weight:700;color:var(--grey-light);text-transform:uppercase;letter-spacing:0.5px;">Commodity</label><select class="form-input"><option>Sugar ICUMSA 45</option><option>Iron Ore</option><option>LNG</option><option>Soybeans</option><option>Halal Poultry</option><option>Wheat</option></select></div>
+    <div class="form-row" style="margin-bottom:12px;">
+      <div><label style="display:block;margin-bottom:5px;font-size:0.7rem;font-weight:700;color:var(--grey-light);text-transform:uppercase;letter-spacing:0.5px;">Qty (MT)</label><input class="form-input" type="number" placeholder="500"></div>
+      <div><label style="display:block;margin-bottom:5px;font-size:0.7rem;font-weight:700;color:var(--grey-light);text-transform:uppercase;letter-spacing:0.5px;">Value (USD)</label><input class="form-input" type="number" placeholder="175000" oninput="calcModal(this.value)"></div>
+    </div>
+    <div style="margin-bottom:16px;"><label style="display:block;margin-bottom:5px;font-size:0.7rem;font-weight:700;color:var(--grey-light);text-transform:uppercase;letter-spacing:0.5px;">CLXT Required</label><input class="form-input" id="modalCLXT" readonly style="color:var(--teal);font-weight:700;" placeholder="Auto-calculated"></div>
+    <div style="display:flex;gap:10px;">
+      <button style="flex:1;padding:12px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:var(--navy);font-family:Montserrat,sans-serif;font-weight:800;font-size:0.8rem;cursor:pointer;" onclick="submitModal()">🔒 Create Escrow</button>
+      <button style="padding:12px 16px;border:1px solid var(--border);border-radius:10px;background:none;color:var(--grey-light);cursor:pointer;font-family:Montserrat,sans-serif;font-size:0.78rem;font-weight:700;" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+ 
+<script>
+// ─── TOKEN CONFIG ──────────────────────────
+const tokens = {
+  USDT: { icon: '💵', price: 1.00, balance: '24,500.00 USDT' },
+  ETH:  { icon: '⟠',  price: 1960, balance: '2.45 ETH' },
+  BTC:  { icon: '₿',  price: 82400, balance: '0.0082 BTC' },
+  POL:  { icon: '🔷', price: 0.28, balance: '8,920 POL' }
+};
+let currentToken = 'USDT';
+const CLXT_PRICE = 0.042;
+ 
+// ─── AUTH ──────────────────────────────────
+function switchTab(tab, el) {
+  document.querySelectorAll('.gate-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-login').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('tab-register').style.display = tab === 'register' ? 'block' : 'none';
+}
+ 
+function tryLogin() {
+  showScreen('platform');
+  setTimeout(animateBars, 400);
+}
+ 
+function applyAccess() {
+  const tier = document.getElementById('regTier').value;
+  if (tier === 'basic') {
+    showScreen('platform');
+    setTimeout(animateBars, 400);
+  } else {
+    showScreen('pending');
+  }
+}
+ 
+function goBack() { showScreen('gate'); }
+function signOut() { showScreen('gate'); }
+ 
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+}
+ 
+// ─── VIEWS ────────────────────────────────
+function showView(name, navEl) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  if (navEl) {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    navEl.classList.add('active');
+  }
+  closeModal();
+  if (name === 'dashboard') setTimeout(animateBars, 300);
+}
+ 
+// ─── SWAP ────────────────────────────────
+function selectToken(el, token, icon, price) {
+  document.querySelectorAll('.swap-token-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  currentToken = token;
+  document.getElementById('fromToken').innerHTML = `<span class="token-icon">${icon}</span> ${token}`;
+  document.getElementById('fromBalance').textContent = tokens[token].balance;
+  document.getElementById('swapRate').textContent = `1 ${token} = ${(tokens[token].price / CLXT_PRICE).toLocaleString(undefined, {maximumFractionDigits:2})} CLXT`;
+  calcSwap();
+}
+ 
+function calcSwap() {
+  const amt = parseFloat(document.getElementById('swapFrom').value) || 0;
+  const rate = tokens[currentToken].price / CLXT_PRICE;
+  const out = (amt * rate * 0.997).toFixed(2);
+  document.getElementById('swapTo').value = amt > 0 ? parseFloat(out).toLocaleString() + ' CLXT' : '';
+}
+ 
+function flipSwap() {
+  document.getElementById('swapFrom').value = '';
+  document.getElementById('swapTo').value = '';
+}
+ 
+function doSwap() {
+  const amt = document.getElementById('swapFrom').value;
+  if (!amt) { alert('Enter an amount to swap'); return; }
+  const claxt = document.getElementById('swapTo').value;
+  alert(`✅ Swap Confirmed!\n\n${amt} ${currentToken} → ${claxt}\n\nSettling on Polygon network...\nCLXT will appear in your wallet within 30 seconds.`);
+  document.getElementById('swapFrom').value = '';
+  document.getElementById('swapTo').value = '';
+}
+ 
+// ─── TRADE ───────────────────────────────
+function calcTradeCLXT() {
+  const usd = parseFloat(document.getElementById('tradeUSD').value) || 0;
+  const claxt = Math.round(usd / CLXT_PRICE);
+  document.getElementById('tradeCLXT').value = usd > 0 ? claxt.toLocaleString() + ' CLXT' : '';
+}
+ 
+function calcModal(usd) {
+  const claxt = Math.round(parseFloat(usd) / CLXT_PRICE);
+  document.getElementById('modalCLXT').value = usd > 0 ? claxt.toLocaleString() + ' CLXT' : '';
+}
+ 
+function createTrade() {
+  alert('✅ Smart Escrow Created!\n\nTrade ID: CX-2024-007\nCLXT locked on Polygon\nContract: 0xA7C2...FA30\n\nCounterparty notified by email.');
+  showView('trades', document.querySelectorAll('.nav-item')[1]);
+}
+ 
+// ─── MODAL ───────────────────────────────
+function openModal() { document.getElementById('tradeModal').classList.add('open'); }
+function closeModal() { document.getElementById('tradeModal').classList.remove('open'); }
+function submitModal() {
+  closeModal();
+  alert('✅ Escrow Created on Polygon!\n\nCLXT locked · Trade ID: CX-2024-007');
+}
+document.getElementById('tradeModal').addEventListener('click', e => { if (e.target === document.getElementById('tradeModal')) closeModal(); });
+ 
+// ─── BARS ────────────────────────────────
+function animateBars() {
+  document.querySelectorAll('.bar[data-w]').forEach(bar => {
+    bar.style.width = bar.getAttribute('data-w');
+  });
+}
+ 
+// init
+setTimeout(animateBars, 600);
+</script>
+</body>
+</html>
