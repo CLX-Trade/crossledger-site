@@ -589,7 +589,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="topbar-right">
+          <div className="topbar-right"><a href="/onboard.html" style={{marginRight:"8px",padding:"8px 16px",background:"transparent",border:"1px solid #00C2D4",color:"#00C2D4",borderRadius:"8px",fontSize:"0.8rem",fontWeight:"700",textDecoration:"none",fontFamily:"Montserrat,sans-serif"}}>Apply for Access</a><a href="/platform.html" style={{marginRight:"12px",padding:"8px 16px",background:"linear-gradient(135deg,#00C2D4,#0099aa)",color:"#0A1628",borderRadius:"8px",fontSize:"0.8rem",fontWeight:"700",textDecoration:"none",fontFamily:"Montserrat,sans-serif"}}>Trade Platform</a>
             <a href={`https://etherscan.io/address/${PRESALE_CONTRACT_ADDRESS}`} target="_blank" rel="noreferrer">
               Presale
             </a>
