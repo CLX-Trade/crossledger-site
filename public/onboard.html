@@ -871,6 +871,24 @@ function updateShareTotal() {
 }
  
 function submitApplication() {
+  fetch("https://formspree.io/f/mlgpnvbk", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      email: state.email,
+      company: state.company,
+      fullName: state.fullName,
+      country: state.country,
+      phone: state.phone,
+      role: state.role,
+      volume: state.volume,
+      walletTier: state.walletTier,
+      walletAddress: state.beneficiaries[0]?.wallet || "Not provided",
+      commodities: state.commodities.join(", "),
+      beneficiaries: JSON.stringify(state.beneficiaries),
+      submittedAt: new Date().toISOString()
+    })
+  }).catch(e => console.log("Form submission error:", e));
   state.step = 6;
   render();
 }
