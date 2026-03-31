@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://www.crossledger.trade/sitemap.xml
+
+# Disallow Next.js internals
+Disallow: /_next/
+Disallow: /api/
