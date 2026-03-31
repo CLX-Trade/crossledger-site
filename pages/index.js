@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { ethers } from "ethers";
 
-const PRESALE_CONTRACT_ADDRESS = "0xed25ce3C0aDF25a461Be386c514bE94C30Fa6223";
+const PRESALE_CONTRACT_ADDRESS = "0xEcf0AbCbad9A239D2d5d2AE7891B80D28f5988ab";
 const USDT_TOKEN_ADDRESS = "0xdAC17F958D2ee523a2206206994597C13D831ec7";
-const CLX_TOKEN_ADDRESS = "0x437e7fE4086FFAE6Ddd62077945C76bc7ba284d0";
+const CLX_TOKEN_ADDRESS = "0xDa23800A2fc8d345Af55d9Bf88a7A910B2f90A6d";
 const FORMSPREE_ENDPOINT = "https://formspree.io/f/mlgpnvbk";
 
 const TOKEN_NAME = "CrossLedger";
