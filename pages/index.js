@@ -1164,6 +1164,7 @@ export default function HomePage() {
         <footer className="footer">
           <div>© GDN Enterprise Pty Ltd</div>
           <div>Powered by Ethereum</div>
+          <a href="https://x.com/CrossLedgerCLX" target="_blank" rel="noreferrer" style={{color: "inherit", textDecoration: "none"}}>Follow us on 1d54 (Twitter)</a>
         </footer>
       </main>
 
