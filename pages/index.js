@@ -978,7 +978,7 @@ export default function HomePage() {
 
             <section className="content-card glass">
               <p className="section-kicker light">Product Advantages</p>
-              <h3 style={{marginBottom:"20px"}}>Why CrossLedger is differentiated</h3>
+              <h2 style={{marginBottom:"20px"}}>Why CrossLedger is differentiated</h2>
               <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:"14px"}}>
                 <div style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"12px",padding:"18px"}}>
                   <div style={{fontSize:"1.6rem",marginBottom:"8px"}}>🚀</div>
@@ -1034,7 +1034,7 @@ export default function HomePage() {
 
             <section className="content-card glass">
               <p className="section-kicker light">FAQ</p>
-              <h3>Frequently asked questions</h3>
+              <h2>Frequently asked questions</h2>
               <div className="faq-list">
                 {FAQS.map((item) => (
                   <details key={item.q} className="faq-item">
@@ -1049,7 +1049,7 @@ export default function HomePage() {
           <div className="right-col">
             <section className="content-card glass">
               <p className="section-kicker light">Recent Purchases</p>
-              <h3>Latest activity</h3>
+              <h2>Latest activity</h2>
               <div className="activity-list">
                 {RECENT_ACTIVITY.map((item, index) => (
                   <div key={`${item.buyer}-${index}`} className="activity-row">
@@ -1065,7 +1065,7 @@ export default function HomePage() {
 
             <section className="content-card glass">
               <p className="section-kicker light">Transparency</p>
-              <h3>Project references</h3>
+              <h2>Project references</h2>
               <div className="link-card-list">
                 {SOCIAL_LINKS.map((item) => (
                   <a key={item.label} href={item.href} target="_blank" rel="noreferrer" className="link-card">
@@ -1078,7 +1078,7 @@ export default function HomePage() {
 
             <section className="content-card glass">
               <p className="section-kicker light">Phases</p>
-              <h3>Project phases</h3>
+              <h2>Project phases</h2>
               <div className="phase-item">
                 <div className="phase-badge">Phase 1</div>
                 <div>
@@ -1104,7 +1104,7 @@ export default function HomePage() {
 
             <section className="content-card glass">
               <p className="section-kicker light">Business Model</p>
-              <h3>Where the token fits</h3>
+              <h2>Where the token fits</h2>
               <div className="bullet-list">
                 <div>Platform service fees including smart escrow and verification workflows.</div>
                 <div>Utility access for different wallet tiers and services.</div>
@@ -1115,7 +1115,7 @@ export default function HomePage() {
 
             <section className="content-card glass">
               <p className="section-kicker light">Target Market</p>
-              <h3>Cross-border trade corridors</h3>
+              <h2>Cross-border trade corridors</h2>
               <div className="bullet-list">
                 <div>Asia-Pacific, the Middle East and Latin America.</div>
                 <div>Commodity, agriculture, metals and SME trade flows.</div>
@@ -1126,7 +1126,7 @@ export default function HomePage() {
 
             <section className="content-card glass">
               <p className="section-kicker light">Roadmap</p>
-              <h3>Execution roadmap</h3>
+              <h2>Execution roadmap</h2>
               <div className="roadmap-item">
                 <div className="dot" />
                 <div>
@@ -1159,7 +1159,7 @@ export default function HomePage() {
 
             <section className="content-card glass">
               <p className="section-kicker light">Leadership</p>
-              <h3>Core team</h3>
+              <h2>Core team</h2>
               <div className="team-item">
                 <strong>Gui Di Nardo — Co-Founder & CEO</strong>
                 <p>International trade specialist with extensive experience in commodity trading, cross-border deal execution, and trade finance across Asia-Pacific and emerging markets. Gui brings deep commercial networks and operational expertise to guide CrossLedger's go-to-market strategy and enterprise partnerships. <a href="https://www.linkedin.com/in/guidinardo" target="_blank" rel="noopener noreferrer" style={{color:"#00d4aa",fontWeight:600,textDecoration:"none"}}>View LinkedIn Profile &rarr;</a></p>
@@ -1172,7 +1172,7 @@ export default function HomePage() {
 
             <section className="content-card glass">
               <p className="section-kicker light">Communication Box</p>
-              <h3>Contact us</h3>
+              <h2>Contact us</h2>
 
               <form onSubmit={handleContactSubmit} className="contact-form">
                 <input
@@ -1207,32 +1207,32 @@ export default function HomePage() {
         
         {/* ===== BLOG SECTION ===== */}
         <section id="blog" style={{padding:"60px 20px",maxWidth:"1100px",margin:"0 auto"}}>
-          <p style={{textTransform:"uppercase",fontSize:"0.75rem",fontWeight:700,letterSpacing:"0.1em",color:"#00C2D4",marginBottom:"8px"}}>Resources &amp; Insights</p>
+          <p style={{textTransform:"uppercase",fontSize:"0.75rem",fontWeight:700,letterSpacing:"0.1em",color:"#00C2D4",marginBottom:"8px"}}>INSIGHTS</p>
           <h2 style={{fontSize:"2rem",fontWeight:800,color:"#fff",marginBottom:"12px"}}>CrossLedger Blog</h2>
-          <p style={{color:"#a0b0c0",marginBottom:"40px",maxWidth:"600px"}}>Insights on blockchain trade finance, tokenisation, and global commodity markets.</p>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:"24px"}}>
-            <article style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"16px",padding:"28px"}}>
-              <p style={{fontSize:"0.72rem",fontWeight:600,color:"#00C2D4",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"10px"}}>Trade Finance &middot; March 2025</p>
+          <p style={{color:"rgba(255,255,255,0.65)",marginBottom:"40px",maxWidth:"600px"}}>Insights on blockchain adoption in global trade finance, cross-border payments, and the CLXT token presale.</p>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:"28px"}}>
+            <article style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"16px",padding:"28px",display:"flex",flexDirection:"column"}}>
+              <p style={{fontSize:"0.75rem",color:"#00C2D4",fontWeight:600,marginBottom:"10px",textTransform:"uppercase"}}>Trade Finance &bull; June 2025</p>
               <h3 style={{fontSize:"1.15rem",fontWeight:700,color:"#fff",marginBottom:"12px",lineHeight:1.4}}>Why Cross-Border Commodity Trade Needs Blockchain Now</h3>
-              <p style={{color:"#8090a0",fontSize:"0.88rem",lineHeight:1.6,marginBottom:"18px"}}>Traditional cross-border commodity trade relies on paper-heavy processes, slow correspondent banking, and fragmented verification. We explore why blockchain infrastructure is no longer optional for competitive trade corridors.</p>
+              <p style={{fontSize:"0.9rem",color:"rgba(255,255,255,0.7)",lineHeight:1.7,marginBottom:"16px",flexGrow:1}}>Global commodity trade moves over $18 trillion annually, yet most transactions still rely on paper letters of credit, manual reconciliation across three or more banking intermediaries, and settlement windows of 5 to 14 business days. A single iron ore shipment from Australia to South Korea can involve a shipping company, an export credit agency, two correspondent banks, an insurance provider, and a customs authority — each maintaining separate ledgers, each introducing friction, cost, and counterparty risk. Blockchain changes this by creating a shared, immutable record that all parties read simultaneously. CrossLedger applies this to real trade corridors: Australia-Asia bulk commodities, East Africa agricultural exports, and South America energy logistics. By tokenising the letter of credit process on-chain, CrossLedger eliminates the need for multiple reconciliation steps, reduces settlement from days to hours, and cuts transaction costs by an estimated 60 to 80 percent for mid-market exporters who currently cannot access prime bank rates.</p>
               <span style={{fontSize:"0.82rem",color:"#00C2D4",fontWeight:600}}>Read Article &rarr;</span>
             </article>
-            <article style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"16px",padding:"28px"}}>
-              <p style={{fontSize:"0.72rem",fontWeight:600,color:"#00C2D4",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"10px"}}>Smart Contracts &middot; February 2025</p>
+            <article style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"16px",padding:"28px",display:"flex",flexDirection:"column"}}>
+              <p style={{fontSize:"0.75rem",color:"#00C2D4",fontWeight:600,marginBottom:"10px",textTransform:"uppercase"}}>Smart Contracts &bull; July 2025</p>
               <h3 style={{fontSize:"1.15rem",fontWeight:700,color:"#fff",marginBottom:"12px",lineHeight:1.4}}>How Smart Escrow Eliminates Counterparty Risk in Global Trade</h3>
-              <p style={{color:"#8090a0",fontSize:"0.88rem",lineHeight:1.6,marginBottom:"18px"}}>Smart escrow on Ethereum enables conditional fund release tied to verified trade milestones &mdash; removing the need for trusted intermediaries and reducing settlement times from days to minutes.</p>
+              <p style={{fontSize:"0.9rem",color:"rgba(255,255,255,0.7)",lineHeight:1.7,marginBottom:"16px",flexGrow:1}}>Counterparty risk — the possibility that the other side of a trade deal will default or fail to deliver — is the single largest friction point in international commerce. Traditional trade finance addresses this through letters of credit issued by banks, but these instruments are expensive (typically 1 to 3 percent of transaction value), slow to issue, and inaccessible to smaller exporters in emerging markets. Smart escrow contracts deployed on a public blockchain provide an alternative: funds are locked in a verifiable on-chain escrow and released automatically only when delivery conditions are confirmed. CrossLedger's smart escrow module uses oracle-verified shipping data, port arrival confirmations, and quality inspection certificates to trigger fund release without requiring manual bank intervention. For a coffee exporter in Ethiopia shipping to European buyers, this means receiving payment within 24 hours of confirmed delivery rather than waiting 30 days for bank processing. The CLXT token serves as the gas and governance token within this escrow system, aligning incentives between platform users and long-term token holders.</p>
               <span style={{fontSize:"0.82rem",color:"#00C2D4",fontWeight:600}}>Read Article &rarr;</span>
             </article>
-            <article style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"16px",padding:"28px"}}>
-              <p style={{fontSize:"0.72rem",fontWeight:600,color:"#00C2D4",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"10px"}}>Tokenisation &middot; January 2025</p>
-              <h3 style={{fontSize:"1.15rem",fontWeight:700,color:"#fff",marginBottom:"12px",lineHeight:1.4}}>CLXT Token Utility: Beyond Speculation &mdash; Real Trade Infrastructure</h3>
-              <p style={{color:"#8090a0",fontSize:"0.88rem",lineHeight:1.6,marginBottom:"18px"}}>Unlike purely speculative tokens, CLXT is designed with defined utility across platform fees, wallet tier access, trade incentives, and settlement workflows &mdash; built for real commercial adoption from day one.</p>
+            <article style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"16px",padding:"28px",display:"flex",flexDirection:"column"}}>
+              <p style={{fontSize:"0.75rem",color:"#00C2D4",fontWeight:600,marginBottom:"10px",textTransform:"uppercase"}}>Token Economics &bull; August 2025</p>
+              <h3 style={{fontSize:"1.15rem",fontWeight:700,color:"#fff",marginBottom:"12px",lineHeight:1.4}}>CLXT Token Utility: Beyond Speculation, Real Trade Infrastructure</h3>
+              <p style={{fontSize:"0.9rem",color:"rgba(255,255,255,0.7)",lineHeight:1.7,marginBottom:"16px",flexGrow:1}}>Most utility tokens described at launch never develop genuine on-chain utility. CLXT is designed differently: token demand is directly tied to transaction volume on the CrossLedger platform, not to speculative market sentiment. Every trade financed through the platform requires CLXT for fee settlement, staking collateral, and dispute arbitration. As transaction volume grows — driven by real commercial trade flows in agriculture, energy, and industrial goods — demand for CLXT increases proportionally. The tokenomics are structured to prevent early dumping: 40 percent of the total supply is allocated to the ecosystem and liquidity reserves with a 24-month vesting schedule, team tokens are locked for 18 months post-launch, and presale participants receive a staking bonus for holding rather than selling immediately. The presale price of $0.003 per CLXT reflects the early-stage risk premium, with projected platform revenue providing a fundamental valuation anchor once live trade volumes are established. Investors who understand trade finance fundamentals — not just crypto cycles — represent CrossLedger's core audience.</p>
               <span style={{fontSize:"0.82rem",color:"#00C2D4",fontWeight:600}}>Read Article &rarr;</span>
             </article>
-            <article style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"16px",padding:"28px"}}>
-              <p style={{fontSize:"0.72rem",fontWeight:600,color:"#00C2D4",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"10px"}}>Market Opportunity &middot; December 2024</p>
+            <article style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"16px",padding:"28px",display:"flex",flexDirection:"column"}}>
+              <p style={{fontSize:"0.75rem",color:"#00C2D4",fontWeight:600,marginBottom:"10px",textTransform:"uppercase"}}>Market Analysis &bull; September 2025</p>
               <h3 style={{fontSize:"1.15rem",fontWeight:700,color:"#fff",marginBottom:"12px",lineHeight:1.4}}>Asia-Pacific Trade Corridors: A $2T Opportunity for Blockchain Infrastructure</h3>
-              <p style={{color:"#8090a0",fontSize:"0.88rem",lineHeight:1.6,marginBottom:"18px"}}>Asia-Pacific, the Middle East and Latin America represent some of the world&apos;s most active and underserved trade corridors. We break down the market opportunity and why decentralised infrastructure is uniquely positioned to capture it.</p>
+              <p style={{fontSize:"0.9rem",color:"rgba(255,255,255,0.7)",lineHeight:1.7,marginBottom:"16px",flexGrow:1}}>The Asia-Pacific region accounts for approximately 40 percent of global merchandise trade, with intra-regional flows exceeding $2 trillion annually. Despite this scale, the documentary infrastructure supporting these flows remains largely analogue: paper bills of lading, fax-based instructions to freight forwarders, and correspondent banking chains that can involve four or five institutions between an Indonesian palm oil exporter and a Chinese processor. The Asian Development Bank estimates the global trade finance gap — the difference between demand for financing and what banks currently supply — at $2.5 trillion, with 40 percent of rejected applications coming from SMEs in developing Asia. CrossLedger targets precisely this gap. By providing blockchain-verified documentary trade services at a fraction of traditional bank costs, the platform opens trade finance access to mid-market exporters in Vietnam, Indonesia, the Philippines, and across East Africa. Early pilot corridors include Australian iron ore to South Korea, and Ethiopian specialty coffee to EU buyers. These are not theoretical use cases — they are active negotiations with logistics partners and commodity brokers who have committed to testing the platform on live shipments in Q1 2026.</p>
               <span style={{fontSize:"0.82rem",color:"#00C2D4",fontWeight:600}}>Read Article &rarr;</span>
             </article>
           </div>
