@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ethers } from "ethers";
 
-const PRESALE_CONTRACT_ADDRESS = "0x3c5AbD6107b8f62D836db6176C9c3f698e6AF501";
+const PRESALE_CONTRACT_ADDRESS = "0xABCA8F71BA5f0e500A7e9c470048472c0B982B35";
 const USDT_TOKEN_ADDRESS = "0xdAC17F958D2ee523a2206206994597C13D831ec7";
 const CLX_TOKEN_ADDRESS = "0xDa23800A2fc8d345Af55d9Bf88a7A910B2f90A6d";
 const FORMSPREE_ENDPOINT = "https://formspree.io/f/mlgpnvbk";
@@ -14,7 +14,7 @@ const PROJECTED_LAUNCH_USD = 13.5;
 const MIN_PURCHASE_USD = 200;
 
 const PRESALE_ABI = [
-  "function buyTokens(uint256 usdtAmount) external",
+  "function buyWithUSDT(uint256 usdtAmount) external",
   "function claimTokens() external",
   "function currentPrice() view returns (uint256)",
   "function remainingInStage() view returns (uint256)",
@@ -454,7 +454,7 @@ export default function HomePage() {
       const amount = ethers.parseUnits(usdtAmount, 6);
 
       setStatusMessage("Waiting for purchase confirmation...");
-      const tx = await presale.buyTokens(amount);
+      const tx = await presale.buyWithUSDT(amount);
 
       setStatusMessage("Purchase submitted. Waiting for blockchain confirmation...");
       await tx.wait();
