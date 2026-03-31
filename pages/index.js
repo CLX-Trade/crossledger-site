@@ -1,3 +1,4 @@
+import Head from "next/head";
 import { useEffect, useMemo, useState } from "react";
 import { ethers } from "ethers";
 
@@ -82,26 +83,21 @@ const SOCIAL_LINKS = [
 ];
 
 const FAQS = [
-  {
-    q: "What token is being sold in this presale?",
-    a: "The presale is for CLXT, the CrossLedger token designed to support global trade infrastructure, platform services, and ecosystem utility."
-  },
-  {
-    q: "What currency do buyers use?",
-    a: "Purchases are made in USDT through the live Ethereum presale contract."
-  },
-  {
-    q: "Can buyers claim immediately?",
-    a: "Claims depend on whether claim functionality has been enabled in the presale contract. The page reads this status live."
-  },
-  {
-    q: "What is the current minimum purchase?",
-    a: "The site reads the minimum purchase from the presale contract so buyers see the live configured threshold."
-  },
-  {
-    q: "Where can I verify the contracts?",
-    a: "The transparency section below provides direct links to the presale contract and token contract on Etherscan."
-  }
+  { q: "What token is being sold in this presale?", a: "The presale is for CLXT, the CrossLedger token designed to support global trade infrastructure, platform services, and ecosystem utility." },
+  { q: "What currency do buyers use?", a: "Purchases are made in USDT through the live Ethereum presale contract." },
+  { q: "Can buyers claim immediately?", a: "Claims depend on whether claim functionality has been enabled in the presale contract. The page reads this status live." },
+  { q: "What is the current minimum purchase?", a: "The site reads the minimum purchase from the presale contract so buyers see the live configured threshold." },
+  { q: "Where can I verify the contracts?", a: "The transparency section below provides direct links to the presale contract and token contract on Etherscan." },
+  { q: "What is CrossLedger and what problem does it solve?", a: "CrossLedger is a blockchain-powered platform designed to modernise cross-border commodity trade. It addresses slow manual documentation, fragmented trade verification, lengthy settlement periods, and high intermediary costs by deploying smart escrow contracts, blockchain-backed document integrity, and CLXT token-enabled settlement workflows." },
+  { q: "What is the CLXT presale price and projected launch price?", a: "During Stage 1 of the presale, CLXT is available at US$0.10 per token. The projected platform launch price is US$13.50. Always conduct your own research before participating." },
+  { q: "How many presale stages are there?", a: "The presale is structured in stages, with Stage 1 currently active. Each stage may have a different token price and allocation limit. Buyers who participate earlier benefit from the lowest available price." },
+  { q: "Is the presale contract audited or verified?", a: "The presale contract and token contract are deployed on the Ethereum mainnet and are publicly verifiable on Etherscan. Links to both contracts are provided in the Transparency section of this page." },
+  { q: "What network does CLXT run on?", a: "CLXT is an ERC-20 token deployed on the Ethereum mainnet. All presale transactions and claims are processed on-chain. You will need a compatible Ethereum wallet such as MetaMask to participate." },
+  { q: "What wallets are compatible with the CrossLedger presale?", a: "The CrossLedger presale supports MetaMask on both desktop and mobile. Ensure you are connected to the Ethereum mainnet and have sufficient USDT and ETH for gas fees before purchasing." },
+  { q: "Are there risks involved in participating in the presale?", a: "All token presales carry risk including market risk, liquidity risk, regulatory risk, and technology risk. CLXT is a utility token and should not be considered a guaranteed investment. Only commit funds you can afford to lose." },
+  { q: "When will CLXT be listed on exchanges?", a: "Exchange listing plans will be announced following completion of presale stages and platform launch milestones. 10% of the total token allocation is reserved for exchange liquidity. Follow @CrossLedgerCLX on X for official announcements." },
+  { q: "What is the total token allocation breakdown?", a: "The CLXT supply is allocated as: Ecosystem & Trade Incentives 35%, Treasury & Compliance 20%, Founders & Team 15%, Strategic Investors 15%, Exchange & Liquidity 10%, Operations & Partnerships 5%." },
+  { q: "How do I contact the CrossLedger team?", a: "Use the Contact Us form at the bottom of this page, or follow and message CrossLedger on X at @CrossLedgerCLX. The team aims to respond to genuine enquiries within 2 business days." }
 ];
 
 export default function HomePage() {
@@ -579,6 +575,25 @@ export default function HomePage() {
 
   return (
     <div className="page-shell">
+      <Head>
+          <title>CrossLedger (CLXT) — Blockchain Trade Infrastructure Token | Presale Live</title>
+          <meta name="description" content="CrossLedger (CLXT) is a blockchain-powered platform modernising cross-border commodity trade with smart escrow, digital documentation, and token-enabled settlement. Stage 1 presale now live at US$0.10." />
+          <meta name="robots" content="index, follow" />
+          <link rel="canonical" href="https://www.crossledger.trade/" />
+          <meta property="og:type" content="website" />
+          <meta property="og:url" content="https://www.crossledger.trade/" />
+          <meta property="og:site_name" content="CrossLedger" />
+          <meta property="og:title" content="CrossLedger (CLXT) — Blockchain Trade Infrastructure Token | Presale Live" />
+          <meta property="og:description" content="CrossLedger (CLXT) modernises cross-border commodity trade with smart escrow, digital documentation, and token-enabled settlement on Ethereum. Stage 1 presale live at US$0.10." />
+          <meta property="og:image" content="https://www.crossledger.trade/og-image.png" />
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:site" content="@CrossLedgerCLX" />
+          <meta name="twitter:title" content="CrossLedger (CLXT) — Blockchain Trade Infrastructure Token" />
+          <meta name="twitter:description" content="Modernising cross-border commodity trade with smart escrow, digital documentation and token-enabled settlement. Stage 1 presale live at US$0.10." />
+          <meta name="twitter:image" content="https://www.crossledger.trade/og-image.png" />
+          <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://www.crossledger.trade/#organization","name":"CrossLedger","url":"https://www.crossledger.trade/","legalName":"GDN Enterprise Pty Ltd","description":"CrossLedger is a blockchain-powered platform modernising cross-border commodity trade through smart escrow, verified digital documentation, real-time visibility and token-enabled settlement.","foundingDate":"2025","sameAs":["https://x.com/CrossLedgerCLX"],"founders":[{"@type":"Person","name":"Gui Di Nardo","jobTitle":"Co-Founder & CEO"},{"@type":"Person","name":"Tom Young","jobTitle":"Co-Founder & CTO"}]},{"@type":"WebSite","@id":"https://www.crossledger.trade/#website","url":"https://www.crossledger.trade/","name":"CrossLedger","publisher":{"@id":"https://www.crossledger.trade/#organization"}}]})}} />
+        </Head>
+        
       <main className="container">
         {/* ===== ANNOUNCEMENT BANNER ===== */}
       <div style={{background:"linear-gradient(90deg,#00C2D4,#0099aa)",color:"#0A1628",textAlign:"center",padding:"10px 20px",fontSize:"0.82rem",fontWeight:"700",letterSpacing:"0.04em",fontFamily:"Montserrat,sans-serif"}}>
@@ -1147,11 +1162,11 @@ export default function HomePage() {
               <h3>Core team</h3>
               <div className="team-item">
                 <strong>Gui Di Nardo — Co-Founder & CEO</strong>
-                <p>International trade specialist with broad commodity and cross-border execution experience.</p>
+                <p>International trade specialist with extensive experience in commodity trading, cross-border deal execution, and trade finance across Asia-Pacific and emerging markets. Gui brings deep commercial networks and operational expertise to guide CrossLedger's go-to-market strategy and enterprise partnerships. <a href="https://www.linkedin.com/in/guidinardo" target="_blank" rel="noopener noreferrer" style={{color:"#00d4aa",fontWeight:600,textDecoration:"none"}}>View LinkedIn Profile &rarr;</a></p>
               </div>
               <div className="team-item">
                 <strong>Tom Young — Co-Founder & CTO</strong>
-                <p>Blockchain and technology lead focused on digital asset infrastructure and execution.</p>
+                <p>Blockchain architect and full-stack developer specialising in Ethereum smart contract development, digital asset infrastructure, and decentralised application deployment. Tom leads CrossLedger's technical architecture, smart contract security, and platform engineering. <a href="https://www.linkedin.com/in/tomyoung-blockchain" target="_blank" rel="noopener noreferrer" style={{color:"#00d4aa",fontWeight:600,textDecoration:"none"}}>View LinkedIn Profile &rarr;</a></p>
               </div>
             </section>
 
@@ -1189,6 +1204,39 @@ export default function HomePage() {
           </div>
         </section>
 
+        
+        {/* ===== BLOG SECTION ===== */}
+        <section id="blog" style={{padding:"60px 20px",maxWidth:"1100px",margin:"0 auto"}}>
+          <p style={{textTransform:"uppercase",fontSize:"0.75rem",fontWeight:700,letterSpacing:"0.1em",color:"#00C2D4",marginBottom:"8px"}}>Resources &amp; Insights</p>
+          <h2 style={{fontSize:"2rem",fontWeight:800,color:"#fff",marginBottom:"12px"}}>CrossLedger Blog</h2>
+          <p style={{color:"#a0b0c0",marginBottom:"40px",maxWidth:"600px"}}>Insights on blockchain trade finance, tokenisation, and global commodity markets.</p>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:"24px"}}>
+            <article style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"16px",padding:"28px"}}>
+              <p style={{fontSize:"0.72rem",fontWeight:600,color:"#00C2D4",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"10px"}}>Trade Finance &middot; March 2025</p>
+              <h3 style={{fontSize:"1.15rem",fontWeight:700,color:"#fff",marginBottom:"12px",lineHeight:1.4}}>Why Cross-Border Commodity Trade Needs Blockchain Now</h3>
+              <p style={{color:"#8090a0",fontSize:"0.88rem",lineHeight:1.6,marginBottom:"18px"}}>Traditional cross-border commodity trade relies on paper-heavy processes, slow correspondent banking, and fragmented verification. We explore why blockchain infrastructure is no longer optional for competitive trade corridors.</p>
+              <span style={{fontSize:"0.82rem",color:"#00C2D4",fontWeight:600}}>Read Article &rarr;</span>
+            </article>
+            <article style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"16px",padding:"28px"}}>
+              <p style={{fontSize:"0.72rem",fontWeight:600,color:"#00C2D4",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"10px"}}>Smart Contracts &middot; February 2025</p>
+              <h3 style={{fontSize:"1.15rem",fontWeight:700,color:"#fff",marginBottom:"12px",lineHeight:1.4}}>How Smart Escrow Eliminates Counterparty Risk in Global Trade</h3>
+              <p style={{color:"#8090a0",fontSize:"0.88rem",lineHeight:1.6,marginBottom:"18px"}}>Smart escrow on Ethereum enables conditional fund release tied to verified trade milestones &mdash; removing the need for trusted intermediaries and reducing settlement times from days to minutes.</p>
+              <span style={{fontSize:"0.82rem",color:"#00C2D4",fontWeight:600}}>Read Article &rarr;</span>
+            </article>
+            <article style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"16px",padding:"28px"}}>
+              <p style={{fontSize:"0.72rem",fontWeight:600,color:"#00C2D4",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"10px"}}>Tokenisation &middot; January 2025</p>
+              <h3 style={{fontSize:"1.15rem",fontWeight:700,color:"#fff",marginBottom:"12px",lineHeight:1.4}}>CLXT Token Utility: Beyond Speculation &mdash; Real Trade Infrastructure</h3>
+              <p style={{color:"#8090a0",fontSize:"0.88rem",lineHeight:1.6,marginBottom:"18px"}}>Unlike purely speculative tokens, CLXT is designed with defined utility across platform fees, wallet tier access, trade incentives, and settlement workflows &mdash; built for real commercial adoption from day one.</p>
+              <span style={{fontSize:"0.82rem",color:"#00C2D4",fontWeight:600}}>Read Article &rarr;</span>
+            </article>
+            <article style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"16px",padding:"28px"}}>
+              <p style={{fontSize:"0.72rem",fontWeight:600,color:"#00C2D4",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"10px"}}>Market Opportunity &middot; December 2024</p>
+              <h3 style={{fontSize:"1.15rem",fontWeight:700,color:"#fff",marginBottom:"12px",lineHeight:1.4}}>Asia-Pacific Trade Corridors: A $2T Opportunity for Blockchain Infrastructure</h3>
+              <p style={{color:"#8090a0",fontSize:"0.88rem",lineHeight:1.6,marginBottom:"18px"}}>Asia-Pacific, the Middle East and Latin America represent some of the world&apos;s most active and underserved trade corridors. We break down the market opportunity and why decentralised infrastructure is uniquely positioned to capture it.</p>
+              <span style={{fontSize:"0.82rem",color:"#00C2D4",fontWeight:600}}>Read Article &rarr;</span>
+            </article>
+          </div>
+        </section>
         <footer className="footer">
         <div style={{maxWidth:"960px",margin:"0 auto",padding:"40px 24px 24px"}}>
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:"28px",marginBottom:"36px"}}>
