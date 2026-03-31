@@ -580,7 +580,11 @@ export default function HomePage() {
   return (
     <div className="page-shell">
       <main className="container">
-        <section className="topbar">
+        {/* ===== ANNOUNCEMENT BANNER ===== */}
+      <div style={{background:"linear-gradient(90deg,#00C2D4,#0099aa)",color:"#0A1628",textAlign:"center",padding:"10px 20px",fontSize:"0.82rem",fontWeight:"700",letterSpacing:"0.04em",fontFamily:"Montserrat,sans-serif"}}>
+        🌐 CrossLedger Presale Stage 1 LIVE &mdash; CLXT at US$0.10 &nbsp;·&nbsp; <a href="/onboard.html" style={{color:"#0A1628",textDecoration:"underline",fontWeight:"800"}}>Apply for Early Access →</a>
+      </div>
+      <section className="topbar">
           <div className="topbar-left">
             <div className="topbar-logo">CLXT</div>
             <div className="topbar-meta">
@@ -646,6 +650,20 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+      {/* ===== STATS STRIP ===== */}
+      <section style={{background:"rgba(0,194,212,0.05)",borderTop:"1px solid rgba(0,194,212,0.12)",borderBottom:"1px solid rgba(0,194,212,0.12)",padding:"16px 24px"}}>
+        <div style={{maxWidth:"960px",margin:"0 auto",display:"flex",flexWrap:"wrap",alignItems:"center",justifyContent:"center",gap:"24px"}}>
+          <div style={{textAlign:"center"}}><div style={{fontSize:"1.3rem",fontWeight:"800",color:"#00C2D4",fontFamily:"Montserrat,sans-serif"}}>On-Chain</div><div style={{fontSize:"0.67rem",color:"#64748b",letterSpacing:"0.07em",textTransform:"uppercase"}}>Smart Escrow</div></div>
+          <div style={{width:"1px",height:"30px",background:"rgba(255,255,255,0.07)"}}></div>
+          <div style={{textAlign:"center"}}><div style={{fontSize:"1.3rem",fontWeight:"800",color:"#00C2D4",fontFamily:"Montserrat,sans-serif"}}>USDT</div><div style={{fontSize:"0.67rem",color:"#64748b",letterSpacing:"0.07em",textTransform:"uppercase"}}>Settlement</div></div>
+          <div style={{width:"1px",height:"30px",background:"rgba(255,255,255,0.07)"}}></div>
+          <div style={{textAlign:"center"}}><div style={{fontSize:"1.3rem",fontWeight:"800",color:"#00C2D4",fontFamily:"Montserrat,sans-serif"}}>Ethereum</div><div style={{fontSize:"0.67rem",color:"#64748b",letterSpacing:"0.07em",textTransform:"uppercase"}}>Network</div></div>
+          <div style={{width:"1px",height:"30px",background:"rgba(255,255,255,0.07)"}}></div>
+          <div style={{textAlign:"center"}}><div style={{fontSize:"1.3rem",fontWeight:"800",color:"#00C2D4",fontFamily:"Montserrat,sans-serif"}}>Stage 1</div><div style={{fontSize:"0.67rem",color:"#64748b",letterSpacing:"0.07em",textTransform:"uppercase"}}>Presale Active</div></div>
+          <div style={{width:"1px",height:"30px",background:"rgba(255,255,255,0.07)"}}></div>
+          <div style={{textAlign:"center"}}><div style={{fontSize:"1.3rem",fontWeight:"800",color:"#00C2D4",fontFamily:"Montserrat,sans-serif"}}>3</div><div style={{fontSize:"0.67rem",color:"#64748b",letterSpacing:"0.07em",textTransform:"uppercase"}}>Trade Corridors</div></div>
+        </div>
+      </section>
 
         <section className="progress-card glass">
           <div className="progress-top">
@@ -918,57 +936,67 @@ export default function HomePage() {
 
             <section className="content-card glass">
               <p className="section-kicker light">Why CrossLedger</p>
-              <h3>Infrastructure with real commercial use case</h3>
-              <div className="adv-grid">
-                <div className="adv-box">
-                  <strong>Trade Utility</strong>
-                  <p>Designed around real-world global trade activity rather than short-term hype alone.</p>
+              <h3 style={{marginBottom:"20px"}}>Infrastructure with real commercial use</h3>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:"14px"}}>
+                <div style={{background:"rgba(0,194,212,0.08)",border:"1px solid rgba(0,194,212,0.18)",borderRadius:"12px",padding:"18px"}}>
+                  <div style={{fontSize:"1.6rem",marginBottom:"8px"}}>⚡</div>
+                  <div style={{fontWeight:"700",color:"#00C2D4",marginBottom:"5px",fontFamily:"Montserrat,sans-serif",fontSize:"0.88rem"}}>Trade Utility</div>
+                  <div style={{color:"#94a3b8",fontSize:"0.8rem",lineHeight:"1.5"}}>Designed around real-world global trade, not short-term speculation.</div>
                 </div>
-                <div className="adv-box">
-                  <strong>Transparent Access</strong>
-                  <p>Contract references and investor-facing information are placed clearly on the website.</p>
+                <div style={{background:"rgba(0,194,212,0.08)",border:"1px solid rgba(0,194,212,0.18)",borderRadius:"12px",padding:"18px"}}>
+                  <div style={{fontSize:"1.6rem",marginBottom:"8px"}}>🔍</div>
+                  <div style={{fontWeight:"700",color:"#00C2D4",marginBottom:"5px",fontFamily:"Montserrat,sans-serif",fontSize:"0.88rem"}}>Transparent Access</div>
+                  <div style={{color:"#94a3b8",fontSize:"0.8rem",lineHeight:"1.5"}}>Contract references and investor information on-chain and visible on-site.</div>
                 </div>
-                <div className="adv-box">
-                  <strong>On-Chain Workflow</strong>
-                  <p>Approval, purchase and claim flow are all tied directly to your live contract logic.</p>
+                <div style={{background:"rgba(0,194,212,0.08)",border:"1px solid rgba(0,194,212,0.18)",borderRadius:"12px",padding:"18px"}}>
+                  <div style={{fontSize:"1.6rem",marginBottom:"8px"}}>⛓️</div>
+                  <div style={{fontWeight:"700",color:"#00C2D4",marginBottom:"5px",fontFamily:"Montserrat,sans-serif",fontSize:"0.88rem"}}>On-Chain Workflow</div>
+                  <div style={{color:"#94a3b8",fontSize:"0.8rem",lineHeight:"1.5"}}>Approval, purchase and claim tied directly to live smart contract logic.</div>
                 </div>
-                <div className="adv-box">
-                  <strong>Scalable Platform Vision</strong>
-                  <p>Built to grow into broader settlement, verification and trade support infrastructure.</p>
+                <div style={{background:"rgba(0,194,212,0.08)",border:"1px solid rgba(0,194,212,0.18)",borderRadius:"12px",padding:"18px"}}>
+                  <div style={{fontSize:"1.6rem",marginBottom:"8px"}}>🌐</div>
+                  <div style={{fontWeight:"700",color:"#00C2D4",marginBottom:"5px",fontFamily:"Montserrat,sans-serif",fontSize:"0.88rem"}}>Scalable Platform</div>
+                  <div style={{color:"#94a3b8",fontSize:"0.8rem",lineHeight:"1.5"}}>Built to expand into settlement, verification and broader trade infrastructure.</div>
                 </div>
               </div>
-            </section>
+              </section>
 
             <section className="content-card glass">
               <p className="section-kicker light">Product Advantages</p>
-              <h3>Why CrossLedger is differentiated</h3>
-              <div className="adv-grid">
-                <div className="adv-box">
-                  <strong>Speed & Efficiency</strong>
-                  <p>Settlement and validation are faster than traditional workflows.</p>
+              <h3 style={{marginBottom:"20px"}}>Why CrossLedger is differentiated</h3>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:"14px"}}>
+                <div style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"12px",padding:"18px"}}>
+                  <div style={{fontSize:"1.6rem",marginBottom:"8px"}}>🚀</div>
+                  <div style={{fontWeight:"700",color:"#e2e8f0",marginBottom:"5px",fontFamily:"Montserrat,sans-serif",fontSize:"0.88rem"}}>Speed &amp; Efficiency</div>
+                  <div style={{color:"#94a3b8",fontSize:"0.8rem",lineHeight:"1.5"}}>Settlement and validation faster than traditional workflows.</div>
                 </div>
-                <div className="adv-box">
-                  <strong>Lower Costs</strong>
-                  <p>Reduced dependency on paper-heavy and intermediary-heavy processes.</p>
+                <div style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"12px",padding:"18px"}}>
+                  <div style={{fontSize:"1.6rem",marginBottom:"8px"}}>💰</div>
+                  <div style={{fontWeight:"700",color:"#e2e8f0",marginBottom:"5px",fontFamily:"Montserrat,sans-serif",fontSize:"0.88rem"}}>Lower Costs</div>
+                  <div style={{color:"#94a3b8",fontSize:"0.8rem",lineHeight:"1.5"}}>Reduced dependency on paper-heavy intermediary processes.</div>
                 </div>
-                <div className="adv-box">
-                  <strong>Security & Trust</strong>
-                  <p>Smart escrow and transparent on-chain records strengthen confidence.</p>
+                <div style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"12px",padding:"18px"}}>
+                  <div style={{fontSize:"1.6rem",marginBottom:"8px"}}>🔒</div>
+                  <div style={{fontWeight:"700",color:"#e2e8f0",marginBottom:"5px",fontFamily:"Montserrat,sans-serif",fontSize:"0.88rem"}}>Security &amp; Trust</div>
+                  <div style={{color:"#94a3b8",fontSize:"0.8rem",lineHeight:"1.5"}}>Smart escrow and transparent on-chain records build confidence.</div>
                 </div>
-                <div className="adv-box">
-                  <strong>Global Accessibility</strong>
-                  <p>Built for real trade corridors, including underserved markets.</p>
+                <div style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"12px",padding:"18px"}}>
+                  <div style={{fontSize:"1.6rem",marginBottom:"8px"}}>🌍</div>
+                  <div style={{fontWeight:"700",color:"#e2e8f0",marginBottom:"5px",fontFamily:"Montserrat,sans-serif",fontSize:"0.88rem"}}>Global Accessibility</div>
+                  <div style={{color:"#94a3b8",fontSize:"0.8rem",lineHeight:"1.5"}}>Built for real trade corridors including underserved markets.</div>
                 </div>
-                <div className="adv-box">
-                  <strong>Service Access</strong>
-                  <p>Wallet tiers and token utility connect users to premium platform functions.</p>
+                <div style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"12px",padding:"18px"}}>
+                  <div style={{fontSize:"1.6rem",marginBottom:"8px"}}>🎫</div>
+                  <div style={{fontWeight:"700",color:"#e2e8f0",marginBottom:"5px",fontFamily:"Montserrat,sans-serif",fontSize:"0.88rem"}}>Service Access</div>
+                  <div style={{color:"#94a3b8",fontSize:"0.8rem",lineHeight:"1.5"}}>Wallet tiers and token utility connect to premium platform functions.</div>
                 </div>
-                <div className="adv-box">
-                  <strong>Scalable Infrastructure</strong>
-                  <p>Designed for expansion across global commodity and trade networks.</p>
+                <div style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:"12px",padding:"18px"}}>
+                  <div style={{fontSize:"1.6rem",marginBottom:"8px"}}>📈</div>
+                  <div style={{fontWeight:"700",color:"#e2e8f0",marginBottom:"5px",fontFamily:"Montserrat,sans-serif",fontSize:"0.88rem"}}>Scalable Infrastructure</div>
+                  <div style={{color:"#94a3b8",fontSize:"0.8rem",lineHeight:"1.5"}}>Designed for expansion across global commodity and trade networks.</div>
                 </div>
               </div>
-            </section>
+              </section>
 
             <section className="allocation-card white-card">
               <div className="section-head">
@@ -1162,10 +1190,43 @@ export default function HomePage() {
         </section>
 
         <footer className="footer">
-          <div>© GDN Enterprise Pty Ltd</div>
-          <div>Powered by Ethereum</div>
-          <a href="https://x.com/CrossLedgerCLX" target="_blank" rel="noreferrer" style={{color: "inherit", textDecoration: "none"}}>Follow us on X</a>
-        </footer>
+        <div style={{maxWidth:"960px",margin:"0 auto",padding:"40px 24px 24px"}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:"28px",marginBottom:"36px"}}>
+            <div>
+              <div style={{fontWeight:"800",color:"#00C2D4",fontSize:"0.95rem",fontFamily:"Montserrat,sans-serif",marginBottom:"10px"}}>CrossLedger</div>
+              <p style={{color:"#475569",fontSize:"0.78rem",lineHeight:"1.6"}}>Blockchain-powered cross-border commodity trade infrastructure. Smart escrow, digital documentation, token-enabled settlement.</p>
+            </div>
+            <div>
+              <div style={{fontWeight:"700",color:"#94a3b8",fontSize:"0.72rem",fontFamily:"Montserrat,sans-serif",marginBottom:"10px",textTransform:"uppercase",letterSpacing:"0.07em"}}>Platform</div>
+              <div style={{display:"flex",flexDirection:"column",gap:"7px"}}>
+                <a href="/platform.html" style={{color:"#475569",fontSize:"0.8rem",textDecoration:"none"}}>Trade Platform</a>
+                <a href="/onboard.html" style={{color:"#475569",fontSize:"0.8rem",textDecoration:"none"}}>Apply for Access</a>
+                <a href="#presale" style={{color:"#475569",fontSize:"0.8rem",textDecoration:"none"}}>Buy CLXT</a>
+              </div>
+            </div>
+            <div>
+              <div style={{fontWeight:"700",color:"#94a3b8",fontSize:"0.72rem",fontFamily:"Montserrat,sans-serif",marginBottom:"10px",textTransform:"uppercase",letterSpacing:"0.07em"}}>Token</div>
+              <div style={{display:"flex",flexDirection:"column",gap:"7px"}}>
+                <a href={`https://etherscan.io/address/${PRESALE_CONTRACT_ADDRESS}`} target="_blank" rel="noreferrer" style={{color:"#475569",fontSize:"0.8rem",textDecoration:"none"}}>Presale Contract ↗</a>
+                <a href={`https://etherscan.io/token/${CLX_TOKEN_ADDRESS}`} target="_blank" rel="noreferrer" style={{color:"#475569",fontSize:"0.8rem",textDecoration:"none"}}>Token Contract ↗</a>
+                <a href={`https://etherscan.io/token/${USDT_TOKEN_ADDRESS}`} target="_blank" rel="noreferrer" style={{color:"#475569",fontSize:"0.8rem",textDecoration:"none"}}>USDT on Etherscan ↗</a>
+              </div>
+            </div>
+            <div>
+              <div style={{fontWeight:"700",color:"#94a3b8",fontSize:"0.72rem",fontFamily:"Montserrat,sans-serif",marginBottom:"10px",textTransform:"uppercase",letterSpacing:"0.07em"}}>Connect</div>
+              <div style={{display:"flex",flexDirection:"column",gap:"7px"}}>
+                <a href="https://x.com/CrossLedgerCLX" target="_blank" rel="noreferrer" style={{color:"#475569",fontSize:"0.8rem",textDecoration:"none"}}>Follow on X ↗</a>
+                <span style={{color:"#475569",fontSize:"0.8rem"}}>GDN Enterprise Pty Ltd</span>
+                <span style={{color:"#475569",fontSize:"0.8rem"}}>Powered by Ethereum</span>
+              </div>
+            </div>
+          </div>
+          <div style={{borderTop:"1px solid rgba(255,255,255,0.06)",paddingTop:"18px",display:"flex",flexWrap:"wrap",justifyContent:"space-between",alignItems:"center",gap:"10px"}}>
+            <span style={{color:"#334155",fontSize:"0.73rem"}}>© 2025 GDN Enterprise Pty Ltd · CrossLedger &amp; CLXT Token</span>
+            <span style={{color:"#334155",fontSize:"0.73rem"}}>Presale Stage 1 Active · Network: Ethereum</span>
+          </div>
+        </div>
+      </footer>
       </main>
 
       <style jsx>{`
