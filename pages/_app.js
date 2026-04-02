@@ -10,7 +10,7 @@ const projectId = '5c3e263fbd158f50dd934e0912398db6'
 const metadata = {
   name: 'CrossLedger',
   description: 'CrossLedger Presale',
-  url: 'https://crossledger.trade',
+  url: 'https://www.crossledger.trade',
   icons: []
 }
 
