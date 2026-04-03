@@ -1,6 +1,6 @@
 import Head from "next/head";
 import { useEffect, useMemo, useState } from "react";
-import { ethers } from "ethers";
+import { ethers, JsonRpcProvider } from "ethers";
 
 const PRESALE_CONTRACT_ADDRESS = "0xABCA8F71BA5f0e500A7e9c470048472c0B982B35";
 const USDT_TOKEN_ADDRESS = "0xdAC17F958D2ee523a2206206994597C13D831ec7";
@@ -232,10 +232,10 @@ export default function HomePage() {
   }
 
   async function getProvider() {
-    if (typeof window === "undefined" || typeof window.ethereum === "undefined") {
-      throw new Error("MetaMask is not installed");
+    if (typeof window !== "undefined" && window.ethereum) {
+      return new ethers.BrowserProvider(window.ethereum);
     }
-    return new ethers.BrowserProvider(window.ethereum);
+    return new JsonRpcProvider("https://cloudflare-eth.com");
   }
 
   async function restoreExistingWallet() {
@@ -294,9 +294,7 @@ export default function HomePage() {
 
   async function loadPresaleInfo() {
     try {
-      if (typeof window === "undefined" || !window.ethereum) return;
-
-      const provider = await getProvider();
+        const provider = await getProvider();
       const presale = new ethers.Contract(PRESALE_CONTRACT_ADDRESS, PRESALE_ABI, provider);
 
       const [minPurchase, stage, salePaused, claimEnabled, remainingInStage] = await Promise.all([
