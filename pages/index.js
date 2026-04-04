@@ -225,6 +225,10 @@ export default function HomePage() {
     return new JsonRpcProvider("https://ethereum.publicnode.com");
   }
 
+  function getReadProvider() {
+    return new JsonRpcProvider("https://ethereum.publicnode.com");
+  }
+
   async function restoreExistingWallet() {
     if (typeof window === "undefined" || !window.ethereum) return;
 
@@ -281,7 +285,7 @@ export default function HomePage() {
 
   async function loadPresaleInfo() {
     try {
-      const provider = await getProvider();
+      const provider = getReadProvider();
       const presale = new ethers.Contract(PRESALE_CONTRACT_ADDRESS, PRESALE_ABI, provider);
       const clxtToken = new ethers.Contract(CLX_TOKEN_ADDRESS, ERC20_ABI, provider);
       const [isActive, remainingRaw] = await Promise.all([
@@ -304,7 +308,7 @@ export default function HomePage() {
   async function loadWalletData() {
     try {
       if (!walletAddress) return;
-      const provider = await getProvider();
+      const provider = getReadProvider();
       const usdt = new ethers.Contract(USDT_TOKEN_ADDRESS, ERC20_ABI, provider);
       const [balanceRaw, allowanceRaw] = await Promise.all([
         usdt.balanceOf(walletAddress),
