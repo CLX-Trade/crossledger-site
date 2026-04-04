@@ -16,14 +16,7 @@ const MIN_PURCHASE_USD = 200;
 
 const PRESALE_ABI = [
   "function buyWithUSDT(uint256 usdtAmount) external",
-  "function claimTokens() external",
-  "function currentPrice() view returns (uint256)",
-  "function remainingInStage() view returns (uint256)",
-  "function minPurchase() view returns (uint256)",
-  "function stage() view returns (uint256)",
-  "function salePaused() view returns (bool)",
-  "function claimEnabled() view returns (bool)",
-  "function buyerInfo(address account) view returns (uint256 usdtSpent, uint256 totalPurchased, uint256 totalClaimed, uint256 claimable)"
+  "function presaleActive() view returns (bool)"
 ];
 
 const ERC20_ABI = [
@@ -32,13 +25,7 @@ const ERC20_ABI = [
   "function balanceOf(address account) external view returns (uint256)"
 ];
 
-const RECENT_ACTIVITY = [
-  { buyer: "0x71...9ab4", amount: "12,500 USDT", status: "Confirmed" },
-  { buyer: "0x93...1fd2", amount: "4,800 USDT", status: "Confirmed" },
-  { buyer: "0x28...7ce1", amount: "18,200 USDT", status: "Confirmed" },
-  { buyer: "0x84...ab19", amount: "7,100 USDT", status: "Confirmed" },
-  { buyer: "0x16...ce42", amount: "25,000 USDT", status: "Confirmed" }
-];
+const RECENT_ACTIVITY = [];
 
 const TOKEN_ALLOCATION = [
   {
@@ -85,8 +72,8 @@ const SOCIAL_LINKS = [
 const FAQS = [
   { q: "What token is being sold in this presale?", a: "The presale is for CLXT, the CrossLedger token designed to support global trade infrastructure, platform services, and ecosystem utility." },
   { q: "What currency do buyers use?", a: "Purchases are made in USDT through the live Ethereum presale contract." },
-  { q: "Can buyers claim immediately?", a: "Claims depend on whether claim functionality has been enabled in the presale contract. The page reads this status live." },
-  { q: "What is the current minimum purchase?", a: "The site reads the minimum purchase from the presale contract so buyers see the live configured threshold." },
+  { q: "Do buyers receive tokens immediately?", a: "Yes. This is a direct-send presale. When your buyWithUSDT transaction is confirmed on-chain, CLXT tokens are transferred directly to your wallet in the same transaction. There is no separate claim step." },
+  { q: "What is the current minimum purchase?", a: "The minimum purchase is 200 USDT, which gives you 2,000 CLXT at the Stage 1 presale price of US$0.10 per token." },
   { q: "Where can I verify the contracts?", a: "The transparency section below provides direct links to the presale contract and token contract on Etherscan." },
   { q: "What is CrossLedger and what problem does it solve?", a: "CrossLedger is a blockchain-powered platform designed to modernise cross-border commodity trade. It addresses slow manual documentation, fragmented trade verification, lengthy settlement periods, and high intermediary costs by deploying smart escrow contracts, blockchain-backed document integrity, and CLXT token-enabled settlement workflows." },
   { q: "What is the CLXT presale price and projected launch price?", a: "During Stage 1 of the presale, CLXT is available at US$0.10 per token. The projected platform launch price is US$13.50. Always conduct your own research before participating." },
@@ -235,7 +222,7 @@ export default function HomePage() {
     if (typeof window !== "undefined" && window.ethereum) {
       return new ethers.BrowserProvider(window.ethereum);
     }
-    return new JsonRpcProvider("https://cloudflare-eth.com");
+    return new JsonRpcProvider("https://ethereum.publicnode.com");
   }
 
   async function restoreExistingWallet() {
@@ -294,25 +281,20 @@ export default function HomePage() {
 
   async function loadPresaleInfo() {
     try {
-        const provider = await getProvider();
+      const provider = await getProvider();
       const presale = new ethers.Contract(PRESALE_CONTRACT_ADDRESS, PRESALE_ABI, provider);
-
-      const [minPurchase, stage, salePaused, claimEnabled, remainingInStage] = await Promise.all([
-        presale.minPurchase(),
-        presale.stage(),
-        presale.salePaused(),
-        presale.claimEnabled(),
-        presale.remainingInStage()
+      const clxtToken = new ethers.Contract(CLX_TOKEN_ADDRESS, ERC20_ABI, provider);
+      const [isActive, remainingRaw] = await Promise.all([
+        presale.presaleActive(),
+        clxtToken.balanceOf(PRESALE_CONTRACT_ADDRESS)
       ]);
-
+      const remainingFormatted = Number(ethers.formatUnits(remainingRaw, 18)).toLocaleString(undefined, { maximumFractionDigits: 0 });
       setPresaleInfo({
-        minPurchase: Number(ethers.formatUnits(minPurchase, 6)),
-        stage: Number(stage),
-        salePaused,
-        claimEnabled,
-        remainingInStage: Number(ethers.formatUnits(remainingInStage, 18)).toLocaleString(undefined, {
-          maximumFractionDigits: 0
-        })
+        minPurchase: MIN_PURCHASE_USD,
+        stage: 1,
+        salePaused: !isActive,
+        claimEnabled: false,
+        remainingInStage: remainingFormatted
       });
     } catch (error) {
       console.error("Failed to load presale info:", error);
@@ -322,30 +304,19 @@ export default function HomePage() {
   async function loadWalletData() {
     try {
       if (!walletAddress) return;
-
       const provider = await getProvider();
-      const presale = new ethers.Contract(PRESALE_CONTRACT_ADDRESS, PRESALE_ABI, provider);
       const usdt = new ethers.Contract(USDT_TOKEN_ADDRESS, ERC20_ABI, provider);
-
-      const [balanceRaw, allowanceRaw, buyerInfo] = await Promise.all([
+      const [balanceRaw, allowanceRaw] = await Promise.all([
         usdt.balanceOf(walletAddress),
-        usdt.allowance(walletAddress, PRESALE_CONTRACT_ADDRESS),
-        presale.buyerInfo(walletAddress)
+        usdt.allowance(walletAddress, PRESALE_CONTRACT_ADDRESS)
       ]);
-
       setWalletData({
         usdtBalance: Number(ethers.formatUnits(balanceRaw, 6)).toFixed(2),
         allowance: Number(ethers.formatUnits(allowanceRaw, 6)).toFixed(2),
-        usdtSpent: Number(ethers.formatUnits(buyerInfo[0], 6)).toFixed(2),
-        totalPurchased: Number(ethers.formatUnits(buyerInfo[1], 18)).toLocaleString(undefined, {
-          maximumFractionDigits: 2
-        }),
-        totalClaimed: Number(ethers.formatUnits(buyerInfo[2], 18)).toLocaleString(undefined, {
-          maximumFractionDigits: 2
-        }),
-        claimable: Number(ethers.formatUnits(buyerInfo[3], 18)).toLocaleString(undefined, {
-          maximumFractionDigits: 2
-        })
+        usdtSpent: "0",
+        totalPurchased: "0",
+        totalClaimed: "0",
+        claimable: "0"
       });
     } catch (error) {
       console.error("Failed to load wallet data:", error);
@@ -734,8 +705,7 @@ export default function HomePage() {
                 <p className="section-kicker">USDT Presale</p>
                 <h2>Buy {TOKEN_SYMBOL}</h2>
                 <p className="section-copy">
-                  This presale purchases {TOKEN_SYMBOL} using USDT. Connect your wallet, approve USDT,
-                  commit the purchase, and claim tokens once claims are enabled.
+                  This presale purchases {TOKEN_SYMBOL} using USDT. Connect your wallet, approve USDT, and commit the purchase. Tokens are sent directly to your wallet upon confirmation.
                 </p>
               </div>
 
@@ -802,13 +772,9 @@ export default function HomePage() {
                 </button>
               </div>
 
-              <button
-                className="claim-btn"
-                onClick={handleClaimTokens}
-                disabled={isClaiming || !presaleInfo.claimEnabled}
-              >
-                {isClaiming ? "Claiming..." : presaleInfo.claimEnabled ? "Claim Tokens" : "Claim Not Enabled Yet"}
-              </button>
+              <div style={{padding:"14px 18px",borderRadius:"18px",background:"rgba(139,226,181,0.12)",border:"1px solid rgba(139,226,181,0.25)",color:"#8be2b5",fontSize:"0.88rem",fontWeight:"600",textAlign:"center",marginBottom:"18px"}}>
+          ✓ Tokens sent directly to your wallet on purchase — no claim step needed
+        </div>
 
               {statusMessage ? <div className="status-box info">{statusMessage}</div> : null}
               {successMessage ? <div className="status-box success">{successMessage}</div> : null}
@@ -847,11 +813,6 @@ export default function HomePage() {
                 </div>
 
                 <div className="summary-row">
-                  <span>Claim status</span>
-                  <strong>{presaleInfo.claimEnabled ? "Enabled" : "Disabled"}</strong>
-                </div>
-
-                <div className="summary-row">
                   <span>USDT balance</span>
                   <strong>{walletData.usdtBalance} USDT</strong>
                 </div>
@@ -859,26 +820,6 @@ export default function HomePage() {
                 <div className="summary-row">
                   <span>Approved allowance</span>
                   <strong>{walletData.allowance} USDT</strong>
-                </div>
-
-                <div className="summary-row">
-                  <span>Total USDT spent</span>
-                  <strong>{walletData.usdtSpent} USDT</strong>
-                </div>
-
-                <div className="summary-row">
-                  <span>Total {TOKEN_SYMBOL} purchased</span>
-                  <strong>{walletData.totalPurchased}</strong>
-                </div>
-
-                <div className="summary-row">
-                  <span>Total {TOKEN_SYMBOL} claimed</span>
-                  <strong>{walletData.totalClaimed}</strong>
-                </div>
-
-                <div className="summary-row">
-                  <span>Claimable {TOKEN_SYMBOL}</span>
-                  <strong>{walletData.claimable}</strong>
                 </div>
               </div>
             </section>
@@ -912,14 +853,14 @@ export default function HomePage() {
                   <span>4</span>
                   <div>
                     <strong>Commit purchase</strong>
-                    <p>The website calls <code>buyTokens(uint256 usdtAmount)</code> on the presale contract.</p>
+                    <p>The website calls <code>buyWithUSDT(uint256 usdtAmount)</code> on the presale contract.</p>
                   </div>
                 </div>
                 <div className="step">
                   <span>5</span>
                   <div>
-                    <strong>Claim later</strong>
-                    <p>When claims are enabled, the buyer can claim purchased tokens directly from the site.</p>
+                    <strong>Receive tokens</strong>
+                <p>Tokens are transferred directly to your wallet as part of the purchase transaction. No separate claim step required.</p>
                   </div>
                 </div>
               </div>
@@ -1049,15 +990,12 @@ export default function HomePage() {
               <p className="section-kicker light">Recent Purchases</p>
               <h2>Latest activity</h2>
               <div className="activity-list">
-                {RECENT_ACTIVITY.map((item, index) => (
-                  <div key={`${item.buyer}-${index}`} className="activity-row">
-                    <div>
-                      <div className="activity-buyer">{item.buyer}</div>
-                      <div className="activity-status">{item.status}</div>
-                    </div>
-                    <div className="activity-amount">{item.amount}</div>
-                  </div>
-                ))}
+                <div style={{textAlign:"center",padding:"18px 0",color:"rgba(255,255,255,0.65)",fontSize:"0.88rem",lineHeight:"1.7"}}>
+                  All purchases are processed on-chain and publicly verifiable.<br />
+                  <a href={`https://etherscan.io/address/${PRESALE_CONTRACT_ADDRESS}#tokentxns`} target="_blank" rel="noreferrer" style={{color:"#9fd0ff",fontWeight:"700",textDecoration:"none"}}>
+                    View all transactions on Etherscan ↗
+                  </a>
+                </div>
               </div>
             </section>
 
