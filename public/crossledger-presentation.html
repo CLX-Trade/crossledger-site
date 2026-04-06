@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>CrossLedger — Global Trade Infrastructure</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Rajdhani:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -17,7 +17,7 @@
   #bg-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
   #slides { position: fixed; inset: 0; z-index: 10; }
   .slide { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 1.8s cubic-bezier(0.25,0.1,0.25,1); padding: 60px 80px; overflow: hidden; }
-  .slide.active { opacity: 1; pointer-events: all; } .slide { will-change: opacity; }
+  .slide.active { opacity: 1; pointer-events: all; } .slide { will-change: auto; } @media (min-width: 769px) { .slide { will-change: opacity; } }
   .slide::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(200,153,58,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(200,153,58,0.04) 1px, transparent 1px); background-size: 80px 80px; pointer-events: none; }
   #topbar { position: fixed; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--gold), var(--blue2), var(--gold)); z-index: 100; }
   #logo { position: fixed; top: 28px; left: 40px; z-index: 100; display: flex; align-items: center; gap: 12px; }
@@ -677,11 +677,11 @@ class Particle {
   update() { this.x+=this.speedX; this.y+=this.speedY; if(this.x<0||this.x>canvas.width||this.y<0||this.y>canvas.height)this.reset(); }
   draw() { ctx.beginPath(); ctx.arc(this.x,this.y,this.size,0,Math.PI*2); ctx.fillStyle=this.gold?'rgba(200,153,58,'+this.opacity+')':'rgba(139,180,212,'+(this.opacity*0.5)+')'; ctx.fill(); }
 }
-const particles = Array.from({length:120},()=>new Particle());
-function drawConnections() {
+const particles = Array.from({length: (window.innerWidth <= 768 ? 35 : 120)},()=>new Particle()); var isMobile=(window.innerWidth<=768);
+function drawConnections(){ if(isMobile)return;
   for(let i=0;i<particles.length;i++){for(let j=i+1;j<particles.length;j++){const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y,dist=Math.sqrt(dx*dx+dy*dy);if(dist<120){ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);ctx.lineTo(particles[j].x,particles[j].y);ctx.strokeStyle='rgba(200,153,58,'+(0.04*(1-dist/120))+')';ctx.lineWidth=0.5;ctx.stroke();}}}
 }
-function animParticles(){ctx.clearRect(0,0,canvas.width,canvas.height);particles.forEach(p=>{p.update();p.draw();});drawConnections();requestAnimationFrame(animParticles);}
+function animParticles(){try{ctx.clearRect(0,0,canvas.width,canvas.height);particles.forEach(p=>{p.update();p.draw();});drawConnections();}catch(e){}requestAnimationFrame(animParticles);}
 animParticles();
 const cursor=document.getElementById('cursor'),cursorRing=document.getElementById('cursor-ring');
 document.addEventListener('mousemove',e=>{cursor.style.left=e.clientX+'px';cursor.style.top=e.clientY+'px';cursorRing.style.left=e.clientX+'px';cursorRing.style.top=e.clientY+'px';});
@@ -708,13 +708,13 @@ document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' '){pa
 const observer=new MutationObserver(mutations=>{mutations.forEach(m=>{if(m.target.classList.contains('active')){const id=m.target.id;if(id==='slide-3'){setTimeout(()=>{const l=document.querySelector('#slide-3 .big-stat-block');const r=document.querySelector('#slide-3 .two-col > div:last-child');if(l){l.style.opacity='1';l.style.transform='translateX(0)';}if(r){r.style.opacity='1';r.style.transform='translateX(0)';}},600);}if(id==='slide-5'){setTimeout(()=>{const t=document.querySelector('#slide-5 .target-anim');if(t){t.style.opacity='1';t.style.transform='translateY(0)';}},1600);}if(id==='slide-9'){setTimeout(()=>{const bt=document.querySelector('.burn-tagline');if(bt)bt.style.opacity='1';},1800);}if(id==='slide-15'){setTimeout(()=>{const fs=document.querySelector('.final-stats');if(fs)fs.style.opacity='1';},1500);}}});});
 slides.forEach(s=>observer.observe(s,{attributes:true,attributeFilter:['class']}));
 goTo(0);updateDots();requestAnimationFrame(tick);_initialLoad=false;
-// ====== IMPROVED AUDIO: AUTOPLAY + SLIDE SYNC ======
+// ====== AUDIO: AGGRESSIVE AUTOPLAY + SLIDE SYNC ======
 (function(){
   var p1=document.getElementById('audio-part1'),p2=document.getElementById('audio-part2');
   var btn=document.getElementById('audio-play-btn'),fill=document.getElementById('audio-progress-fill');
   var time=document.getElementById('audio-time'),info=document.getElementById('audio-track-info');
   var vol=document.getElementById('audio-vol-btn'),wrap=document.getElementById('audio-progress-wrap');
-  var cur=1,isPlaying=false,muted=false;
+  var cur=1,isPlaying=false,muted=false,autoStarted=false;
   var slideTimes=[0,50,100,155,210,260,310,360,399,449,499,547,597,647,700];
   function ca(){return cur===1?p1:p2;}
   function fmt(s){if(!s||isNaN(s))return'0:00';return Math.floor(s/60)+':'+(Math.floor(s%60)<10?'0':'')+Math.floor(s%60);}
@@ -723,15 +723,18 @@ goTo(0);updateDots();requestAnimationFrame(tick);_initialLoad=false;
   function uiLoop(){var tot=getTot(),now=getNow();fill.style.width=(tot>0?(now/tot)*100:0)+'%';time.textContent=fmt(now)+' / '+fmt(tot);info.textContent='PART '+cur+' / 2';requestAnimationFrame(uiLoop);}
   function playAudio(){ca().play().catch(function(){});isPlaying=true;btn.innerHTML='&#10074;&#10074;';}
   function pauseAudio(){ca().pause();isPlaying=false;btn.innerHTML='&#9654;';}
-  btn.addEventListener('click',function(){isPlaying?pauseAudio():playAudio();});
-  vol.addEventListener('click',function(){muted=!muted;p1.muted=muted;p2.muted=muted;vol.innerHTML=muted?'&#128263;':'&#128264;';});
-  wrap.addEventListener('click',function(e){var r=wrap.getBoundingClientRect(),pct=(e.clientX-r.left)/r.width,d1=p1.duration||399,tot=getTot(),t=pct*tot;if(t<=d1){if(cur===2){p2.pause();p2.currentTime=0;cur=1;}p1.currentTime=t;}else{if(cur===1){p1.pause();cur=2;}p2.currentTime=t-d1;}if(isPlaying)ca().play().catch(function(){});});
+  btn.addEventListener('click',function(e){e.stopPropagation();isPlaying?pauseAudio():playAudio();});
+  vol.addEventListener('click',function(e){e.stopPropagation();muted=!muted;p1.muted=muted;p2.muted=muted;vol.innerHTML=muted?'&#128263;':'&#128264;';});
+  wrap.addEventListener('click',function(e){e.stopPropagation();var r=wrap.getBoundingClientRect(),pct=(e.clientX-r.left)/r.width,d1=p1.duration||399,tot=getTot(),t=pct*tot;if(t<=d1){if(cur===2){p2.pause();p2.currentTime=0;cur=1;}p1.currentTime=t;}else{if(cur===1){p1.pause();cur=2;}p2.currentTime=t-d1;}if(isPlaying)ca().play().catch(function(){});});
   p1.addEventListener('ended',function(){cur=2;p2.currentTime=0;if(isPlaying)p2.play().catch(function(){});});
   p2.addEventListener('ended',function(){isPlaying=false;btn.innerHTML='&#9654;';cur=1;info.textContent='VOICEOVER';});
   window._syncAudioToSlide=function(idx){if(idx<0||idx>=slideTimes.length)return;var t=slideTimes[idx],d1=p1.duration||399;if(t<d1){if(cur===2){p2.pause();p2.currentTime=0;cur=1;}p1.currentTime=t;}else{if(cur===1){p1.pause();cur=2;}p2.currentTime=t-d1;}if(isPlaying)ca().play().catch(function(){});};
-  var autoStarted=false;
-  function startVoiceover(){if(autoStarted)return;autoStarted=true;p1.play().then(function(){isPlaying=true;btn.innerHTML='&#10074;&#10074;';var toast=document.createElement('div');toast.style.cssText='position:fixed;top:46px;left:50%;transform:translateX(-50%);background:rgba(5,8,16,0.9);border:1px solid rgba(200,153,58,0.5);color:#c8993a;font-family:Space Mono,monospace;font-size:10px;letter-spacing:2px;padding:8px 20px;z-index:9999;pointer-events:none;transition:opacity 1.2s;white-space:nowrap;';toast.textContent='\u25ba VOICEOVER PLAYING';document.body.appendChild(toast);setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove();},1200);},2500);}).catch(function(){autoStarted=false;var ov=document.createElement('div');ov.id='tap-to-start';ov.style.cssText='position:fixed;inset:0;z-index:9990;background:transparent;display:flex;align-items:flex-end;justify-content:center;padding-bottom:140px;pointer-events:all;cursor:pointer;';var btn2=document.createElement('div');btn2.style.cssText='font-family:Space Mono,monospace;font-size:11px;letter-spacing:4px;color:rgba(200,153,58,0.8);border:1px solid rgba(200,153,58,0.4);padding:12px 30px;animation:tapPulse 2s infinite;background:rgba(5,8,16,0.7);';btn2.textContent='\u25ba TAP TO START VOICEOVER';var s=document.createElement('style');s.textContent='@keyframes tapPulse{0%,100%{opacity:0.5;transform:scale(1)}50%{opacity:1;transform:scale(1.02)}}';document.head.appendChild(s);ov.appendChild(btn2);document.body.appendChild(ov);function removeAndStart(){ov.remove();startVoiceover();}ov.addEventListener('click',removeAndStart,{once:true});ov.addEventListener('touchstart',removeAndStart,{once:true});});}
-  setTimeout(startVoiceover,800);
+  function showTapOverlay(){if(document.getElementById('tap-overlay'))return;var st=document.createElement('style');st.textContent='@keyframes tapPulse{0%,100%{opacity:0.6;transform:scale(1)}50%{opacity:1;transform:scale(1.04)}}';document.head.appendChild(st);var ov=document.createElement('div');ov.id='tap-overlay';ov.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(5,8,16,0.01);display:flex;align-items:center;justify-content:center;cursor:pointer;pointer-events:all;';var box=document.createElement('div');box.style.cssText='font-family:"Space Mono",monospace;font-size:13px;letter-spacing:4px;color:rgba(200,153,58,0.9);border:1px solid rgba(200,153,58,0.5);padding:16px 36px;animation:tapPulse 1.8s infinite;background:rgba(5,8,16,0.85);backdrop-filter:blur(6px);text-align:center;';box.innerHTML='&#9654;&nbsp; TAP ANYWHERE TO START VOICEOVER';ov.appendChild(box);document.body.appendChild(ov);function removeAndPlay(){var o=document.getElementById('tap-overlay');if(o)o.remove();startVoiceover();}ov.addEventListener('click',removeAndPlay,{once:true});ov.addEventListener('touchstart',removeAndPlay,{once:true,passive:true});}
+  function startVoiceover(){if(autoStarted)return;autoStarted=true;p1.play().then(function(){isPlaying=true;btn.innerHTML='&#10074;&#10074;';var toast=document.createElement('div');toast.style.cssText='position:fixed;top:46px;left:50%;transform:translateX(-50%);background:rgba(5,8,16,0.9);border:1px solid rgba(200,153,58,0.5);color:#c8993a;font-family:"Space Mono",monospace;font-size:10px;letter-spacing:2px;padding:8px 20px;z-index:9999;pointer-events:none;transition:opacity 1.2s;white-space:nowrap;';toast.textContent='► VOICEOVER PLAYING';document.body.appendChild(toast);setTimeout(function(){toast.style.opacity='0';setTimeout(function(){toast.remove();},1200);},2500);}).catch(function(){autoStarted=false;showTapOverlay();});}
+  setTimeout(startVoiceover,100);
+  var iEvents=['touchstart','touchend','click','keydown','pointerdown'];
+  function onFirstInteraction(){iEvents.forEach(function(ev){document.removeEventListener(ev,onFirstInteraction,true);});if(!autoStarted){var o=document.getElementById('tap-overlay');if(o)o.remove();startVoiceover();}}
+  iEvents.forEach(function(ev){document.addEventListener(ev,onFirstInteraction,{once:true,capture:true,passive:true});});
   requestAnimationFrame(uiLoop);
 })();
 </script>
