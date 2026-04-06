@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CrossLedger — Global Trade Infrastructure</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Rajdhani:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #050810; --navy: #080d1a; --navy2: #0b1228;
+    --gold: #c8993a; --gold2: #e8b84b; --gold3: #f5d078;
+    --blue: #1a3a6b; --blue2: #1e4d9e; --ice: #8fb4d4;
+    --white: #f0ede8; --muted: #7a8a9a; --accent: #2a5298;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; background: var(--black); overflow: hidden; font-family: 'Rajdhani', sans-serif; cursor: none; }
+  #bg-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+  #slides { position: fixed; inset: 0; z-index: 10; }
+  .slide { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 1.2s cubic-bezier(0.4,0,0.2,1); padding: 60px 80px; overflow: hidden; }
+  .slide.active { opacity: 1; pointer-events: all; }
+  .slide::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(200,153,58,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(200,153,58,0.04) 1px, transparent 1px); background-size: 80px 80px; pointer-events: none; }
+  #topbar { position: fixed; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--gold), var(--blue2), var(--gold)); z-index: 100; }
+  #logo { position: fixed; top: 28px; left: 40px; z-index: 100; display: flex; align-items: center; gap: 12px; }
+  #logo .mark { width: 32px; height: 32px; border: 1.5px solid var(--gold); transform: rotate(45deg); display: flex; align-items: center; justify-content: center; position: relative; }
+  #logo .mark::after { content: ''; width: 14px; height: 14px; background: var(--gold); display: block; }
+  #logo .name { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 4px; color: var(--gold); text-transform: uppercase; }
+  #counter { position: fixed; bottom: 30px; right: 40px; z-index: 100; font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); letter-spacing: 2px; }
+  #progress-bar { position: fixed; bottom: 0; left: 0; height: 2px; background: linear-gradient(90deg, var(--gold), var(--gold2)); z-index: 100; transition: width 0.3s linear; box-shadow: 0 0 10px var(--gold); }
+  #timer-svg { position: fixed; bottom: 20px; left: 40px; z-index: 100; width: 36px; height: 36px; }
+  #dots { position: fixed; right: 20px; top: 50%; transform: translateY(-50%); z-index: 100; display: flex; flex-direction: column; gap: 8px; }
+  .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--muted); transition: all 0.3s; cursor: pointer; }
+  .dot.active { background: var(--gold); transform: scale(1.8); }
+  #controls { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 100; display: flex; gap: 16px; align-items: center; }
+  .ctrl-btn { width: 36px; height: 36px; border: 1px solid rgba(200,153,58,0.3); background: rgba(5,8,16,0.8); color: var(--gold); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: all 0.2s; font-family: 'Space Mono', monospace; }
+  .ctrl-btn:hover { border-color: var(--gold); background: rgba(200,153,58,0.1); }
+  #play-btn { width: 44px; height: 44px; font-size: 16px; }
+  /* AUDIO PLAYER */
+  #audio-player-bar { position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%); z-index: 200; display: flex; align-items: center; gap: 12px; background: rgba(5,8,16,0.92); border: 1px solid rgba(200,153,58,0.4); padding: 10px 20px; backdrop-filter: blur(10px); min-width: 340px; box-shadow: 0 0 30px rgba(200,153,58,0.1); }
+  #audio-play-btn { width: 36px; height: 36px; border: 1.5px solid var(--gold); background: transparent; color: var(--gold); cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; }
+  #audio-play-btn:hover { background: rgba(200,153,58,0.15); }
+  #audio-track-info { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; min-width: 80px; }
+  #audio-progress-wrap { flex: 1; height: 3px; background: rgba(200,153,58,0.15); cursor: pointer; position: relative; }
+  #audio-progress-fill { height: 100%; background: var(--gold); width: 0%; pointer-events: none; }
+  #audio-time { font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 1px; min-width: 70px; text-align: right; }
+  #audio-vol-btn { background: transparent; border: none; color: var(--muted); cursor: pointer; font-size: 14px; padding: 0 4px; transition: color 0.2s; }
+  #audio-vol-btn:hover { color: var(--gold); }
+  .eyebrow { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 5px; color: var(--gold); text-transform: uppercase; margin-bottom: 20px; opacity: 0; transform: translateY(20px); transition: all 0.7s 0.3s; }
+  .slide.active .eyebrow { opacity: 1; transform: translateY(0); }
+  .headline { font-family: 'Cormorant Garamond', serif; font-size: clamp(42px, 6vw, 84px); font-weight: 300; color: var(--white); line-height: 1.05; text-align: center; opacity: 0; transform: translateY(30px); transition: all 0.8s 0.5s; }
+  .slide.active .headline { opacity: 1; transform: translateY(0); }
+  .headline em { font-style: italic; color: var(--gold); }
+  .subheadline { font-family: 'Rajdhani', sans-serif; font-size: clamp(14px, 1.8vw, 20px); font-weight: 400; color: var(--ice); text-align: center; margin-top: 24px; max-width: 700px; line-height: 1.7; opacity: 0; transform: translateY(20px); transition: all 0.7s 0.8s; letter-spacing: 0.5px; }
+  .slide.active .subheadline { opacity: 1; transform: translateY(0); }
+  .divider { width: 60px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); margin: 28px auto; opacity: 0; transition: all 0.6s 0.6s; }
+  .slide.active .divider { opacity: 1; }
+  #slide-1 { background: radial-gradient(ellipse at 60% 40%, #0e1f3d 0%, var(--black) 65%); }
+  .title-badge { display: inline-flex; align-items: center; gap: 10px; border: 1px solid rgba(200,153,58,0.4); padding: 8px 20px; margin-bottom: 40px; opacity: 0; transform: scale(0.9); transition: all 0.6s 0.2s; }
+  .slide.active .title-badge { opacity: 1; transform: scale(1); }
+  .title-badge span { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 3px; color: var(--gold); }
+  .title-badge .dot-live { width: 6px; height: 6px; background: #2ecc71; border-radius: 50%; animation: pulse-live 1.5s infinite; }
+  @keyframes pulse-live { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.7); } }
+  .title-main { font-family: 'Cormorant Garamond', serif; font-size: clamp(60px, 9vw, 120px); font-weight: 600; color: var(--white); letter-spacing: -2px; text-align: center; line-height: 0.95; opacity: 0; transform: translateY(40px); transition: all 1s 0.4s; }
+  .slide.active .title-main { opacity: 1; transform: translateY(0); }
+  .title-main .gold-word { color: var(--gold); display: block; }
+  .title-sub { font-family: 'Rajdhani', sans-serif; font-size: clamp(13px, 1.5vw, 17px); letter-spacing: 6px; color: var(--muted); text-transform: uppercase; text-align: center; margin-top: 28px; opacity: 0; transform: translateY(20px); transition: all 0.7s 0.9s; }
+  .slide.active .title-sub { opacity: 1; transform: translateY(0); }
+  .title-tagline { margin-top: 50px; font-family: 'Cormorant Garamond', serif; font-size: clamp(18px, 2.5vw, 26px); font-style: italic; color: var(--gold); text-align: center; opacity: 0; transition: all 0.8s 1.2s; }
+  .slide.active .title-tagline { opacity: 1; }
+  .stats-row { display: flex; gap: 60px; margin-top: 50px; opacity: 0; transform: translateY(20px); transition: all 0.8s 1.4s; }
+  .slide.active .stats-row { opacity: 1; transform: translateY(0); }
+  .stat-item { text-align: center; }
+  .stat-num { font-family: 'Cormorant Garamond', serif; font-size: clamp(28px, 4vw, 48px); font-weight: 600; color: var(--gold); line-height: 1; }
+  .stat-label { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-top: 6px; }
+  .stat-divider { width: 1px; background: rgba(200,153,58,0.2); align-self: stretch; }
+  #slide-2 { background: radial-gradient(ellipse at 30% 70%, #1a0a0a 0%, var(--black) 60%); }
+  #slide-3 { background: radial-gradient(ellipse at 70% 30%, #1a0a0a 0%, var(--black) 60%); }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; width: 100%; max-width: 1100px; align-items: center; }
+  .problem-list { list-style: none; display: flex; flex-direction: column; gap: 20px; opacity: 0; transform: translateX(-30px); transition: all 0.8s 0.7s; }
+  .slide.active .problem-list { opacity: 1; transform: translateX(0); }
+  .problem-item { display: flex; align-items: flex-start; gap: 16px; padding: 18px 22px; border-left: 2px solid rgba(200,153,58,0.2); background: rgba(255,255,255,0.02); }
+  .problem-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+  .problem-title { font-family: 'Rajdhani', sans-serif; font-size: 17px; font-weight: 700; color: var(--white); letter-spacing: 1px; }
+  .problem-desc { font-size: 13px; color: var(--muted); line-height: 1.5; margin-top: 3px; }
+  .big-stat-block { text-align: center; opacity: 0; transform: translateX(30px); transition: all 0.8s 0.9s; }
+  .slide.active .big-stat-block { opacity: 1; transform: translateX(0); }
+  .big-number { font-family: 'Cormorant Garamond', serif; font-size: clamp(70px, 10vw, 130px); font-weight: 700; color: var(--gold); line-height: 1; display: block; }
+  .big-label { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; display: block; margin-top: 8px; }
+  .quote-block { border: 1px solid rgba(200,153,58,0.3); padding: 30px 35px; position: relative; margin-top: 30px; }
+  .quote-block::before { content: '"'; font-family: 'Cormorant Garamond', serif; font-size: 80px; color: rgba(200,153,58,0.15); position: absolute; top: -20px; left: 20px; line-height: 1; }
+  .quote-text { font-family: 'Cormorant Garamond', serif; font-size: clamp(20px, 2.5vw, 28px); font-style: italic; color: var(--white); line-height: 1.4; }
+  #slide-4 { background: radial-gradient(ellipse at 50% 50%, #081a3a 0%, var(--black) 65%); }
+  .solution-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 1000px; margin-top: 40px; opacity: 0; transform: translateY(30px); transition: all 0.9s 0.7s; }
+  .slide.active .solution-grid { opacity: 1; transform: translateY(0); }
+  .sol-card { border: 1px solid rgba(200,153,58,0.15); padding: 28px 30px; background: rgba(255,255,255,0.02); position: relative; overflow: hidden; }
+  .sol-card::after { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 0; background: var(--gold); transition: height 0.4s 1.2s; }
+  .slide.active .sol-card::after { height: 100%; }
+  .sol-num { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 2px; color: var(--gold); margin-bottom: 12px; display: block; }
+  .sol-title { font-family: 'Rajdhani', sans-serif; font-size: 18px; font-weight: 700; color: var(--white); margin-bottom: 8px; }
+  .sol-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .replace-block { display: flex; align-items: center; gap: 30px; margin-top: 40px; opacity: 0; transition: all 0.7s 1.4s; }
+  .slide.active .replace-block { opacity: 1; }
+  .replace-old, .replace-new { font-family: 'Rajdhani', sans-serif; font-size: clamp(14px, 1.5vw, 17px); padding: 12px 20px; letter-spacing: 1px; }
+  .replace-old { border: 1px solid rgba(200,80,80,0.3); color: rgba(200,80,80,0.7); text-decoration: line-through; }
+  .replace-new { border: 1px solid rgba(200,153,58,0.5); color: var(--gold); background: rgba(200,153,58,0.05); }
+  .arrow-replace { font-size: 24px; color: var(--muted); }
+  #slide-5 { background: radial-gradient(ellipse at 20% 80%, #081a3a 0%, var(--black) 60%); }
+  .arch-flow { display: flex; align-items: center; width: 100%; max-width: 1100px; margin-top: 50px; opacity: 0; transform: translateY(30px); transition: all 0.9s 0.7s; }
+  .slide.active .arch-flow { opacity: 1; transform: translateY(0); }
+  .arch-node { flex: 1; text-align: center; padding: 30px 20px; border: 1px solid rgba(200,153,58,0.2); background: rgba(255,255,255,0.02); }
+  .arch-icon { font-size: 32px; display: block; margin-bottom: 12px; }
+  .arch-title { font-family: 'Rajdhani', sans-serif; font-size: 15px; font-weight: 700; color: var(--gold); letter-spacing: 1px; margin-bottom: 6px; }
+  .arch-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .arch-arrow { width: 50px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: var(--gold); font-size: 20px; }
+  #slide-6 { background: radial-gradient(ellipse at 80% 20%, #081a3a 0%, var(--black) 65%); }
+  .steps-container { width: 100%; max-width: 900px; margin-top: 40px; }
+  .step-row { display: flex; align-items: flex-start; gap: 24px; margin-bottom: 24px; opacity: 0; transform: translateX(-20px); }
+  .step-row:nth-child(1){transition:all 0.5s 0.5s;} .step-row:nth-child(2){transition:all 0.5s 0.7s;}
+  .step-row:nth-child(3){transition:all 0.5s 0.9s;} .step-row:nth-child(4){transition:all 0.5s 1.1s;}
+  .step-row:nth-child(5){transition:all 0.5s 1.3s;} .step-row:nth-child(6){transition:all 0.5s 1.5s;}
+  .slide.active .step-row { opacity: 1; transform: translateX(0); }
+  .step-num-col { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+  .step-circle { width: 44px; height: 44px; border: 1.5px solid var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 600; color: var(--gold); }
+  .step-line { width: 1px; flex: 1; min-height: 20px; background: linear-gradient(to bottom, var(--gold), transparent); margin-top: 4px; }
+  .step-content { padding-top: 8px; }
+  .step-title { font-family: 'Rajdhani', sans-serif; font-size: 17px; font-weight: 700; color: var(--white); margin-bottom: 4px; }
+  .step-desc { font-size: 13px; color: var(--muted); line-height: 1.5; }
+  #slide-7 { background: radial-gradient(ellipse at 50% 60%, #1a1200 0%, var(--black) 60%); }
+  .token-center { width: 160px; height: 160px; border: 2px solid var(--gold); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 30px auto; flex-shrink: 0; }
+  .token-symbol { font-family: 'Cormorant Garamond', serif; font-size: 42px; font-weight: 700; color: var(--gold); line-height: 1; }
+  .token-name { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 2px; color: var(--muted); }
+  .utility-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; width: 100%; max-width: 1000px; margin-top: 30px; opacity: 0; transform: translateY(25px); transition: all 0.8s 0.8s; }
+  .slide.active .utility-grid { opacity: 1; transform: translateY(0); }
+  .util-card { padding: 22px 20px; border: 1px solid rgba(200,153,58,0.15); background: rgba(255,255,255,0.02); text-align: center; }
+  .util-icon { font-size: 28px; display: block; margin-bottom: 10px; }
+  .util-title { font-family: 'Rajdhani', sans-serif; font-size: 15px; font-weight: 700; color: var(--white); margin-bottom: 6px; }
+  .util-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  #slide-8 { background: radial-gradient(ellipse at 40% 40%, #0a1800 0%, var(--black) 60%); }
+  .tokenomics-layout { display: grid; grid-template-columns: 1fr 1.2fr; gap: 60px; width: 100%; max-width: 1100px; align-items: center; margin-top: 30px; }
+  .token-supply-block { opacity: 0; transform: translateX(-30px); transition: all 0.8s 0.6s; }
+  .slide.active .token-supply-block { opacity: 1; transform: translateX(0); }
+  .supply-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid rgba(200,153,58,0.1); }
+  .supply-label { font-size: 14px; color: var(--muted); }
+  .supply-value { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 600; color: var(--gold); }
+  .donut-wrap { opacity: 0; transform: translateX(30px); transition: all 0.9s 0.8s; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+  .slide.active .donut-wrap { opacity: 1; transform: translateX(0); }
+  .donut-svg { width: 200px; height: 200px; }
+  .donut-legend { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+  .legend-item { display: flex; align-items: center; gap: 12px; }
+  .legend-swatch { width: 12px; height: 12px; flex-shrink: 0; }
+  .legend-name { font-size: 13px; color: var(--white); flex: 1; }
+  .legend-pct { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--gold); }
+  #slide-9 { background: radial-gradient(ellipse at 50% 50%, #1a0500 0%, var(--black) 60%); }
+  .burn-visual { display: flex; flex-direction: column; align-items: center; margin-top: 30px; opacity: 0; transition: all 0.8s 0.6s; }
+  .slide.active .burn-visual { opacity: 1; }
+  .burn-equation { display: flex; align-items: center; gap: 30px; flex-wrap: wrap; justify-content: center; }
+  .burn-box { padding: 20px 30px; border: 1px solid; text-align: center; min-width: 160px; }
+  .burn-box.blue { border-color: rgba(30,77,158,0.5); }
+  .burn-box.gold { border-color: rgba(200,153,58,0.5); background: rgba(200,153,58,0.05); }
+  .burn-box.red { border-color: rgba(200,80,80,0.4); background: rgba(200,80,80,0.03); }
+  .burn-box-title { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; }
+  .burn-box-value { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 600; }
+  .burn-box.blue .burn-box-value { color: var(--ice); }
+  .burn-box.gold .burn-box-value { color: var(--gold); }
+  .burn-box.red .burn-box-value { color: #e55; }
+  .burn-op { font-size: 28px; color: var(--muted); }
+  .burn-effect-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; width: 100%; max-width: 900px; margin-top: 40px; opacity: 0; transform: translateY(20px); transition: all 0.8s 1s; }
+  .slide.active .burn-effect-grid { opacity: 1; transform: translateY(0); }
+  .effect-card { text-align: center; padding: 24px 20px; border: 1px solid rgba(200,153,58,0.12); background: rgba(255,255,255,0.02); }
+  .effect-arrow { font-family: 'Cormorant Garamond', serif; font-size: 40px; color: var(--gold); display: block; line-height: 1; }
+  .effect-title { font-size: 14px; font-weight: 700; color: var(--white); margin-top: 8px; }
+  .effect-desc { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  #slide-10 { background: radial-gradient(ellipse at 60% 30%, #001a12 0%, var(--black) 65%); }
+  .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%; max-width: 1000px; margin-top: 40px; opacity: 0; transform: translateY(30px); transition: all 0.9s 0.6s; }
+  .slide.active .status-grid { opacity: 1; transform: translateY(0); }
+  .status-item { display: flex; align-items: center; gap: 16px; padding: 18px 22px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); }
+  .status-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .status-icon.done { background: rgba(46,204,113,0.15); }
+  .status-icon.progress { background: rgba(200,153,58,0.15); }
+  .status-text { font-size: 14px; color: var(--white); font-weight: 500; }
+  .status-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .live-banner { margin-top: 30px; padding: 20px 40px; border: 1px solid rgba(46,204,113,0.3); background: rgba(46,204,113,0.05); text-align: center; opacity: 0; transition: all 0.7s 1.4s; }
+  .slide.active .live-banner { opacity: 1; }
+  .live-banner-text { font-family: 'Cormorant Garamond', serif; font-size: clamp(18px, 2vw, 24px); font-style: italic; color: #2ecc71; }
+  #slide-11 { background: radial-gradient(ellipse at 30% 50%, #0a0a1a 0%, var(--black) 60%); }
+  .security-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; width: 100%; max-width: 1000px; align-items: start; margin-top: 40px; }
+  .security-pillars { display: flex; flex-direction: column; gap: 16px; opacity: 0; transform: translateX(-30px); transition: all 0.8s 0.6s; }
+  .slide.active .security-pillars { opacity: 1; transform: translateX(0); }
+  .pillar { padding: 20px 24px; border-left: 3px solid var(--gold); background: rgba(255,255,255,0.02); }
+  .pillar-title { font-family: 'Rajdhani', sans-serif; font-size: 16px; font-weight: 700; color: var(--white); margin-bottom: 5px; }
+  .pillar-desc { font-size: 13px; color: var(--muted); line-height: 1.5; }
+  .audit-block { opacity: 0; transform: translateX(30px); transition: all 0.8s 0.9s; text-align: center; padding: 40px 30px; border: 1px solid rgba(200,153,58,0.2); background: rgba(200,153,58,0.03); }
+  .slide.active .audit-block { opacity: 1; transform: translateX(0); }
+  .audit-icon { font-size: 48px; display: block; margin-bottom: 16px; }
+  .audit-title { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 600; color: var(--white); margin-bottom: 12px; }
+  .audit-desc { font-size: 14px; color: var(--muted); line-height: 1.6; }
+  #slide-12 { background: radial-gradient(ellipse at 70% 60%, #081a3a 0%, var(--black) 65%); }
+  .market-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; width: 100%; max-width: 1100px; margin-top: 40px; opacity: 0; transform: translateY(30px); transition: all 0.9s 0.7s; }
+  .slide.active .market-grid { opacity: 1; transform: translateY(0); }
+  .market-card { padding: 28px 20px; text-align: center; border: 1px solid rgba(200,153,58,0.15); background: rgba(255,255,255,0.02); }
+  .market-icon { font-size: 32px; display: block; margin-bottom: 12px; }
+  .market-value { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 700; color: var(--gold); line-height: 1; }
+  .market-unit { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-top: 4px; display: block; }
+  .market-desc { font-size: 12px; color: var(--muted); margin-top: 8px; line-height: 1.4; }
+  .market-statement { margin-top: 30px; text-align: center; font-family: 'Cormorant Garamond', serif; font-size: clamp(20px, 2.5vw, 28px); font-style: italic; color: var(--gold); opacity: 0; transition: all 0.7s 1.4s; }
+  .slide.active .market-statement { opacity: 1; }
+  #slide-13 { background: radial-gradient(ellipse at 50% 30%, #0a1800 0%, var(--black) 65%); }
+  .biz-layout { display: grid; grid-template-columns: 1.2fr 1fr; gap: 60px; width: 100%; max-width: 1100px; margin-top: 30px; align-items: start; }
+  .revenue-streams { opacity: 0; transform: translateX(-30px); transition: all 0.8s 0.7s; }
+  .slide.active .revenue-streams { opacity: 1; transform: translateX(0); }
+  .revenue-item { display: flex; align-items: center; gap: 16px; padding: 16px 0; border-bottom: 1px solid rgba(200,153,58,0.08); }
+  .revenue-name { font-size: 14px; color: var(--white); font-weight: 600; min-width: 180px; }
+  .revenue-desc { font-size: 12px; color: var(--muted); }
+  .flywheel-block { opacity: 0; transform: translateX(30px); transition: all 0.8s 0.9s; text-align: center; }
+  .slide.active .flywheel-block { opacity: 1; transform: translateX(0); }
+  .flywheel-title { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; margin-bottom: 20px; display: block; }
+  .flywheel-items { display: flex; flex-direction: column; border: 1px solid rgba(200,153,58,0.2); overflow: hidden; }
+  .flywheel-item { padding: 16px 20px; border-bottom: 1px solid rgba(200,153,58,0.1); display: flex; align-items: center; gap: 14px; background: rgba(255,255,255,0.02); }
+  .flywheel-arrow { color: var(--gold); font-size: 14px; }
+  .flywheel-text { font-size: 13px; color: var(--white); }
+  #slide-14 { background: radial-gradient(ellipse at 80% 80%, #081a3a 0%, var(--black) 65%); }
+  .roadmap-timeline { width: 100%; max-width: 1100px; position: relative; margin-top: 40px; opacity: 0; transform: translateY(30px); transition: all 0.9s 0.6s; }
+  .slide.active .roadmap-timeline { opacity: 1; transform: translateY(0); }
+  .timeline-line { position: absolute; top: 40px; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, var(--gold), rgba(200,153,58,0.2)); }
+  .timeline-phases { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; position: relative; }
+  .phase { padding: 0 16px; }
+  .phase-dot { width: 16px; height: 16px; border: 2px solid var(--gold); border-radius: 50%; margin: 32px auto 24px; position: relative; }
+  .phase.active-phase .phase-dot { background: var(--gold); }
+  .phase-dot::after { content: ''; position: absolute; inset: -6px; border-radius: 50%; border: 1px solid rgba(200,153,58,0.3); }
+  .phase-label { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; text-align: center; margin-bottom: 12px; display: block; }
+  .phase-title { font-family: 'Rajdhani', sans-serif; font-size: 16px; font-weight: 700; color: var(--white); text-align: center; margin-bottom: 12px; }
+  .phase-items { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .phase-item { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  .phase-item::before { content: '—'; color: rgba(200,153,58,0.4); }
+  #slide-15 { background: radial-gradient(ellipse at 50% 50%, #0d1f42 0%, var(--black) 65%); }
+  .vision-center { text-align: center; max-width: 900px; }
+  .vision-headline { font-family: 'Cormorant Garamond', serif; font-size: clamp(42px, 7vw, 90px); font-weight: 300; color: var(--white); line-height: 1.05; opacity: 0; transform: translateY(40px); transition: all 1s 0.4s; }
+  .slide.active .vision-headline { opacity: 1; transform: translateY(0); }
+  .vision-headline strong { font-weight: 700; color: var(--gold); }
+  .vision-statement { margin-top: 40px; padding: 30px 40px; border: 1px solid rgba(200,153,58,0.3); background: rgba(200,153,58,0.04); opacity: 0; transition: all 0.8s 1.2s; }
+  .slide.active .vision-statement { opacity: 1; }
+  .vision-statement p { font-family: 'Cormorant Garamond', serif; font-size: clamp(18px, 2.2vw, 26px); font-style: italic; color: var(--gold); line-height: 1.5; }
+  .cta-row { display: flex; gap: 20px; justify-content: center; margin-top: 50px; opacity: 0; transform: translateY(20px); transition: all 0.7s 1.8s; }
+  .slide.active .cta-row { opacity: 1; transform: translateY(0); }
+  .cta-btn { padding: 16px 36px; font-family: 'Rajdhani', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; border: none; transition: all 0.3s; }
+  .cta-primary { background: var(--gold); color: var(--black); }
+  .cta-primary:hover { background: var(--gold2); }
+  .cta-secondary { background: transparent; border: 1px solid rgba(200,153,58,0.4); color: var(--gold); }
+  .cta-secondary:hover { border-color: var(--gold); background: rgba(200,153,58,0.08); }
+  .shimmer { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(135deg, transparent 40%, rgba(200,153,58,0.015) 50%, transparent 60%); background-size: 200% 200%; animation: shimmer 8s ease infinite; }
+  @keyframes shimmer { 0% { background-position: -200% -200%; } 100% { background-position: 200% 200%; } }
+  .cursor { position: fixed; width: 6px; height: 6px; background: var(--gold); border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%, -50%); transition: transform 0.1s; }
+  .cursor-ring { position: fixed; width: 30px; height: 30px; border: 1px solid rgba(200,153,58,0.4); border-radius: 50%; pointer-events: none; z-index: 9998; transform: translate(-50%, -50%); transition: all 0.15s ease; }
+</style>
+</head>
+<body>
+<!-- CURSOR -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
+<!-- UI CHROME -->
+<div id="topbar"></div>
+<div id="logo"><div class="mark"></div><span class="name">CrossLedger</span></div>
+<div id="dots"></div>
+<div id="counter"><span id="cur-slide">01</span> / <span id="tot-slides">15</span></div>
+<div id="controls">
+  <button class="ctrl-btn" id="prev-btn">&#8592;</button>
+  <button class="ctrl-btn" id="play-btn">&#10074;&#10074;</button>
+  <button class="ctrl-btn" id="next-btn">&#8594;</button>
+</div>
+<svg id="timer-svg" viewBox="0 0 36 36">
+  <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(200,153,58,0.1)" stroke-width="1.5"/>
+  <circle id="timer-arc" cx="18" cy="18" r="15" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-dasharray="94.25" stroke-dashoffset="0" stroke-linecap="round" transform="rotate(-90 18 18)" style="transition:stroke-dashoffset 0.1s linear"/>
+</svg>
+<div id="progress-bar" style="width:0%"></div>
+<canvas id="bg-canvas"></canvas>
+<!-- AUDIO VOICEOVER PLAYER -->
+<div id="audio-player-bar">
+  <button id="audio-play-btn" title="Play/Pause voiceover">&#9654;</button>
+  <div id="audio-track-info">VOICEOVER</div>
+  <div id="audio-progress-wrap"><div id="audio-progress-fill"></div></div>
+  <div id="audio-time">0:00 / 0:00</div>
+  <button id="audio-vol-btn" title="Mute/Unmute">&#128264;</button>
+</div>
+<audio id="audio-part1" preload="auto"><source src="crossledger-voice-part1.mp3" type="audio/mpeg"></audio>
+<audio id="audio-part2" preload="auto"><source src="crossledger-voice-part2.mp3" type="audio/mpeg"></audio>
+<div id="slides">
+  <div class="slide" id="slide-1">
+    <div class="shimmer"></div>
+    <div class="title-badge"><div class="dot-live"></div><span>Presale Stage 1 — Live Now</span></div>
+    <div class="title-main">Cross<span class="gold-word">Ledger</span></div>
+    <div class="title-sub">Token: CLX / CLXT &nbsp;·&nbsp; Ethereum Network &nbsp;·&nbsp; crossledger.trade</div>
+    <div class="title-tagline">"Rebuilding Global Trade Infrastructure on Blockchain"</div>
+    <div class="stats-row">
+      <div class="stat-item"><div class="stat-num">$32T+</div><div class="stat-label">Global Trade Volume</div></div>
+      <div class="stat-divider"></div>
+      <div class="stat-item"><div class="stat-num">1B</div><div class="stat-label">Total Token Supply</div></div>
+      <div class="stat-divider"></div>
+      <div class="stat-item"><div class="stat-num">$0.10</div><div class="stat-label">Stage 1 Presale Price</div></div>
+    </div>
+  </div>
+  <div class="slide" id="slide-2">
+    <div class="shimmer"></div>
+    <div class="eyebrow">The Problem</div>
+    <div class="headline">Global Trade Runs on<br><em>Broken Infrastructure</em></div>
+    <div class="divider"></div>
+    <div class="two-col" style="margin-top:30px;">
+      <ul class="problem-list">
+        <li class="problem-item"><div class="problem-icon">⏳</div><div><div class="problem-title">5–15 Day Settlement Delays</div><div class="problem-desc">Transactions stall in manual approval chains, even when both parties are ready to execute.</div></div></li>
+        <li class="problem-item"><div class="problem-icon">🏦</div><div><div class="problem-title">Costly Bank Intermediaries</div><div class="problem-desc">SBLCs and DLCs require multiple banking layers, each extracting fees and introducing friction.</div></div></li>
+        <li class="problem-item"><div class="problem-icon">📄</div><div><div class="problem-title">Manual Document Verification</div><div class="problem-desc">Paper-heavy processes expose trade to fraud, manipulation, and human error at every stage.</div></div></li>
+        <li class="problem-item"><div class="problem-icon">🚫</div><div><div class="problem-title">Limited Market Access</div><div class="problem-desc">Smaller trade participants are excluded by the capital requirements of traditional instruments.</div></div></li>
+      </ul>
+      <div class="big-stat-block"><span class="big-number">15+</span><span class="big-label">Days — Average SBLC Settlement</span><div class="quote-block" style="margin-top:30px;"><p class="quote-text">Both parties ready. Deal agreed. Yet banks slow everything down.</p></div></div>
+    </div>
+  </div>
+  <div class="slide" id="slide-3">
+    <div class="shimmer"></div>
+    <div class="eyebrow">Market Inefficiency</div>
+    <div class="headline">The Instruments<br>That <em>Should</em> Enable Trade<br>Are the Bottleneck</div>
+    <div class="divider"></div>
+    <div class="two-col" style="margin-top:20px;">
+      <div class="big-stat-block" style="opacity:0;transition:opacity 0.8s 0.6s,transform 0.8s 0.6s;transform:translateX(-30px);">
+        <div style="padding:30px;border:1px solid rgba(200,153,58,0.2);text-align:center;"><span class="big-number" style="font-size:70px;">SBLC</span><span class="big-label">Standby Letter of Credit</span><div style="margin-top:20px;font-size:13px;color:var(--muted);line-height:1.7;">Issued by banks as guarantees for international trade. Require weeks of underwriting, significant fees, and full bank trust chains.</div></div>
+        <div style="padding:30px;border:1px solid rgba(200,153,58,0.2);text-align:center;margin-top:16px;"><span class="big-number" style="font-size:70px;">DLC</span><span class="big-label">Documentary Letter of Credit</span><div style="margin-top:20px;font-size:13px;color:var(--muted);line-height:1.7;">Document-heavy instruments requiring physical verification, manual matching, and bank-to-bank coordination.</div></div>
+      </div>
+      <div style="opacity:0;transform:translateX(30px);transition:all 0.8s 1s;">
+        <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--muted);margin-bottom:20px;">THE TRUE COST</div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);"><span style="font-size:14px;color:var(--white);">Bank Fees</span><span style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gold);">1–5%</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);"><span style="font-size:14px;color:var(--white);">Settlement Time</span><span style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gold);">5–15 days</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);"><span style="font-size:14px;color:var(--white);">Fraud Risk</span><span style="font-family:'Cormorant Garamond',serif;font-size:22px;color:#e55;">High</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);"><span style="font-size:14px;color:var(--white);">Accessibility</span><span style="font-family:'Cormorant Garamond',serif;font-size:22px;color:#e55;">Limited</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);"><span style="font-size:14px;color:var(--white);">Transparency</span><span style="font-family:'Cormorant Garamond',serif;font-size:22px;color:#e55;">None</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide" id="slide-4">
+    <div class="shimmer"></div>
+    <div class="eyebrow">The Solution</div>
+    <div class="headline">We Replace<br><em>Trust With Code</em></div>
+    <div class="divider"></div>
+    <div class="solution-grid">
+      <div class="sol-card"><span class="sol-num">01 —</span><div class="sol-title">Smart Contract Trade Execution</div><div class="sol-desc">Contracts deployed on Ethereum, self-executing upon agreed conditions. No manual enforcement. No intermediary required.</div></div>
+      <div class="sol-card"><span class="sol-num">02 —</span><div class="sol-title">Blockchain Wallet Validation</div><div class="sol-desc">Tiered wallet validation by capital range replaces BCL and RWA documentation. Counterparties verified on-chain instantly.</div></div>
+      <div class="sol-card"><span class="sol-num">03 —</span><div class="sol-title">Automated Smart Escrow</div><div class="sol-desc">Funds held in blockchain escrow. Released automatically upon condition fulfillment. Instant versus 5–15 day banking delays.</div></div>
+      <div class="sol-card"><span class="sol-num">04 —</span><div class="sol-title">Immutable Audit Trail</div><div class="sol-desc">Every transaction permanently recorded. Publicly verifiable on Etherscan. Fraud-resistant by design, not by policy.</div></div>
+    </div>
+    <div class="replace-block">
+      <div class="replace-old">SBLC / DLC / BCL / RWA</div>
+      <div class="arrow-replace">→</div>
+      <div class="replace-new">Smart Contracts / Blockchain Settlement</div>
+    </div>
+  </div>
+  <div class="slide" id="slide-5">
+    <div class="shimmer"></div>
+    <div class="eyebrow">Platform Architecture</div>
+    <div class="headline"><em>Infrastructure</em> Layer<br>for Global Trade</div>
+    <div class="arch-flow">
+      <div class="arch-node"><span class="arch-icon">🪪</span><div class="arch-title">Identity &amp; Wallet</div><div class="arch-desc">Verified accounts. Tiered capital validation. KYC-ready infrastructure for institutional participants.</div></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node"><span class="arch-icon">📜</span><div class="arch-title">Contract Layer</div><div class="arch-desc">Trade agreements encoded as smart contracts on Ethereum. Self-executing upon condition fulfilment.</div></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node"><span class="arch-icon">🔐</span><div class="arch-title">Escrow Engine</div><div class="arch-desc">Funds locked in smart escrow. Released only upon verified condition completion. No counterparty risk.</div></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node"><span class="arch-icon">⚡</span><div class="arch-title">Settlement</div><div class="arch-desc">Instant, atomic settlement. Token gas fees consumed and burned. Immutable record created permanently.</div></div>
+    </div>
+    <div style="margin-top:30px;text-align:center;">
+      <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--muted);">TARGET COMMODITIES</div>
+      <div style="display:flex;gap:24px;justify-content:center;margin-top:16px;flex-wrap:wrap;">
+        <span style="font-family:'Rajdhani',sans-serif;font-size:14px;color:var(--ice);border:1px solid rgba(139,180,212,0.2);padding:6px 16px;">⛽ Oil — EN590 / Jet A1</span>
+        <span style="font-family:'Rajdhani',sans-serif;font-size:14px;color:var(--ice);border:1px solid rgba(139,180,212,0.2);padding:6px 16px;">🍬 Sugar — ICUMSA 45</span>
+        <span style="font-family:'Rajdhani',sans-serif;font-size:14px;color:var(--ice);border:1px solid rgba(139,180,212,0.2);padding:6px 16px;">🌾 Agricultural Commodities</span>
+        <span style="font-family:'Rajdhani',sans-serif;font-size:14px;color:var(--ice);border:1px solid rgba(139,180,212,0.2);padding:6px 16px;">🚢 Bulk International Trade</span>
+      </div>
+    </div>
+  </div>
+  <div class="slide" id="slide-6">
+    <div class="shimmer"></div>
+    <div class="eyebrow">How It Works</div>
+    <div class="headline"><em>Six Steps</em> to<br>Frictionless Trade</div>
+    <div class="steps-container">
+      <div class="step-row"><div class="step-num-col"><div class="step-circle">1</div><div class="step-line"></div></div><div class="step-content"><div class="step-title">Account Verification</div><div class="step-desc">Users create verified accounts on the CrossLedger platform. Identity and wallet capacity confirmed on-chain.</div></div></div>
+      <div class="step-row"><div class="step-num-col"><div class="step-circle">2</div><div class="step-line"></div></div><div class="step-content"><div class="step-title">Tiered Wallet Validation</div><div class="step-desc">Wallets validated by capital range (e.g. $100K–$1M, $1M–$10M). Replaces BCL and RWA documentation.</div></div></div>
+      <div class="step-row"><div class="step-num-col"><div class="step-circle">3</div><div class="step-line"></div></div><div class="step-content"><div class="step-title">Smart Contract Creation</div><div class="step-desc">Trade terms encoded into a smart contract deployed on Ethereum. Conditions defined, counterparties confirmed.</div></div></div>
+      <div class="step-row"><div class="step-num-col"><div class="step-circle">4</div><div class="step-line"></div></div><div class="step-content"><div class="step-title">Funds Into Blockchain Escrow</div><div class="step-desc">Payment secured in smart escrow. Neither party controls funds until conditions are fully met.</div></div></div>
+      <div class="step-row"><div class="step-num-col"><div class="step-circle">5</div><div class="step-line"></div></div><div class="step-content"><div class="step-title">Automatic Execution</div><div class="step-desc">Upon condition fulfilment, the smart contract self-executes. No human approval required.</div></div></div>
+      <div class="step-row"><div class="step-num-col"><div class="step-circle">6</div></div><div class="step-content"><div class="step-title">Instant Settlement &amp; Burn</div><div class="step-desc">Funds released. CLXT gas fees consumed and permanently burned. Immutable record written to Ethereum.</div></div></div>
+    </div>
+  </div>
+  <div class="slide" id="slide-7">
+    <div class="shimmer"></div>
+    <div class="eyebrow">Token Utility</div>
+    <div class="headline">CLXT — The<br><em>Fuel of the Platform</em></div>
+    <div class="divider"></div>
+    <div style="display:flex;flex-direction:column;align-items:center;"><div class="token-center"><div class="token-symbol">CLX</div><div class="token-name">CLXT Token</div></div></div>
+    <div class="utility-grid">
+      <div class="util-card"><span class="util-icon">⛽</span><div class="util-title">Gas Fees</div><div class="util-desc">Every platform transaction requires CLXT. The token is the operational fuel for the entire system.</div></div>
+      <div class="util-card"><span class="util-icon">📜</span><div class="util-title">Contract Deployment</div><div class="util-desc">Creating and executing smart contracts on CrossLedger consumes CLXT. More trades = more burn.</div></div>
+      <div class="util-card"><span class="util-icon">✅</span><div class="util-title">Trade Validation</div><div class="util-desc">Counterparty verification and wallet tier access require token stake. Aligns incentives with platform health.</div></div>
+      <div class="util-card"><span class="util-icon">💳</span><div class="util-title">Settlement Currency</div><div class="util-desc">CLXT facilitates final settlement within the ecosystem, reducing reliance on external payment rails.</div></div>
+      <div class="util-card"><span class="util-icon">🏆</span><div class="util-title">Tier Access</div><div class="util-desc">Premium platform features, higher contract limits, and priority processing unlocked via CLXT holdings.</div></div>
+      <div class="util-card"><span class="util-icon">🔥</span><div class="util-title">Burn Mechanism</div><div class="util-desc">All gas fee tokens are permanently burned. Supply decreases with every transaction executed on-platform.</div></div>
+    </div>
+  </div>
+  <div class="slide" id="slide-8">
+    <div class="shimmer"></div>
+    <div class="eyebrow">Tokenomics</div>
+    <div class="headline">Designed for<br><em>Long-Term Scarcity</em></div>
+    <div class="tokenomics-layout">
+      <div class="token-supply-block">
+        <div class="supply-row"><span class="supply-label">Total Supply</span><span class="supply-value">1,000,000,000</span></div>
+        <div class="supply-row"><span class="supply-label">Treasury Allocation</span><span class="supply-value">960,000,000</span></div>
+        <div class="supply-row"><span class="supply-label">Initial Market Float</span><span class="supply-value">40,000,000</span></div>
+        <div class="supply-row"><span class="supply-label">Presale Price (Stage 1)</span><span class="supply-value">$0.10</span></div>
+        <div class="supply-row"><span class="supply-label">Network</span><span class="supply-value" style="font-size:18px;">Ethereum</span></div>
+        <div style="margin-top:30px;padding:20px;border:1px solid rgba(200,153,58,0.2);background:rgba(200,153,58,0.04);">
+          <div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);margin-bottom:8px;">VALUE LOGIC</div>
+          <div style="font-size:14px;color:var(--white);line-height:1.7;">Token value is driven by <span style="color:var(--gold);font-weight:600;">real platform utility</span> — not presale alone. Every trade executed burns tokens, reducing supply while demand grows with adoption.</div>
+        </div>
+      </div>
+      <div class="donut-wrap">
+        <svg class="donut-svg" viewBox="0 0 200 200">
+          <circle cx="100" cy="100" r="80" fill="none" stroke="rgba(200,153,58,0.1)" stroke-width="30"/>
+          <circle cx="100" cy="100" r="80" fill="none" stroke="#c8993a" stroke-width="30" stroke-dasharray="482.5 20.35" stroke-dashoffset="0" transform="rotate(-90 100 100)" opacity="0.9"/>
+          <circle cx="100" cy="100" r="80" fill="none" stroke="#1e4d9e" stroke-width="30" stroke-dasharray="20.35 482.5" stroke-dashoffset="-482.5" transform="rotate(-90 100 100)"/>
+          <text x="100" y="94" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="28" font-weight="700" fill="#c8993a">1B</text>
+          <text x="100" y="112" text-anchor="middle" font-family="Space Mono,monospace" font-size="8" fill="#7a8a9a" letter-spacing="1">TOTAL SUPPLY</text>
+        </svg>
+        <div class="donut-legend">
+          <div class="legend-item"><div class="legend-swatch" style="background:var(--gold);"></div><span class="legend-name">Treasury Allocation</span><span class="legend-pct">96%</span></div>
+          <div class="legend-item"><div class="legend-swatch" style="background:var(--blue2);"></div><span class="legend-name">Initial Market Float</span><span class="legend-pct">4%</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide" id="slide-9">
+    <div class="shimmer"></div>
+    <div class="eyebrow">Burn Mechanism</div>
+    <div class="headline">Every Trade<br><em>Destroys Supply</em></div>
+    <div class="burn-visual">
+      <div class="burn-equation">
+        <div class="burn-box blue"><div class="burn-box-title">Trade Executed</div><div class="burn-box-value">+ Volume</div></div>
+        <div class="burn-op">→</div>
+        <div class="burn-box gold"><div class="burn-box-title">CLXT Gas Fee</div><div class="burn-box-value">Consumed</div></div>
+        <div class="burn-op">→</div>
+        <div class="burn-box red"><div class="burn-box-title">Tokens</div><div class="burn-box-value">🔥 Burned</div></div>
+      </div>
+    </div>
+    <div class="burn-effect-grid">
+      <div class="effect-card"><span class="effect-arrow">↑</span><div class="effect-title">Trade Volume</div><div class="effect-desc">Platform adoption drives transaction throughput on CrossLedger.</div></div>
+      <div class="effect-card"><span class="effect-arrow">↓</span><div class="effect-title">Circulating Supply</div><div class="effect-desc">Burned tokens are permanently removed. Supply decreases continuously.</div></div>
+      <div class="effect-card"><span class="effect-arrow">↑</span><div class="effect-title">Token Scarcity</div><div class="effect-desc">Reduced supply with growing demand creates natural scarcity. Value is structurally supported.</div></div>
+    </div>
+    <div style="margin-top:30px;text-align:center;"><span style="font-family:'Cormorant Garamond',serif;font-size:clamp(18px,2.2vw,24px);font-style:italic;color:var(--gold);">"The more the platform is used — the scarcer the token becomes."</span></div>
+  </div>
+  <div class="slide" id="slide-10">
+    <div class="shimmer"></div>
+    <div class="eyebrow">Current Status</div>
+    <div class="headline">Not a Concept —<br><em>Already Live</em></div>
+    <div class="divider"></div>
+    <div class="status-grid">
+      <div class="status-item"><div class="status-icon done">✅</div><div><div class="status-text">Token Deployed on Ethereum</div><div class="status-sub">CLXT live on mainnet — verified on Etherscan</div></div></div>
+      <div class="status-item"><div class="status-icon done">✅</div><div><div class="status-text">Smart Contracts Live &amp; Functional</div><div class="status-sub">Presale contract operational. Purchase and claim logic active.</div></div></div>
+      <div class="status-item"><div class="status-icon done">✅</div><div><div class="status-text">Contracts Verified On-Chain</div><div class="status-sub">Public verification on Etherscan — full transparency</div></div></div>
+      <div class="status-item"><div class="status-icon done">✅</div><div><div class="status-text">Uniswap Liquidity Tested</div><div class="status-sub">Real market conditions. Liquidity proven at launch.</div></div></div>
+      <div class="status-item"><div class="status-icon done">✅</div><div><div class="status-text">Website Live</div><div class="status-sub">crossledger.trade — investor information &amp; contract links</div></div></div>
+      <div class="status-item"><div class="status-icon done">✅</div><div><div class="status-text">Presale Stage 1 Active</div><div class="status-sub">USDT purchases via live Ethereum presale contract</div></div></div>
+      <div class="status-item"><div class="status-icon progress">🔄</div><div><div class="status-text">Independent Smart Contract Audit</div><div class="status-sub">Third-party institutional-grade audit being engaged</div></div></div>
+      <div class="status-item"><div class="status-icon progress">🔄</div><div><div class="status-text">Full Platform Rollout</div><div class="status-sub">Post-presale — trade execution layer, wallet tiers, escrow system</div></div></div>
+    </div>
+    <div class="live-banner"><span class="live-banner-text">"This is not a concept — CrossLedger is already live and functioning."</span></div>
+  </div>
+  <div class="slide" id="slide-11">
+    <div class="shimmer"></div>
+    <div class="eyebrow">Security &amp; Trust</div>
+    <div class="headline">Built for<br><em>Institutional Adoption</em></div>
+    <div class="divider"></div>
+    <div class="security-layout">
+      <div class="security-pillars">
+        <div class="pillar"><div class="pillar-title">🔍 On-Chain Transparency</div><div class="pillar-desc">Every contract, transaction, and token movement is publicly verifiable on Ethereum. No hidden mechanisms.</div></div>
+        <div class="pillar"><div class="pillar-title">🛡️ Smart Contract Verification</div><div class="pillar-desc">All CrossLedger contracts verified on Etherscan. Source code publicly accessible and auditable by anyone.</div></div>
+        <div class="pillar"><div class="pillar-title">🏛️ Treasury Control</div><div class="pillar-desc">960M token treasury allocation managed internally. Controlled release prevents market flooding. Investor protection built-in.</div></div>
+        <div class="pillar"><div class="pillar-title">⚖️ Compliance Framework</div><div class="pillar-desc">Designed with compliance in mind from day one. KYC-ready wallet infrastructure for enterprise and institutional participants.</div></div>
+      </div>
+      <div class="audit-block">
+        <span class="audit-icon">🔐</span>
+        <div class="audit-title">Independent Audit</div>
+        <div class="audit-desc">An independent third-party smart contract audit is being engaged — institutional-grade security review of all CrossLedger contracts before full platform launch.</div>
+        <div style="margin-top:24px;padding:16px;border:1px solid rgba(200,153,58,0.2);background:rgba(200,153,58,0.04);"><div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);margin-bottom:8px;">SECURITY STANDARD</div><div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-style:italic;color:var(--white);">"Not speculation — infrastructure."</div></div>
+        <div style="margin-top:24px;display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;justify-content:space-between;padding:10px 14px;border:1px solid rgba(255,255,255,0.04);font-size:12px;"><span style="color:var(--muted);">Network</span><span style="color:var(--white);">Ethereum Mainnet</span></div>
+          <div style="display:flex;justify-content:space-between;padding:10px 14px;border:1px solid rgba(255,255,255,0.04);font-size:12px;"><span style="color:var(--muted);">Verification</span><span style="color:var(--white);">Etherscan Verified</span></div>
+          <div style="display:flex;justify-content:space-between;padding:10px 14px;border:1px solid rgba(255,255,255,0.04);font-size:12px;"><span style="color:var(--muted);">Audit Status</span><span style="color:var(--gold);">In Progress</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide" id="slide-12">
+    <div class="shimmer"></div>
+    <div class="eyebrow">Market Opportunity</div>
+    <div class="headline">From Billions<br>to <em>Trillions</em></div>
+    <div class="divider"></div>
+    <div class="market-grid">
+      <div class="market-card"><span class="market-icon">🌍</span><div class="market-value">$32T+</div><div class="market-unit">Global Trade Volume / Yr</div><div class="market-desc">Total cross-border trade that could be processed through blockchain settlement rails.</div></div>
+      <div class="market-card"><span class="market-icon">🛢️</span><div class="market-value">$3.5T</div><div class="market-unit">Global Oil Trade / Yr</div><div class="market-desc">EN590, Jet A1 — primary early-stage CrossLedger target commodities.</div></div>
+      <div class="market-card"><span class="market-icon">🍬</span><div class="market-value">$100B+</div><div class="market-unit">Sugar Market / Yr</div><div class="market-desc">ICUMSA 45 — high-volume commodity with complex international trade documentation requirements.</div></div>
+      <div class="market-card"><span class="market-icon">⛓️</span><div class="market-value">$10B+</div><div class="market-unit">Trade Finance Addressable</div><div class="market-desc">Near-term TAM for blockchain-based trade finance infrastructure across key commodity corridors.</div></div>
+    </div>
+    <div class="market-statement">"Capturing even 0.1% of global trade volume represents a transformational opportunity."</div>
+  </div>
+  <div class="slide" id="slide-13">
+    <div class="shimmer"></div>
+    <div class="eyebrow">Business Model</div>
+    <div class="headline">Revenue Tied to<br><em>Real Trade Activity</em></div>
+    <div class="biz-layout">
+      <div class="revenue-streams">
+        <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--muted);margin-bottom:20px;">REVENUE STREAMS</div>
+        <div class="revenue-item"><div><div class="revenue-name">Transaction Gas Fees</div><div class="revenue-desc">CLXT consumed per trade — primary burn driver</div></div></div>
+        <div class="revenue-item"><div><div class="revenue-name">Smart Contract Execution</div><div class="revenue-desc">Fee per contract deployed on the platform</div></div></div>
+        <div class="revenue-item"><div><div class="revenue-name">Platform Usage Fees</div><div class="revenue-desc">Access tiers and volume-based pricing</div></div></div>
+        <div class="revenue-item"><div><div class="revenue-name">Enterprise Onboarding</div><div class="revenue-desc">Institutional participants, trade houses, brokers</div></div></div>
+        <div class="revenue-item" style="border-bottom:none;"><div><div class="revenue-name">Wallet Tier Subscriptions</div><div class="revenue-desc">Premium validation tiers for high-volume traders</div></div></div>
+        <div style="margin-top:30px;padding:20px 22px;border:1px solid rgba(200,153,58,0.2);background:rgba(200,153,58,0.04);"><div style="font-size:13px;color:var(--muted);line-height:1.7;">Value is <span style="color:var(--gold);font-weight:600;">NOT</span> dependent on presale alone. Revenue and token value are tied to <span style="color:var(--gold);font-weight:600;">real economic activity</span> within the platform.</div></div>
+      </div>
+      <div class="flywheel-block">
+        <span class="flywheel-title">The Growth Flywheel</span>
+        <div class="flywheel-items">
+          <div class="flywheel-item"><span class="flywheel-arrow">→</span><span class="flywheel-text">More Traders Join Platform</span></div>
+          <div class="flywheel-item"><span class="flywheel-arrow">→</span><span class="flywheel-text">Trade Volume Increases</span></div>
+          <div class="flywheel-item"><span class="flywheel-arrow">→</span><span class="flywheel-text">More CLXT Gas Consumed</span></div>
+          <div class="flywheel-item"><span class="flywheel-arrow">→</span><span class="flywheel-text">More Tokens Burned</span></div>
+          <div class="flywheel-item"><span class="flywheel-arrow">→</span><span class="flywheel-text">Supply Decreases</span></div>
+          <div class="flywheel-item"><span class="flywheel-arrow">→</span><span class="flywheel-text">Scarcity Increases</span></div>
+          <div class="flywheel-item" style="border:none;background:rgba(200,153,58,0.08);"><span class="flywheel-arrow" style="color:var(--gold2);">↑</span><span class="flywheel-text" style="color:var(--gold);font-weight:700;">Token Value Supported</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide" id="slide-14">
+    <div class="shimmer"></div>
+    <div class="eyebrow">Roadmap</div>
+    <div class="headline">The Path to<br><em>Global Infrastructure</em></div>
+    <div class="roadmap-timeline">
+      <div class="timeline-line"></div>
+      <div class="timeline-phases">
+        <div class="phase active-phase">
+          <div class="phase-dot"></div>
+          <span class="phase-label">Now — Stage 1</span>
+          <div class="phase-title">Foundation</div>
+          <ul class="phase-items">
+            <li class="phase-item">Token deployment live</li>
+            <li class="phase-item">Smart contracts verified</li>
+            <li class="phase-item">Presale Stage 1 active</li>
+            <li class="phase-item">Uniswap liquidity live</li>
+            <li class="phase-item">Website live</li>
+          </ul>
+        </div>
+        <div class="phase">
+          <div class="phase-dot"></div>
+          <span class="phase-label">Phase 2</span>
+          <div class="phase-title">Security &amp; Audit</div>
+          <ul class="phase-items">
+            <li class="phase-item">Independent audit complete</li>
+            <li class="phase-item">Presale Stage 2</li>
+            <li class="phase-item">Exchange listings</li>
+            <li class="phase-item">Community expansion</li>
+            <li class="phase-item">KYC integration</li>
+          </ul>
+        </div>
+        <div class="phase">
+          <div class="phase-dot"></div>
+          <span class="phase-label">Phase 3</span>
+          <div class="phase-title">Platform Launch</div>
+          <ul class="phase-items">
+            <li class="phase-item">Full platform rollout</li>
+            <li class="phase-item">Smart escrow live</li>
+            <li class="phase-item">Wallet tier system</li>
+            <li class="phase-item">First live trades</li>
+            <li class="phase-item">Enterprise onboarding</li>
+          </ul>
+        </div>
+        <div class="phase">
+          <div class="phase-dot"></div>
+          <span class="phase-label">Phase 4+</span>
+          <div class="phase-title">Scale</div>
+          <ul class="phase-items">
+            <li class="phase-item">Global commodity corridors</li>
+            <li class="phase-item">Multi-chain expansion</li>
+            <li class="phase-item">Institutional partnerships</li>
+            <li class="phase-item">Regulatory framework</li>
+            <li class="phase-item">From billions → trillions</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide" id="slide-15">
+    <div class="shimmer"></div>
+    <div class="vision-center">
+      <div class="eyebrow" style="text-align:center;">Vision</div>
+      <div class="vision-headline">The <strong>Default</strong> Execution Layer<br>for <strong>Global Trade</strong></div>
+      <div class="vision-statement"><p>"CrossLedger is building the infrastructure layer for global trade —<br>replacing legacy instruments with smart contract certainty."</p></div>
+      <div style="margin-top:30px;display:flex;justify-content:center;gap:40px;flex-wrap:wrap;">
+        <div style="text-align:center;"><div style="font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:700;color:var(--gold);">$32T+</div><div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);">GLOBAL TRADE MARKET</div></div>
+        <div style="width:1px;background:rgba(200,153,58,0.2);"></div>
+        <div style="text-align:center;"><div style="font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:700;color:var(--gold);">1B</div><div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);">CLXT TOTAL SUPPLY</div></div>
+        <div style="width:1px;background:rgba(200,153,58,0.2);"></div>
+        <div style="text-align:center;"><div style="font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:700;color:var(--gold);">∞</div><div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);">SCALABILITY POTENTIAL</div></div>
+      </div>
+      <div class="cta-row">
+        <button class="cta-btn cta-primary">Join the Presale</button>
+        <button class="cta-btn cta-secondary">crossledger.trade</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+resize();
+window.addEventListener('resize', resize);
+class Particle {
+  constructor() { this.reset(); }
+  reset() { this.x = Math.random()*canvas.width; this.y = Math.random()*canvas.height; this.size = Math.random()*1.5+0.3; this.speedX = (Math.random()-0.5)*0.3; this.speedY = (Math.random()-0.5)*0.3; this.opacity = Math.random()*0.4+0.05; this.gold = Math.random()>0.7; }
+  update() { this.x+=this.speedX; this.y+=this.speedY; if(this.x<0||this.x>canvas.width||this.y<0||this.y>canvas.height)this.reset(); }
+  draw() { ctx.beginPath(); ctx.arc(this.x,this.y,this.size,0,Math.PI*2); ctx.fillStyle=this.gold?'rgba(200,153,58,'+this.opacity+')':'rgba(139,180,212,'+(this.opacity*0.5)+')'; ctx.fill(); }
+}
+const particles = Array.from({length:120},()=>new Particle());
+function drawConnections() {
+  for(let i=0;i<particles.length;i++){for(let j=i+1;j<particles.length;j++){const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y,dist=Math.sqrt(dx*dx+dy*dy);if(dist<120){ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);ctx.lineTo(particles[j].x,particles[j].y);ctx.strokeStyle='rgba(200,153,58,'+(0.04*(1-dist/120))+')';ctx.lineWidth=0.5;ctx.stroke();}}}
+}
+function animParticles(){ctx.clearRect(0,0,canvas.width,canvas.height);particles.forEach(p=>{p.update();p.draw();});drawConnections();requestAnimationFrame(animParticles);}
+animParticles();
+const cursor=document.getElementById('cursor'),cursorRing=document.getElementById('cursor-ring');
+document.addEventListener('mousemove',e=>{cursor.style.left=e.clientX+'px';cursor.style.top=e.clientY+'px';cursorRing.style.left=e.clientX+'px';cursorRing.style.top=e.clientY+'px';});
+const TOTAL=15,DURATION=8000;
+let current=0,playing=true,elapsed=0,lastTime=null;
+const slides=Array.from(document.querySelectorAll('.slide'));
+const dotsContainer=document.getElementById('dots');
+const counter=document.getElementById('cur-slide');
+const progressBar=document.getElementById('progress-bar');
+const timerArc=document.getElementById('timer-arc');
+const playBtn=document.getElementById('play-btn');
+slides.forEach((_,i)=>{const d=document.createElement('div');d.className='dot';d.addEventListener('click',()=>goTo(i));dotsContainer.appendChild(d);});
+document.getElementById('tot-slides').textContent=String(TOTAL).padStart(2,'0');
+function updateDots(){document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===current));}
+function goTo(index){slides[current].classList.remove('active');current=(index+TOTAL)%TOTAL;slides[current].classList.add('active');counter.textContent=String(current+1).padStart(2,'0');updateDots();elapsed=0;lastTime=null;updateProgress(0);}
+function updateProgress(frac){const pct=frac*100;progressBar.style.width=pct+'%';timerArc.style.strokeDashoffset=94.25*(1-frac);}
+function tick(ts){if(!playing){lastTime=null;return;}if(lastTime===null)lastTime=ts;const delta=ts-lastTime;lastTime=ts;elapsed+=delta;const frac=Math.min(elapsed/DURATION,1);updateProgress(frac);if(elapsed>=DURATION)goTo(current+1);requestAnimationFrame(tick);}
+function startPlay(){playing=true;playBtn.innerHTML='&#10074;&#10074;';lastTime=null;requestAnimationFrame(tick);}
+function pausePlay(){playing=false;playBtn.innerHTML='&#9654;';}
+playBtn.addEventListener('click',()=>playing?pausePlay():startPlay());
+document.getElementById('prev-btn').addEventListener('click',()=>{pausePlay();goTo(current-1);startPlay();});
+document.getElementById('next-btn').addEventListener('click',()=>{pausePlay();goTo(current+1);startPlay();});
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' '){pausePlay();goTo(current+1);startPlay();}if(e.key==='ArrowLeft'){pausePlay();goTo(current-1);startPlay();}if(e.key==='p'||e.key==='P')playing?pausePlay():startPlay();});
+const observer=new MutationObserver(mutations=>{mutations.forEach(m=>{if(m.target.classList.contains('active')){const id=m.target.id;if(id==='slide-3'){setTimeout(()=>{const l=document.querySelector('#slide-3 .big-stat-block');const r=document.querySelector('#slide-3 .two-col > div:last-child');if(l){l.style.opacity='1';l.style.transform='translateX(0)';}if(r){r.style.opacity='1';r.style.transform='translateX(0)';}},600);}if(id==='slide-5'){setTimeout(()=>{const t=document.querySelector('#slide-5 .target-anim');if(t){t.style.opacity='1';t.style.transform='translateY(0)';}},1600);}if(id==='slide-9'){setTimeout(()=>{const bt=document.querySelector('.burn-tagline');if(bt)bt.style.opacity='1';},1800);}if(id==='slide-15'){setTimeout(()=>{const fs=document.querySelector('.final-stats');if(fs)fs.style.opacity='1';},1500);}}});});
+slides.forEach(s=>observer.observe(s,{attributes:true,attributeFilter:['class']}));
+goTo(0);updateDots();requestAnimationFrame(tick);
+// AUDIO VOICEOVER SYSTEM
+(function(){
+  var p1=document.getElementById('audio-part1'),p2=document.getElementById('audio-part2');
+  var btn=document.getElementById('audio-play-btn'),fill=document.getElementById('audio-progress-fill');
+  var time=document.getElementById('audio-time'),info=document.getElementById('audio-track-info');
+  var vol=document.getElementById('audio-vol-btn'),wrap=document.getElementById('audio-progress-wrap');
+  var cur=1,playing=false,muted=false;
+  function ca(){return cur===1?p1:p2;}
+  function fmt(s){if(!s||isNaN(s))return'0:00';return Math.floor(s/60)+':'+(Math.floor(s%60)<10?'0':'')+Math.floor(s%60);}
+  function ui(){var d1=p1.duration||0,d2=p2.duration||0,tot=d1+d2,now=(cur===1?0:d1)+ca().currentTime;fill.style.width=(tot>0?(now/tot)*100:0)+'%';time.textContent=fmt(now)+' / '+fmt(tot);info.textContent='PART '+cur+' / 2';requestAnimationFrame(ui);}
+  function play(){ca().play();playing=true;btn.innerHTML='&#10074;&#10074;';}
+  function pause(){ca().pause();playing=false;btn.innerHTML='&#9654;';}
+  btn.addEventListener('click',function(){playing?pause():play();});
+  vol.addEventListener('click',function(){muted=!muted;p1.muted=muted;p2.muted=muted;vol.innerHTML=muted?'&#128263;':'&#128264;';});
+  wrap.addEventListener('click',function(e){var r=wrap.getBoundingClientRect(),pct=(e.clientX-r.left)/r.width,d1=p1.duration||0,tot=d1+(p2.duration||0),t=pct*tot;if(t<=d1){if(cur===2){p2.pause();p2.currentTime=0;cur=1;}p1.currentTime=t;}else{if(cur===1){p1.pause();cur=2;}p2.currentTime=t-d1;}if(playing)ca().play();});
+  p1.addEventListener('ended',function(){cur=2;p2.currentTime=0;if(playing)p2.play();});
+  p2.addEventListener('ended',function(){playing=false;btn.innerHTML='&#9654;';cur=1;info.textContent='VOICEOVER';});
+  requestAnimationFrame(ui);
+})();
+</script>
+</body>
+</html>
