@@ -715,10 +715,10 @@ goTo(0);updateDots();requestAnimationFrame(tick);_initialLoad=false;
   var time=document.getElementById('audio-time'),info=document.getElementById('audio-track-info');
   var vol=document.getElementById('audio-vol-btn'),wrap=document.getElementById('audio-progress-wrap');
   var cur=1,isPlaying=false,muted=false,autoStarted=false;
-  var slideTimes=[0,50,100,155,210,260,310,360,399,449,499,547,597,647,700];
+  var slideTimes=[0,40,80,120,162,202,242,282,322,362,402,442,482,522,562];
   function ca(){return cur===1?p1:p2;}
   function fmt(s){if(!s||isNaN(s))return'0:00';return Math.floor(s/60)+':'+(Math.floor(s%60)<10?'0':'')+Math.floor(s%60);}
-  function getTot(){return(p1.duration||399)+(p2.duration||342);}
+  function getTot(){return(p1.duration||322)+(p2.duration||280);}
   function getNow(){return(cur===1?0:(p1.duration||399))+ca().currentTime;}
   function uiLoop(){var tot=getTot(),now=getNow();fill.style.width=(tot>0?(now/tot)*100:0)+'%';time.textContent=fmt(now)+' / '+fmt(tot);info.textContent='PART '+cur+' / 2';requestAnimationFrame(uiLoop);}
   function playAudio(){ca().play().catch(function(){});isPlaying=true;btn.innerHTML='&#10074;&#10074;';}
