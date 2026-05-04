@@ -1,3 +1,53 @@
+import Head from "next/head";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useAppKit, useAppKitAccount } from "@reown/appkit/react";
+import { mainnet } from "@reown/appkit/networks";
+import { useAccount, useChainId, useSwitchChain, useReadContracts, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { parseUnits, formatUnits } from "viem";
+
+/* ==========================================================
+   CONSTANTS – preserved from existing index.js
+      ========================================================== */
+const PRESALE_CONTRACT_ADDRESS = "0xABCA8F71BA5f0e500A7e9c470048472c0B982B35";
+const USDT_TOKEN_ADDRESS        = "0xdAC17F958D2ee523a2206206994597C13D831ec7";
+const CLX_TOKEN_ADDRESS         = "0xDa23800A2fc8d345Af55d9Bf88a7A910B2f90A6d";
+const FORMSPREE_ENDPOINT        = "https://formspree.io/f/mlgpnvbk";
+
+const TOKEN_NAME          = "CrossLedger";
+const TOKEN_SYMBOL        = "CLXT";
+const TAGLINE             = "Settlement infrastructure for cross-border commodity trade";
+const CURRENT_PRICE_USD   = 0.10;
+const MIN_PURCHASE_USD    = 200;
+
+const PRESALE_ABI = [
+    "function buyWithUSDT(uint256 usdtAmount)",
+    "function clxtPerUsdt() view returns (uint256)",
+    "function presaleActive() view returns (bool)",
+  ];
+
+const ERC20_ABI = [
+    "function balanceOf(address account) external view returns (uint256)",
+    "function allowance(address owner, address spender) external view returns (uint256)",
+    "function approve(address spender, uint256 amount) external returns (bool)",
+  ];
+
+const TOKEN_ALLOCATION = [
+  { title: "Ecosystem & Trade Incentives",   percent: "35%", desc: "User rewards, trade-flow stimulation, rebates, referrals, and corridor liquidity for trade partners." },
+  { title: "Treasury & Compliance",          percent: "20%", desc: "Regulatory readiness, AFSL pathway, audit reserves, operational runway, and dispute provisioning." },
+  { title: "Founders & Team",                percent: "15%", desc: "Long-term execution alignment for the core founding team and key technical hires." },
+  { title: "Strategic Investors",            percent: "15%", desc: "Seed and strategic capital partners. The four-stage public presale draws from this allocation pool." },
+  { title: "Exchange & Liquidity",           percent: "10%", desc: "DEX liquidity pool seeding at TGE, market-making partnerships, and CEX listing reserves." },
+  { title: "Operations & Partnerships",      percent: "5%",  desc: "Commercial growth, ecosystem integrations, and trade-finance partnership development." },
+  ];
+
+const PRESALE_STAGES = [
+  { stage: "01", name: "Stage 1", price: "$0.10", delta: "–",     cap: "5,000,000 CLXT", live: true },
+  { stage: "02", name: "Stage 2", price: "$0.20", delta: "+100%", cap: "5,000,000 CLXT" },
+  { stage: "03", name: "Stage 3", price: "$0.25", delta: "+150%", cap: "4,000,000 CLXT" },
+  { stage: "04", name: "Stage 4", price: "$0.50", delta: "+400%", cap: "3,000,000 CLXT" },
+  { stage: "REF",name: "Listing Reference", price: "$1.00", delta: "+900%", cap: "DEX liquidity pool", target: true },
+  ];
+
 
 
 export default function HomePage() {
