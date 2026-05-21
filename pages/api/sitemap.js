@@ -25,4 +25,3 @@ export default function handler(req, res) {
                                                                               res.write(sitemap);
                                                                                 res.end();
                                                                                 }
-}
