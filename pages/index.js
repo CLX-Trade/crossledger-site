@@ -1,4 +1,5 @@
 import Head from "next/head";
+import CountdownTimer from '../components/CountdownTimer';
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useAppKit, useAppKitAccount } from "@reown/appkit/react";
 import { mainnet } from "@reown/appkit/networks";
