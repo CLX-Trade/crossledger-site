@@ -2,7 +2,7 @@ name: CrossLedger AI Organism
 
 on:
   schedule:
-    - cron: '0 3 * * *'
+    - cron: '0 3 * * *'→ Runs at 03:00
   workflow_dispatch:
     inputs:
       reason:
@@ -31,41 +31,6 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install --legacy-peer-deps
 
       - name: Run AI improvement agent
-        id: ai-run
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: |
-          node scripts/run-ai-agent.mjs 2>&1 | tee agent-output.txt
-          echo "run_date=$(date -u +%Y-%m-%d)" >> $GITHUB_OUTPUT
-          echo "branch_name=ai-improvements/$(date -u +%Y-%m-%d-%H%M)" >> $GITHUB_OUTPUT
-
-      - name: Check if improvements were generated
-        id: check-improvements
-        run: |
-          if [ -f "ai-improvements.json" ] && [ -s "ai-improvements.json" ]; then
-            echo "has_improvements=true" >> $GITHUB_OUTPUT
-          else
-            echo "has_improvements=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Create improvement branch and PR
-        if: steps.check-improvements.outputs.has_improvements == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git config --global user.name "CrossLedger AI Agent"
-          git config --global user.email "ai-agent@crossledger.trade"
-          BRANCH="ai-improvements/$(date -u +%Y-%m-%d-%H%M)"
-          git checkout -b $BRANCH
-          git add ai-improvements.json agent-output.txt
-          git commit -m "AI improvements for $(date -u +%Y-%m-%d)"
-          git push origin $BRANCH
-          gh pr create --title "AI Improvements: $(date -u +%Y-%m-%d)" --body "$(cat ai-improvements.json | node -e "const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));const lines=['## CrossLedger AI Improvements',''];(d.improvements||[]).forEach((i,n)=>{lines.push('### '+(n+1)+'. '+i.areaName);lines.push(i.suggestion);lines.push('');});console.log(lines.join('\n'));")" --base main --head $BRANCH
-
-      - name: Summary
-        run: |
-          echo "## AI Organism Run Complete" >> $GITHUB_STEP_SUMMARY
-          echo "Date: $(date -u +%Y-%m-%d)" >> $GITHUB_STEP_SUMMARY
