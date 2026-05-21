@@ -9,7 +9,7 @@ import { parseUnits, formatUnits } from "viem";
    CONSTANTS – preserved from existing index.js
       ========================================================== */
 const PRESALE_CONTRACT_ADDRESS = "0xABCA8F71BA5f0e500A7e9c470048472c0B982B35";
-const USDT_TOKEN_ADDRESS        = "0xdAC17F958D2ee523a2206206994597C13D831ec7";
+const USDT_TOKEN_ADDRESS        = "0xAC17F958D2ee523a2206206994597C13D831ec7";
 const CLX_TOKEN_ADDRESS         = "0xDa23800A2fc8d345Af55d9Bf88a7A910B2f90A6d";
 const FORMSPREE_ENDPOINT        = "https://formspree.io/f/mlgpnvbk";
 
@@ -488,7 +488,7 @@ export default function HomePage() {
 
       <Head>
 
-        <title>CrossLedger (CLXT) — Trade Infrastructure by GDN Group | Presale Live</title>
+        <title>CrossLedger (CLXT) | Blockchain Settlement for Global Commodity Trade</title>
 
         <meta name="description" content="CrossLedger is a blockchain-anchored settlement platform purpose-built for cross-border commodity trade. Built by GDN Group. CLXT presale Stage 1 live on Ethereum mainnet at US$0.10." />
 
@@ -574,13 +574,13 @@ export default function HomePage() {
 
             <div className="hero-eyebrow">CROSSLEDGER · INFRASTRUCTURE · BUILT BY GDN GROUP</div>
 
-            <h1 className="h-display">Settlement infrastructure for cross-border commodity trade.</h1>
+            <h1 className="h-display">Institutional-Grade Settlement Infrastructure — Now Open to Early Adopters.</h1>
 
             <p className="hero-lede">A blockchain-anchored platform purpose-built by GDN Group to modernise the world&apos;s commodity corridors. Smart escrow, verified documentation, real-time visibility, and token-enabled settlement. CLXT presale Stage 1 live on Ethereum mainnet.</p>
 
             <div className="hero-actions">
 
-              <a href="#presale" className="btn-primary">Enter presale</a>
+              <a href="#presale" className="btn-primary">Secure Stage 1 Allocation</a>
 
               <a href="#token" className="btn-link">Platform overview →</a>
 
@@ -684,7 +684,7 @@ export default function HomePage() {
 
           <div className="eyebrow">MARKET CONTEXT</div>
 
-          <h2 className="h-section" style={{ marginBottom: 32, maxWidth: "28ch" }}>A measurable opportunity at the intersection of three structural gaps.</h2>
+          <h2 className="h-section" style={{ marginBottom: 32, maxWidth: "28ch" }}>While crypto markets consolidate, institutional capital flows into real-world asset infrastructure. CrossLedger bridges traditional commodity trade with blockchain efficiency.</h2>
 
           <div className="context-grid">
 
@@ -1254,7 +1254,9 @@ export default function HomePage() {
 
             <details className="faq"><summary>Is the presale available to US, Canadian, or Chinese residents?</summary><div className="answer"><p>No. CLXT is not offered to residents of the United States, Canada, China, North Korea, Iran, Syria, Cuba, or other comprehensively-sanctioned jurisdictions. Geo-IP screening is enforced at the purchase flow, but it remains your responsibility to confirm eligibility under your own jurisdiction&apos;s rules before participating.</p></div></details>
 
-            <details className="faq"><summary>What are the risks of participating?</summary><div className="answer"><p>Material risks include market risk (token price may decline, including to zero), liquidity risk (limited secondary market until exchange listing), regulatory risk (digital-asset rules continue to evolve in Australia and other jurisdictions), smart-contract risk (despite audits, no smart contract is risk-free), platform-execution risk, and total-loss risk. Participate only with funds you can afford to lose. This is not financial advice.</p></div></details>
+            <details className="faq"><summary>How does CrossLedger perform during periods of market volatility?</summary><div className="answer"><p>CrossLedger&apos;s value proposition is anchored in real-world trade finance utility, not speculative momentum. Our smart escrow and settlement infrastructure serves active commodity exporters regardless of broader crypto market conditions. The CLXT token derives utility from transaction fees and platform usage—meaning demand correlates with global trade volume rather than market sentiment alone. During neutral or bearish markets, platforms with genuine commercial use cases tend to demonstrate greater resilience than purely speculative assets.</p></div></details>
+
+<details className="faq"><summary>What are the risks of participating?</summary><div className="answer"><p>Material risks include market risk (token price may decline, including to zero), liquidity risk (limited secondary market until exchange listing), regulatory risk (digital-asset rules continue to evolve in Australia and other jurisdictions), smart-contract risk (despite audits, no smart contract is risk-free), platform-execution risk, and total-loss risk. Participate only with funds you can afford to lose. This is not financial advice.</p></div></details>
 
           </div>
 
