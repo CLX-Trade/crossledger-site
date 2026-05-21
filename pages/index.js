@@ -7,8 +7,8 @@ import { useAccount, useChainId, useSwitchChain, useReadContracts, useReadContra
 import { parseUnits, formatUnits } from "viem";
 
 /* ==========================================================
-   CONSTANTS – preserved from existing index.js
-      ========================================================== */
+   CONSTANTS – preserved from existig index.js
+      ========================================================= */
 const PRESALE_CONTRACT_ADDRESS = "0xABCA8F71BA5f0e500A7e9c470048472c0B982B35";
 const USDT_TOKEN_ADDRESS        = "0xAC17F958D2ee523a2206206994597C13D831ec7";
 const CLX_TOKEN_ADDRESS         = "0xDa23800A2fc8d345Af55d9Bf88a7A910B2f90A6d";
@@ -586,6 +586,8 @@ export default function HomePage() {
               <a href="#token" className="btn-link">Platform overview →</a>
 
             </div>
+
+            <CountdownTimer />
 
           </div>
 
