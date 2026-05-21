@@ -574,13 +574,13 @@ export default function HomePage() {
 
             <div className="hero-eyebrow">CROSSLEDGER · INFRASTRUCTURE · BUILT BY GDN GROUP</div>
 
-            <h1 className="h-display">Institutional-Grade Settlement Infrastructure — Now Open to Early Adopters.</h1>
+            <h1 className="h-display">Institutional-Grade Settlement. Early-Stage Entry.</h1>
 
             <p className="hero-lede">A blockchain-anchored platform purpose-built by GDN Group to modernise the world&apos;s commodity corridors. Smart escrow, verified documentation, real-time visibility, and token-enabled settlement. CLXT presale Stage 1 live on Ethereum mainnet.</p>
 
             <div className="hero-actions">
 
-              <a href="#presale" className="btn-primary">Secure Stage 1 Allocation</a>
+              <a href="#presale" className="btn-primary">Secure Your Allocation</a>
 
               <a href="#token" className="btn-link">Platform overview →</a>
 
