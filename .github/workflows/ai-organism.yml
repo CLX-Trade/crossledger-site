@@ -43,36 +43,24 @@ jobs:
           NEXT_PUBLIC_RPC_URL: ${{ secrets.NEXT_PUBLIC_RPC_URL }}
         run: node scripts/run-ai-agent.mjs
 
-      - name: Commit and push improvements
+      - name: Commit improvements directly to main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --global user.name "CrossLedger AI Agent"
           git config --global user.email "ai-agent@crossledger.trade"
-          BRANCH="ai-improvements/$(date -u +%Y-%m-%d-%H%M)"
-          git checkout -b $BRANCH
           git add ai-improvements.json agent-output.txt
-          git commit -m "AI improvements for $(date -u +%Y-%m-%d)"
-          git push origin $BRANCH
-          echo "BRANCH=$BRANCH" >> $GITHUB_ENV
-
-      - name: Create and auto-merge Pull Request
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          PR_URL=$(gh pr create \
-            --title "AI improvements for $(date -u +%Y-%m-%d)" \
-            --body "Automated AI improvement run. See ai-improvements.json for details." \
-            --base main \
-            --head "$BRANCH")
-          echo "PR created: $PR_URL"
-          PR_NUMBER=$(echo "$PR_URL" | grep -oE '[0-9]+$')
-          echo "Auto-merging PR #$PR_NUMBER..."
-          gh pr merge "$PR_NUMBER" --merge --admin --delete-branch
-          echo "PR #$PR_NUMBER merged successfully."
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git pull --rebase origin main
+            git commit -m "AI improvements for $(date -u +%Y-%m-%d-%H%M)"
+            git push origin main
+            echo "Changes pushed directly to main"
+          fi
 
       - name: Summary
         run: |
           echo "## AI Organism Run Complete" >> $GITHUB_STEP_SUMMARY
           echo "Date: $(date -u +%Y-%m-%d)" >> $GITHUB_STEP_SUMMARY
-          echo "Branch merged directly to main." >> $GITHUB_STEP_SUMMARY
+          echo "Changes pushed directly to main." >> $GITHUB_STEP_SUMMARY
