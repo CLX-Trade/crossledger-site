@@ -49,11 +49,13 @@ jobs:
         run: |
           git config --global user.name "CrossLedger AI Agent"
           git config --global user.email "ai-agent@crossledger.trade"
+          git stash --include-untracked || true
+          git pull --rebase origin main
+          git stash pop || true
           git add ai-improvements.json agent-output.txt
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git pull --rebase origin main
             git commit -m "AI improvements for $(date -u +%Y-%m-%d-%H%M)"
             git push origin main
             echo "Changes pushed directly to main"
