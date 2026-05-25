@@ -14,7 +14,7 @@ const SITE_URL = 'https://www.crossledger.trade';
 
 async function main() {
   console.log('[runner] CrossLedger AI Organism starting...');
-  console.log('[runner] Time:', new Date().toISOString());
+  console.log('[runner] Time:', new Date().toISOString())
   
   // Step 1: Fetch live pulse data from the deployed site
   let pulseData = null;
@@ -75,7 +75,7 @@ async function main() {
   console.log('\n=== AI ORGANISM SUMMARY ===');
   improvements.forEach((imp, i) => {
     console.log(`\n${i + 1}. ${imp.areaName} [${imp.urgencyLevel}]`);
-    console.log('   ', imp.suggestion.slice(0, 80) + (imp.suggestion.length > 80 ? '...' : ''));
+    console.log('   ', String(imp.suggestion ?? '').slice(0, 80) + (String(imp.suggestion ?? '').length > 80 ? '...' : ''));
   });
   console.log('\n[runner] Done. Pull Request will be created by GitHub Actions.');
 }
