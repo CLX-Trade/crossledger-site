@@ -20,6 +20,17 @@ export default function Document() {
                                                                                                                                                                               />
 
                                                                                                                                                                                       {/* Google Search Console Verification */}
+
+{/* Google Ads Conversion Tracking - AW-18190712729 */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18190712729"></script>
+                  <script dangerouslySetInnerHTML={{
+                    __html: `
+                                window.dataLayer = window.dataLayer || [];
+                                            function gtag(){dataLayer.push(arguments);}
+                                                        gtag('js', new Date());
+                                                                    gtag('config', 'AW-18190712729');
+                                                                              `
+        }} />
         <meta name="google-site-verification" content="0567f50cc6b6dd62" />
 
         {/* Primary SEO */}
