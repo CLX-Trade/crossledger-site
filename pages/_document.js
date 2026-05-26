@@ -23,7 +23,7 @@ export default function Document() {
         <meta name="google-site-verification" content="0567f50cc6b6dd62" />
 
         {/* Primary SEO */}
-                                                                                                                                                                                              <meta name="description" content="CrossLedger – Institutional-Grade Blockchain Trade Finance" />
+                                                                                                                                                                                              <meta name="description" content="CrossLedger enables faster, transparent cross-border commodity settlements via smart escrow and on-chain verification. Stage 1 presale now live at $0.10 CLXT." />
                                                                                                                                                                                                       <meta name="keywords" content="CrossLedger, CLXT, blockchain trade finance, commodity settlement, cross-border payments, presale, smart escrow, on-chain verification, GDN Group" />
                                                                                                                                                                                                               <meta name="robots" content="index, follow" />
                                                                                                                                                                                                                       <link rel="canonical" href="https://www.crossledger.trade/" />
