@@ -23,13 +23,13 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
@@ -43,16 +43,15 @@ jobs:
           NEXT_PUBLIC_RPC_URL: ${{ secrets.NEXT_PUBLIC_RPC_URL }}
         run: node scripts/run-ai-agent.mjs
 
-      - name: Commit improvements directly to main
+      - name: Commit improvements to main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --global user.name "CrossLedger AI Agent"
           git config --global user.email "ai-agent@crossledger.trade"
-          git stash --include-untracked || true
           git pull --rebase origin main
-          git stash pop || true
           git add ai-improvements.json agent-output.txt
+          git add pages/_document.js pages/index.js public/sitemap.xml || true
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
@@ -65,4 +64,5 @@ jobs:
         run: |
           echo "## AI Organism Run Complete" >> $GITHUB_STEP_SUMMARY
           echo "Date: $(date -u +%Y-%m-%d)" >> $GITHUB_STEP_SUMMARY
+          echo "Live patches applied: _document.js, index.js, sitemap.xml" >> $GITHUB_STEP_SUMMARY
           echo "Changes pushed directly to main." >> $GITHUB_STEP_SUMMARY
