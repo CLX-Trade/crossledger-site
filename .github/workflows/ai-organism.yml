@@ -49,7 +49,11 @@ jobs:
         run: |
           git config --global user.name "CrossLedger AI Agent"
           git config --global user.email "ai-agent@crossledger.trade"
+          git add ai-improvements.json agent-output.txt
+          git add pages/_document.js pages/index.js public/sitemap.xml || true
+          git stash
           git pull --rebase origin main
+          git stash pop || true
           git add ai-improvements.json agent-output.txt
           git add pages/_document.js pages/index.js public/sitemap.xml || true
           if git diff --staged --quiet; then
