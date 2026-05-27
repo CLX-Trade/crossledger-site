@@ -49,30 +49,26 @@ jobs:
         run: |
           git config --global user.name "CrossLedger AI Agent"
           git config --global user.email "ai-agent@crossledger.trade"
-          # Stage generated/patched files BEFORE pulling (prevents unstaged changes error)
+          # Stage generated/patched files
           git add ai-improvements.json agent-output.txt || true
           git add pages/_document.js pages/index.js public/sitemap.xml || true
-          # Pull with rebase to incorporate any remote commits
-          git pull --rebase origin main || true
-          # Detect and discard any conflict markers introduced by rebase
-          for f in ai-improvements.json pages/_document.js pages/index.js; do
-            if [ -f "$f" ] && grep -q "<<<<<<<" "$f" 2>/dev/null; then
-              echo "Conflict detected in $f — keeping ours"
-              git checkout --theirs "$f" 2>/dev/null || git checkout HEAD -- "$f" 2>/dev/null || true
-              git add "$f" || true
-            fi
-          done
-          # Final stage
-          git add ai-improvements.json agent-output.txt || true
-          git add pages/_document.js pages/index.js public/sitemap.xml || true
+          # Only proceed if there are staged changes
           if git diff --staged --quiet; then
             echo "No changes to commit"
-          else
-            git commit -m "AI improvements for $(date -u +%Y-%m-%d-%H%M)"
-            git push origin main
-            echo "Changes pushed directly to main"
+            exit 0
           fi
-
+          # Commit our changes first (index must be clean before rebase)
+          DATESTAMP=$(date -u +%Y-%m-%d-%H%M)
+          git commit -m "AI improvements for $DATESTAMP"
+          # Now pull with rebase - index is clean so this works
+          if ! git pull --rebase origin main; then
+            echo "Rebase failed - aborting and using force push"
+            git rebase --abort || true
+            git push --force-with-lease origin main
+          else
+            git push origin main
+          fi
+          echo "Changes pushed to main"
       - name: Summary
         run: |
           echo "## AI Organism Run Complete" >> $GITHUB_STEP_SUMMARY
