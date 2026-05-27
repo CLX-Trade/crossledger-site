@@ -541,6 +541,8 @@ export default function HomePage() {
 
             <a href="#faq">FAQ</a>
 
+            <a href="/how-it-works">How It Works</a>
+
             <a href="#presale" className="btn-primary">Buy CLXT →</a>
 
           </div>
