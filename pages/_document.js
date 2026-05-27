@@ -35,7 +35,11 @@ export default function Document() {
 
         {/* Primary SEO */}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                                                                                                                                                                                               <meta name="description" content="CrossLedger streamlines cross-border commodity settlement with smart escrow and on-chain verification. Stage 1 presale live at $0.10 CLXT. Built by GDN Group." />
+=======
+                                                                                                                                                                                              <meta name="description" content="CrossLedger delivers smart escrow and on-chain document verification for cross-border commodity settlements. Stage 1 presale live at $0.10 CLXT. Built by GDN Group." />
+>>>>>>> Stashed changes
 =======
                                                                                                                                                                                               <meta name="description" content="CrossLedger delivers smart escrow and on-chain document verification for cross-border commodity settlement. Stage 1 presale live at $0.10 CLXT. Built by GDN Group." />
 >>>>>>> Stashed changes
