@@ -49,12 +49,18 @@ jobs:
         run: |
           git config --global user.name "CrossLedger AI Agent"
           git config --global user.email "ai-agent@crossledger.trade"
-          git add ai-improvements.json agent-output.txt
-          git add pages/_document.js pages/index.js public/sitemap.xml || true
-          git stash
+          # Pull latest first to avoid stash/rebase conflicts
           git pull --rebase origin main
-          git stash pop || true
-          git add ai-improvements.json agent-output.txt
+          # Stage all generated and patched files
+          git add ai-improvements.json agent-output.txt || true
+          git add pages/_document.js pages/index.js public/sitemap.xml || true
+          # Detect and discard any conflict markers in ai-improvements.json
+          if grep -q "<<<<<<<" ai-improvements.json 2>/dev/null; then
+            echo "Conflict markers detected in ai-improvements.json — discarding conflicted file"
+            git checkout HEAD -- ai-improvements.json 2>/dev/null || git rm --cached ai-improvements.json || true
+          fi
+          # Re-stage after conflict resolution
+          git add ai-improvements.json agent-output.txt || true
           git add pages/_document.js pages/index.js public/sitemap.xml || true
           if git diff --staged --quiet; then
             echo "No changes to commit"
