@@ -8,7 +8,9 @@
  */
 
 import { writeFileSync } from 'fs';
-import { runImprovementAgent, formatPRDescription } from '../lib/ai-agent.js';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const { runImprovementAgent, formatPRDescription } = require('../lib/ai-agent.js');
 
 const SITE_URL = 'https://www.crossledger.trade';
 
