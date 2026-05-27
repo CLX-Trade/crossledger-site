@@ -49,17 +49,20 @@ jobs:
         run: |
           git config --global user.name "CrossLedger AI Agent"
           git config --global user.email "ai-agent@crossledger.trade"
-          # Pull latest first to avoid stash/rebase conflicts
-          git pull --rebase origin main
-          # Stage all generated and patched files
+          # Stage generated/patched files BEFORE pulling (prevents unstaged changes error)
           git add ai-improvements.json agent-output.txt || true
           git add pages/_document.js pages/index.js public/sitemap.xml || true
-          # Detect and discard any conflict markers in ai-improvements.json
-          if grep -q "<<<<<<<" ai-improvements.json 2>/dev/null; then
-            echo "Conflict markers detected in ai-improvements.json — discarding conflicted file"
-            git checkout HEAD -- ai-improvements.json 2>/dev/null || git rm --cached ai-improvements.json || true
-          fi
-          # Re-stage after conflict resolution
+          # Pull with rebase to incorporate any remote commits
+          git pull --rebase origin main || true
+          # Detect and discard any conflict markers introduced by rebase
+          for f in ai-improvements.json pages/_document.js pages/index.js; do
+            if [ -f "$f" ] && grep -q "<<<<<<<" "$f" 2>/dev/null; then
+              echo "Conflict detected in $f — keeping ours"
+              git checkout --theirs "$f" 2>/dev/null || git checkout HEAD -- "$f" 2>/dev/null || true
+              git add "$f" || true
+            fi
+          done
+          # Final stage
           git add ai-improvements.json agent-output.txt || true
           git add pages/_document.js pages/index.js public/sitemap.xml || true
           if git diff --staged --quiet; then
