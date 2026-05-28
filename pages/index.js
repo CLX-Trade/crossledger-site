@@ -689,7 +689,7 @@ export default function HomePage() {
 
           <div className="eyebrow">MARKET CONTEXT</div>
 
-          <h2 className="h-section" style={{ marginBottom: 32, maxWidth: "28ch" }}>While crypto markets consolidate, institutional capital flows into real-world asset infrastructure. CrossLedger bridges traditional commodity trade with blockchain efficiency.</h2>
+          <h2 className="h-section" style={{ marginBottom: 32, maxWidth: "28ch" }}>As markets rebalance, real-world infrastructure holds its ground. CrossLedger bridges traditional commodity trade with blockchain efficiency.</h2>
 
           <div className="context-grid">
 
