@@ -1,16 +1,16 @@
 {
-  "runDate": "2026-06-02T11:56:32.723Z",
+  "runDate": "2026-06-02T18:07:44.693Z",
   "siteUrl": "https://www.crossledger.trade",
   "market": {
     "eth": {
-      "price": 1978.5,
-      "change24h": -0.061290285860661084
+      "price": 1923.23,
+      "change24h": -3.067342642143357
     },
     "btc": {
-      "price": 69485,
-      "change24h": -4.0169426241297606
+      "price": 67444,
+      "change24h": -5.632506429927582
     },
-    "sentiment": "neutral"
+    "sentiment": "bearish"
   },
   "presale": {
     "stage": 1,
@@ -19,57 +19,57 @@
     "currency": "USDT",
     "symbol": "CLXT",
     "stageCap": 5000000,
-    "urgency": "Early-stage entry closes when 5M CLXT is reached."
+    "urgency": "5,000,000 CLXT in Stage 1. Once filled, Stage 2 opens at $0.20."
   },
   "improvements": [
     {
       "area": "urgency_messaging",
       "areaName": "Presale Urgency & CTA Copy",
-      "suggestion": "Stage 1 Allocation: $0.10 CLXT — Closes at 5M tokens. In a sideways market, early positioning in real-asset infrastructure matters. Secure your allocation before institutional pricing begins.",
-      "rationale": "References neutral market conditions authentically to frame CLXT as a strategic infrastructure play rather than speculation, while the hard cap creates genuine scarcity without false urgency.",
+      "suggestion": "Stage 1 Presale: $0.10 | Stage 2: $0.20 — While markets consolidate, early conviction compounds. 5M CLXT allocation. No price predictions. Just infrastructure that settles trades when others can't. Reserve Your Allocation →",
+      "rationale": "Acknowledges bearish conditions without fear-mongering, reframes market downturn as opportunity for strategic positioning, and emphasizes product utility over speculation—building trust with sophisticated investors who see through hype.",
       "urgencyLevel": "medium",
-      "generatedAt": "2026-06-02T11:56:14.731Z",
+      "generatedAt": "2026-06-02T18:07:23.281Z",
       "marketSnapshot": {
-        "ethPrice": 1978.5,
-        "sentiment": "neutral"
+        "ethPrice": 1923.23,
+        "sentiment": "bearish"
       }
     },
     {
       "area": "seo_metadata",
       "areaName": "SEO Meta Description & OG Tags",
-      "suggestion": "<title>CrossLedger (CLXT) | Blockchain Settlement for Global Commodity Trade</title><meta name=\"description\" content=\"CrossLedger enables faster cross-border commodity settlement through smart escrow and on-chain verification. Stage 1 presale live at $0.10 CLXT. Built for institutional traders and exporters.\"/><meta property=\"og:title\" content=\"CrossLedger – Institutional-Grade Blockchain Trade Finance\"/><meta property=\"og:description\" content=\"Smart escrow. On-chain document verification. Faster settlement for mid-market commodity exporters. CLXT Stage 1 presale now open.\"/><meta property=\"og:type\" content=\"website\"/><meta property=\"og:image\" content=\"/og-crossledger-presale.png\"/><meta name=\"twitter:card\" content=\"summary_large_image\"/>",
-      "rationale": "Clear, keyword-rich meta tags improve organic search rankings for 'blockchain trade finance' and 'commodity settlement' queries while the OG tags ensure professional link previews on social and messaging platforms—critical for institutional credibility.",
+      "suggestion": "<title>CrossLedger (CLXT) | Blockchain Settlement for Global Commodity Trade</title><meta name=\"description\" content=\"CrossLedger delivers smart escrow and on-chain document verification for cross-border commodity exporters. Stage 1 presale live at $0.10 per CLXT. Built by GDN Group.\"/><meta property=\"og:title\" content=\"CrossLedger – Institutional-Grade Trade Finance on Blockchain\"/><meta property=\"og:description\" content=\"Accelerate cross-border settlements with smart escrow and verified documentation. CLXT Stage 1 presale now open for institutional and crypto-native investors.\"/><meta property=\"og:type\" content=\"website\"/><meta property=\"og:image\" content=\"/og-crossledger-presale.png\"/><meta name=\"twitter:card\" content=\"summary_large_image\"/>",
+      "rationale": "Targets high-intent search queries like 'blockchain trade finance' and 'commodity settlement crypto' while clearly communicating the presale opportunity. Professional phrasing aligns with institutional buyer expectations and improves CTR from search and social shares.",
       "urgencyLevel": "high",
-      "generatedAt": "2026-06-02T11:56:20.963Z",
+      "generatedAt": "2026-06-02T18:07:28.733Z",
       "marketSnapshot": {
-        "ethPrice": 1978.5,
-        "sentiment": "neutral"
+        "ethPrice": 1923.23,
+        "sentiment": "bearish"
       }
     },
     {
       "area": "faq_content",
       "areaName": "FAQ Section",
-      "suggestion": "**Q: How does CLXT maintain utility during periods of broader crypto market volatility?**\n\nA: CLXT is designed as a settlement utility token anchored to real-world trade finance activity—not speculative trading. While cryptocurrency markets naturally experience fluctuations, CrossLedger's value proposition is tied to tangible cross-border commodity flows: smart escrow execution, document verification, and settlement fees. This utility-first architecture means CLXT demand correlates with global trade volume rather than purely with crypto market sentiment. Our presale pricing at US$0.10 remains fixed regardless of ETH or BTC movements, providing entry certainty for participants focused on long-term infrastructure value.",
-      "rationale": "With BTC showing a -4% daily correction and neutral market sentiment, prospective buyers need reassurance that CLXT isn't purely a speculative asset. This FAQ directly addresses volatility concerns while reinforcing the real-world utility narrative and fixed presale pricing.",
+      "suggestion": "**Q: How does market volatility affect my CLXT presale investment?**\n\nA: CLXT is priced in USD at a fixed $0.10 during Stage 1, independent of ETH or BTC price movements. While you'll use ETH to purchase, your allocation is locked at the USD-denominated presale rate. This structure insulates early participants from short-term crypto market fluctuations. Additionally, CrossLedger's utility is tied to real-world trade finance activity—not speculative trading—providing fundamental value drivers beyond broader market sentiment.",
+      "rationale": "Addresses the immediate concern investors have during bearish conditions (-3% to -5% drops visible today), reduces purchase hesitation by clarifying USD-pegged pricing mechanics, and reinforces CLXT's real-world utility narrative.",
       "urgencyLevel": "high",
-      "generatedAt": "2026-06-02T11:56:28.369Z",
+      "generatedAt": "2026-06-02T18:07:35.409Z",
       "marketSnapshot": {
-        "ethPrice": 1978.5,
-        "sentiment": "neutral"
+        "ethPrice": 1923.23,
+        "sentiment": "bearish"
       }
     },
     {
       "area": "market_narrative",
       "areaName": "Market Context Section",
-      "suggestion": "Market Snapshot: ETH $1,978 | BTC $69,485 — Crypto markets hold steady as institutional appetite for real-world asset tokenization accelerates. While majors consolidate, infrastructure plays like CLXT positioned for outsized growth. Stage 1 presale  at $0.10 offers early-mover entry before protocol launch.",
-      "rationale": "Anchors credibility with live pricing, reframes neutral sentiment as stability rather than stagnation, and connects macro conditions to CLXT's RWA narrative—driving urgency without hype.",
+      "suggestion": "Market Update: ETH $1,923 • BTC $67,444 — In volatile conditions, institutional capital seeks utility. CrossLedger's smart escrow settles trades in minutes, not days, while traditional rails stall. Stage 1 at $0.10 offers early positioning before protocol launch.",
+      "rationale": "Acknowledges current bearish sentiment transparently while pivoting to CLXT's real-world utility as a hedge against market uncertainty—building trust through honesty rather than ignoring conditions.",
       "urgencyLevel": "medium",
-      "generatedAt": "2026-06-02T11:56:32.708Z",
+      "generatedAt": "2026-06-02T18:07:44.676Z",
       "marketSnapshot": {
-        "ethPrice": 1978.5,
-        "sentiment": "neutral"
+        "ethPrice": 1923.23,
+        "sentiment": "bearish"
       }
     }
   ],
-  "prDescription": "## AI Improvement Run — 2026-06-02\n\n**Market Conditions:** neutral sentiment | ETH at US$1978.5\n\n---\n\n### 1. Presale Urgency & CTA Copy\n**Urgency:** medium\n\n**Suggested copy:**\n```\nStage 1 Allocation: $0.10 CLXT — Closes at 5M tokens. In a sideways market, early positioning in real-asset infrastructure matters. Secure your allocation before institutional pricing begins.\n```\n\n**Rationale:** References neutral market conditions authentically to frame CLXT as a strategic infrastructure play rather than speculation, while the hard cap creates genuine scarcity without false urgency.\n\n---\n\n### 2. SEO Meta Description & OG Tags\n**Urgency:** high\n\n**Suggested copy:**\n```\n<title>CrossLedger (CLXT) | Blockchain Settlement for Global Commodity Trade</title><meta name=\"description\" content=\"CrossLedger enables faster cross-border commodity settlement through smart escrow and on-chain verification. Stage 1 presale live at $0.10 CLXT. Built for institutional traders and exporters.\"/><meta property=\"og:title\" content=\"CrossLedger – Institutional-Grade Blockchain Trade Finance\"/><meta property=\"og:description\" content=\"Smart escrow. On-chain document verification. Faster settlement for mid-market commodity exporters. CLXT Stage 1 presale now open.\"/><meta property=\"og:type\" content=\"website\"/><meta property=\"og:image\" content=\"/og-crossledger-presale.png\"/><meta name=\"twitter:card\" content=\"summary_large_image\"/>\n```\n\n**Rationale:** Clear, keyword-rich meta tags improve organic search rankings for 'blockchain trade finance' and 'commodity settlement' queries while the OG tags ensure professional link previews on social and messaging platforms—critical for institutional credibility.\n\n---\n\n### 3. FAQ Section\n**Urgency:** high\n\n**Suggested copy:**\n```\n**Q: How does CLXT maintain utility during periods of broader crypto market volatility?**\n\nA: CLXT is designed as a settlement utility token anchored to real-world trade finance activity—not speculative trading. While cryptocurrency markets naturally experience fluctuations, CrossLedger's value proposition is tied to tangible cross-border commodity flows: smart escrow execution, document verification, and settlement fees. This utility-first architecture means CLXT demand correlates with global trade volume rather than purely with crypto market sentiment. Our presale pricing at US$0.10 remains fixed regardless of ETH or BTC movements, providing entry certainty for participants focused on long-term infrastructure value.\n```\n\n**Rationale:** With BTC showing a -4% daily correction and neutral market sentiment, prospective buyers need reassurance that CLXT isn't purely a speculative asset. This FAQ directly addresses volatility concerns while reinforcing the real-world utility narrative and fixed presale pricing.\n\n---\n\n### 4. Market Context Section\n**Urgency:** medium\n\n**Suggested copy:**\n```\nMarket Snapshot: ETH $1,978 | BTC $69,485 — Crypto markets hold steady as institutional appetite for real-world asset tokenization accelerates. While majors consolidate, infrastructure plays like CLXT positioned for outsized growth. Stage 1 presale  at $0.10 offers early-mover entry before protocol launch.\n```\n\n**Rationale:** Anchors credibility with live pricing, reframes neutral sentiment as stability rather than stagnation, and connects macro conditions to CLXT's RWA narrative—driving urgency without hype.\n\n---\n\n*Generated by CrossLedger AI Agent. Live file patches applied automatically.*\n"
+  "prDescription": "## AI Improvement Run — 2026-06-02\n\n**Market Conditions:** bearish sentiment | ETH at US$1923.23\n\n---\n\n### 1. Presale Urgency & CTA Copy\n**Urgency:** medium\n\n**Suggested copy:**\n```\nStage 1 Presale: $0.10 | Stage 2: $0.20 — While markets consolidate, early conviction compounds. 5M CLXT allocation. No price predictions. Just infrastructure that settles trades when others can't. Reserve Your Allocation →\n```\n\n**Rationale:** Acknowledges bearish conditions without fear-mongering, reframes market downturn as opportunity for strategic positioning, and emphasizes product utility over speculation—building trust with sophisticated investors who see through hype.\n\n---\n\n### 2. SEO Meta Description & OG Tags\n**Urgency:** high\n\n**Suggested copy:**\n```\n<title>CrossLedger (CLXT) | Blockchain Settlement for Global Commodity Trade</title><meta name=\"description\" content=\"CrossLedger delivers smart escrow and on-chain document verification for cross-border commodity exporters. Stage 1 presale live at $0.10 per CLXT. Built by GDN Group.\"/><meta property=\"og:title\" content=\"CrossLedger – Institutional-Grade Trade Finance on Blockchain\"/><meta property=\"og:description\" content=\"Accelerate cross-border settlements with smart escrow and verified documentation. CLXT Stage 1 presale now open for institutional and crypto-native investors.\"/><meta property=\"og:type\" content=\"website\"/><meta property=\"og:image\" content=\"/og-crossledger-presale.png\"/><meta name=\"twitter:card\" content=\"summary_large_image\"/>\n```\n\n**Rationale:** Targets high-intent search queries like 'blockchain trade finance' and 'commodity settlement crypto' while clearly communicating the presale opportunity. Professional phrasing aligns with institutional buyer expectations and improves CTR from search and social shares.\n\n---\n\n### 3. FAQ Section\n**Urgency:** high\n\n**Suggested copy:**\n```\n**Q: How does market volatility affect my CLXT presale investment?**\n\nA: CLXT is priced in USD at a fixed $0.10 during Stage 1, independent of ETH or BTC price movements. While you'll use ETH to purchase, your allocation is locked at the USD-denominated presale rate. This structure insulates early participants from short-term crypto market fluctuations. Additionally, CrossLedger's utility is tied to real-world trade finance activity—not speculative trading—providing fundamental value drivers beyond broader market sentiment.\n```\n\n**Rationale:** Addresses the immediate concern investors have during bearish conditions (-3% to -5% drops visible today), reduces purchase hesitation by clarifying USD-pegged pricing mechanics, and reinforces CLXT's real-world utility narrative.\n\n---\n\n### 4. Market Context Section\n**Urgency:** medium\n\n**Suggested copy:**\n```\nMarket Update: ETH $1,923 • BTC $67,444 — In volatile conditions, institutional capital seeks utility. CrossLedger's smart escrow settles trades in minutes, not days, while traditional rails stall. Stage 1 at $0.10 offers early positioning before protocol launch.\n```\n\n**Rationale:** Acknowledges current bearish sentiment transparently while pivoting to CLXT's real-world utility as a hedge against market uncertainty—building trust through honesty rather than ignoring conditions.\n\n---\n\n*Generated by CrossLedger AI Agent. Live file patches applied automatically.*\n"
 }
