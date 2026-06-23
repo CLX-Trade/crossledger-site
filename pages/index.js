@@ -1490,29 +1490,29 @@ export default function HomePage() {
 
         :root {
 
-          --cream:        #f5efe5;
+          --cream:        #ffffff;
 
-          --cream-deep:   #ebe2d3;
+          --cream-deep:   #f4f5f7;
 
-          --navy:         #13283f;
+          --navy:         #0b0e14;
 
-          --navy-deep:    #0d1d2f;
+          --navy-deep:    #070a10;
 
           --white:        #ffffff;
 
-          --ink:          #13283f;
+          --ink:          #0b0e14;
 
-          --ink-mute:     #5a6b7d;
+          --ink-mute:     #5b6472;
 
-          --ink-dim:      #8595a6;
+          --ink-dim:      #8b94a3;
 
-          --ink-line:     rgba(19,40,63,0.12);
+          --ink-line:     rgba(11,14,20,0.10);
 
-          --gold:         #c9a449;
+          --gold:         #3366FF;
 
-          --gold-deep:    #a4842f;
+          --gold-deep:    #2348cc;
 
-          --gold-soft:    rgba(201,164,73,0.14);
+          --gold-soft:    rgba(51,102,255,0.12);
 
           --positive:     #5e8c6f;
 
