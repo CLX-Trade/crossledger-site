@@ -543,6 +543,8 @@ export default function HomePage() {
 
             <a href="/how-it-works">How It Works</a>
 
+            <a href="/CrossLedger-CLXT-Whitepaper.pdf" target="_blank" rel="noopener">Whitepaper</a>
+
             <a href="#presale" className="btn-primary">Buy CLXT →</a>
 
           </div>
@@ -1430,6 +1432,8 @@ export default function HomePage() {
                 <li><a href={`https://etherscan.io/address/${CLX_TOKEN_ADDRESS}`}>Token Contract ↗</a></li>
 
                 <li><a href={`https://etherscan.io/token/${USDT_TOKEN_ADDRESS}`}>Payment Token (USDT) ↗</a></li>
+
+                <li><a href="/CrossLedger-CLXT-Whitepaper.pdf" target="_blank" rel="noopener">Whitepaper ↗</a></li>
 
                 <li><a href="#faq">FAQ</a></li>
 
