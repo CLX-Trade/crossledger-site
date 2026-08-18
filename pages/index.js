@@ -491,16 +491,6 @@ export default function HomePage() {
 
         <title>CrossLedger (CLXT) | Blockchain Settlement for Global Commodity Trade</title>
 
-        <meta name="description" content="CrossLedger is a blockchain-anchored settlement platform purpose-built for cross-border commodity trade. Built by GDN Group. CLXT presale Stage 1 live on Ethereum mainnet at US$0.10." />
-
-        <meta property="og:title" content="CrossLedger (CLXT) — Trade Infrastructure by GDN Group" />
-
-        <meta property="og:description" content="Smart contract infrastructure for real-world commodity transactions. CLXT presale Stage 1 live on Ethereum mainnet." />
-
-        <meta property="og:image" content="/clxt-hero.png" />
-
-        <meta name="twitter:card" content="summary_large_image" />
-
       </Head>
 
       <div className="meta-strip">
@@ -1101,7 +1091,7 @@ export default function HomePage() {
 
           <div className="sec-grid">
 
-            <div className="sec-cell"><span className="tag pending">AUDIT · IN ENGAGEMENT</span><h4>Smart Contract Audit</h4><p>Audit engagement under negotiation with an Australian-based independent security firm with prior protocol-level work on Sushi, Gala, and Redbelly Network. Pre-audit code is publicly verifiable on Etherscan now; the formal audit report will be published prior to Stage 2 opening.</p><div className="meta">Engagement target: Q2 2025 · Publication: prior to Stage 2 close</div></div>
+            <div className="sec-cell"><span className="tag pending">AUDIT · IN ENGAGEMENT</span><h4>Smart Contract Audit</h4><p>Audit engagement under negotiation with an Australian-based independent security firm with prior protocol-level work on Sushi, Gala, and Redbelly Network. Pre-audit code is publicly verifiable on Etherscan now; the formal audit report will be published prior to Stage 2 opening.</p><div className="meta">Engagement: in negotiation · Publication: prior to Stage 2 opening</div></div>
 
             <div className="sec-cell"><span className="tag live">CONTRACTS · VERIFIED</span><h4>On-Chain Transparency</h4><p>The presale contract and CLXT token contract are both deployed and verified on Ethereum mainnet. Source code, ABIs, and full transaction history are visible on Etherscan. No upgradeable proxies, no admin mint backdoors, no transfer pause functions.</p><div className="meta"><a href={`https://etherscan.io/address/${PRESALE_CONTRACT_ADDRESS}`}>Presale ↗</a> · <a href={`https://etherscan.io/address/${CLX_TOKEN_ADDRESS}`}>Token ↗</a></div></div>
 
