@@ -496,6 +496,10 @@ export default function HomePage() {
 
         <title>CrossLedger (CLXT) | Blockchain Settlement for Global Commodity Trade</title>
 
+        {/* Next injects width=device-width by default; initial-scale=1 is added so
+            older iOS Safari does not apply its own zoom on first paint. */}
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
       </Head>
 
       <div className="meta-strip">
@@ -594,7 +598,7 @@ export default function HomePage() {
 
             {/* eslint-disable-next-line @next/next/no-img-element */}
 
-            <img src="/clxt-hero.png" alt="CrossLedger CLXT — verified smart contract on Ethereum, smart contract infrastructure for real-world commodity transactions" className="hero-image" />
+            <img src="/clxt-hero.jpg" alt="CrossLedger CLXT — verified smart contract on Ethereum, smart contract infrastructure for real-world commodity transactions" className="hero-image" />
 
           </div>
 
