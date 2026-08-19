@@ -1477,7 +1477,7 @@ export default function HomePage() {
           <div className="partners-strip" style={{padding:'24px 0',textAlign:'center',borderTop:'1px solid rgba(255,255,255,0.08)'}}>
                          <span style={{fontSize:'11px',letterSpacing:'0.15em',textTransform:'uppercase',color:'rgba(255,255,255,0.4)',marginRight:'16px'}}>Listed on</span>
                          <a href="https://cryptototem.com/" rel="dofollow" target="_blank" style={{display:'inline-flex',alignItems:'center',opacity:0.7,transition:'opacity 0.2s'}} onMouseEnter={e=>e.currentTarget.style.opacity=1} onMouseLeave={e=>e.currentTarget.style.opacity=0.7}>
-                           <img src="https://cryptototem.com/wp-content/uploads/2022/03/cryptototem-logo.png" alt="CryptoTotem" style={{height:'28px',width:'auto'}} />
+                           <img src="/cryptototem-logo.png" alt="CryptoTotem" style={{height:'28px',width:'auto'}} />
              </a>
              </div>
 
