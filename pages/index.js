@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useAppKit, useAppKitAccount } from "@reown/appkit/react";
 import { mainnet } from "@reown/appkit/networks";
 import { useAccount, useChainId, useSwitchChain, useReadContracts, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { parseUnits, formatUnits } from "viem";
+import { parseUnits, formatUnits, parseAbi } from "viem";
 
 /* ==========================================================
    CONSTANTS – preserved from existig index.js
@@ -20,17 +20,22 @@ const TAGLINE             = "Settlement infrastructure for cross-border commodit
 const CURRENT_PRICE_USD   = 0.10;
 const MIN_PURCHASE_USD    = 200;
 
-const PRESALE_ABI = [
+// These must be run through viem's parseAbi(). Passing the human-readable strings
+// straight to wagmi makes viem evaluate `'name' in "function buyWithUSDT(...)"`,
+// which throws "Cannot use 'in' operator to search for 'name'" and silently fails
+// every read and write: balance and allowance never resolve, and Approve/Buy can
+// never fire. parseAbi turns them into the ABI objects wagmi expects.
+const PRESALE_ABI = parseAbi([
     "function buyWithUSDT(uint256 usdtAmount)",
     "function clxtPerUsdt() view returns (uint256)",
     "function presaleActive() view returns (bool)",
-  ];
+  ]);
 
-const ERC20_ABI = [
+const ERC20_ABI = parseAbi([
     "function balanceOf(address account) external view returns (uint256)",
     "function allowance(address owner, address spender) external view returns (uint256)",
     "function approve(address spender, uint256 amount) external returns (bool)",
-  ];
+  ]);
 
 const TOKEN_ALLOCATION = [
   { title: "Ecosystem & Trade Incentives",   percent: "35%", desc: "User rewards, trade-flow stimulation, rebates, referrals, and corridor liquidity for trade partners." },
