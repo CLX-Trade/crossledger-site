@@ -1148,7 +1148,7 @@ export default function HomePage() {
 
             <h4>Jurisdictional Restrictions</h4>
 
-            <p>CLXT is <strong>not offered</strong> to residents of: the United States of America, Canada, the People&apos;s Republic of China, the Democratic People&apos;s Republic of Korea, the Islamic Republic of Iran, Syrian Arab Republic, Cuba, and any other jurisdiction subject to comprehensive sanctions or where such offering would require registration or licensing not currently held by GDN Enterprise Pty Ltd. Geo-IP screening is enforced at the purchase flow, but it remains the participant&apos;s responsibility to confirm eligibility under their own jurisdiction&apos;s rules. This list is subject to expansion based on final legal review.</p>
+            <p>CLXT is <strong>not offered</strong> to residents of: the United States of America, Canada, the People&apos;s Republic of China, the Commonwealth of Australia, the Democratic People&apos;s Republic of Korea, the Islamic Republic of Iran, Syrian Arab Republic, Cuba, and any other jurisdiction subject to comprehensive sanctions or where such offering would require registration or licensing not currently held by GDN Enterprise Pty Ltd. Australia is restricted on a precautionary basis while GDN obtains legal advice on CLXT&apos;s classification. The purchase interface is disabled for visitors whose IP address resolves to a restricted jurisdiction; that screen is IP-based and is not a verification of residence or identity, so it remains the participant&apos;s responsibility to confirm eligibility under their own jurisdiction&apos;s rules. This list is subject to expansion based on final legal review.</p>
 
           </div>
 
