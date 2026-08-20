@@ -6,6 +6,14 @@ import { mainnet } from "@reown/appkit/networks";
 import { useAccount, useChainId, useSwitchChain, useReadContracts, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { parseUnits, formatUnits, parseAbi } from "viem";
 
+// ── Restricted jurisdictions ────────────────────────────────────────────────
+// ISO-3166-1 alpha-2. The presale purchase interface is disabled for visitors
+// whose IP resolves to one of these. Kept in sync with the FAQ copy below.
+//   "AU" is a PRECAUTIONARY entry pending Australian legal advice on CLXT's
+//   classification. Remove that one string to re-open Australia once counsel
+//   confirms the position.
+const RESTRICTED_JURISDICTIONS = ["US", "CA", "CN", "AU", "KP", "IR", "SY", "CU"];
+
 /* ==========================================================
    CONSTANTS – preserved from existig index.js
       ========================================================= */
@@ -145,6 +153,22 @@ export default function HomePage() {
   const [contactStatus, setContactStatus]         = useState(null);
 
   const [contactSending, setContactSending]       = useState(false);
+
+  /* ====== JURISDICTION SCREEN ====== */
+
+  // Country is stamped by middleware.js as a readable cookie. null = not yet
+  // determined (first paint); we fail OPEN on null so the widget is not blocked
+  // for everyone if the cookie is missing, and CLOSED on a restricted match.
+  const [geoCountry, setGeoCountry] = useState(null);
+
+  useEffect(() => {
+    const m = typeof document !== "undefined"
+      ? document.cookie.match(/(?:^|;\s*)clxt_geo=([A-Za-z]{2})/)
+      : null;
+    setGeoCountry(m ? m[1].toUpperCase() : "XX");
+  }, []);
+
+  const geoBlocked = geoCountry !== null && RESTRICTED_JURISDICTIONS.includes(geoCountry);
 
   /* ====== AFTER-CONFIRMATION REFETCHES ====== */
 
@@ -406,6 +430,12 @@ export default function HomePage() {
 
   const buttonState = useMemo(() => {
 
+    if (geoBlocked) {
+
+      return { left: "Not available in your region", leftDisabled: true, right: "Buy CLXT", rightDisabled: true };
+
+    }
+
     if (!isConnected) {
 
       return { left: "Connect Wallet", leftAction: connectWallet, leftDisabled: false, right: "Buy CLXT", rightDisabled: true };
@@ -462,7 +492,7 @@ export default function HomePage() {
 
     };
 
-  }, [isConnected, chainOk, presaleActive, tosChecked, amountValid, hasBalance, hasAllowance, approving, approveConfirming, buying, buyConfirming, pending]);
+  }, [geoBlocked, isConnected, chainOk, presaleActive, tosChecked, amountValid, hasBalance, hasAllowance, approving, approveConfirming, buying, buyConfirming, pending]);
 
   /* ====== WALLET STATUS DISPLAY ====== */
 
@@ -1104,7 +1134,7 @@ export default function HomePage() {
 
             <div className="sec-cell"><span className="tag live">CONTRACTS · VERIFIED</span><h4>On-Chain Transparency</h4><p>The presale contract and CLXT token contract are both deployed and verified on Ethereum mainnet. Source code, ABIs, and full transaction history are visible on Etherscan. No upgradeable proxies, no admin mint backdoors, no transfer pause functions.</p><div className="meta"><a href={`https://etherscan.io/address/${PRESALE_CONTRACT_ADDRESS}`}>Presale ↗</a> · <a href={`https://etherscan.io/address/${CLX_TOKEN_ADDRESS}`}>Token ↗</a></div></div>
 
-            <div className="sec-cell"><span className="tag pending">REGULATORY · AUSTRALIA</span><h4>Australian Regulatory Position</h4><p>GDN Enterprise Pty Ltd (ACN 666 495 263) operates from Queensland under ASIC&apos;s transitional sector-wide no-action position (in effect to 30 June 2026) while the Digital Assets Framework regime is implemented. AUSTRAC scope and AML/CTF programme requirements are under review with Australian counsel.</p><div className="meta">Memo: under review · ACN 666 495 263</div></div>
+            <div className="sec-cell"><span className="tag pending">REGULATORY · AUSTRALIA</span><h4>Australian Regulatory Position</h4><p>GDN Enterprise Pty Ltd (ACN 666 495 263) is an Australian proprietary company registered with ASIC and in good standing. GDN does not hold an Australian Financial Services Licence. Australia&apos;s regulatory framework for digital assets is undergoing reform under the Digital Assets Framework. GDN is obtaining Australian legal advice on the classification of CLXT and the licensing obligations that may apply, and will update this page as that position is confirmed.</p><div className="meta">Memo: legal position under review · ACN 666 495 263</div></div>
 
             <div className="sec-cell"><span className="tag">KYC · AVAILABLE</span><h4>Buyer KYC (Threshold-Based)</h4><p>Identity verification is required for purchases above platform thresholds and for participants requesting allocation outside standard public-stage pricing. KYC is processed through a regulated third-party provider; data is segregated from the smart-contract layer.</p><div className="meta">Threshold disclosure published with Stage 2 opening</div></div>
 
@@ -1256,9 +1286,9 @@ export default function HomePage() {
 
             <details className="faq"><summary>Is the smart contract audited?</summary><div className="answer"><p>Audit engagement is in negotiation with an Australian-based independent security firm at the time of writing. The pre-audit contract code is publicly verifiable on Etherscan now, and the full audit report will be published prior to Stage 2 opening.</p></div></details>
 
-            <details className="faq"><summary>How is GDN Enterprise positioned under Australian regulation?</summary><div className="answer"><p>GDN Enterprise Pty Ltd operates under ASIC&apos;s transitional sector-wide no-action position (in effect to 30 June 2026) while the Digital Assets Framework regime is implemented. AUSTRAC registration scope and AML/CTF programme requirements are under active review with Australian counsel specialising in digital assets.</p></div></details>
+            <details className="faq"><summary>How is GDN Enterprise positioned under Australian regulation?</summary><div className="answer"><p>GDN Enterprise Pty Ltd is an Australian proprietary company registered with ASIC and in good standing. GDN does not hold an Australian Financial Services Licence. Australia&apos;s framework for digital assets is undergoing reform under the Digital Assets Framework, and GDN is obtaining Australian legal advice on the classification of CLXT and the licensing obligations that may apply. AUSTRAC registration scope and AML/CTF programme requirements are under review. This page will be updated as those positions are confirmed.</p></div></details>
 
-            <details className="faq"><summary>Is the presale available to US, Canadian, or Chinese residents?</summary><div className="answer"><p>No. CLXT is not offered to residents of the United States, Canada, China, North Korea, Iran, Syria, Cuba, or other comprehensively-sanctioned jurisdictions. Geo-IP screening is enforced at the purchase flow, but it remains your responsibility to confirm eligibility under your own jurisdiction&apos;s rules before participating.</p></div></details>
+            <details className="faq"><summary>Which residents can take part in the presale?</summary><div className="answer"><p>CLXT is not offered to residents of the United States, Canada, China, Australia, North Korea, Iran, Syria, Cuba, or other comprehensively-sanctioned jurisdictions. Australia is restricted on a precautionary basis while GDN obtains legal advice on CLXT&apos;s classification. The purchase interface is disabled for visitors whose IP address resolves to a restricted jurisdiction. That screen is IP-based and is not a verification of residence or identity, so it remains your responsibility to confirm eligibility under your own jurisdiction&apos;s rules before participating.</p></div></details>
 
             <details className="faq"><summary>How does CrossLedger perform during periods of market volatility?</summary><div className="answer"><p>CrossLedger&apos;s value proposition is anchored in real-world trade finance utility, not speculative momentum. Our smart escrow and settlement infrastructure serves active commodity exporters regardless of broader crypto market conditions. The CLXT token derives utility from transaction fees and platform usage—meaning demand correlates with global trade volume rather than market sentiment alone. During neutral or bearish markets, platforms with genuine commercial use cases tend to demonstrate greater resilience than purely speculative assets.</p></div></details>
 
@@ -1374,7 +1404,7 @@ export default function HomePage() {
 
           <p><strong>CLXT is a utility token issued by GDN Enterprise Pty Ltd.</strong> Participation in the presale or any subsequent purchase, sale, or transfer of CLXT involves material risks including but not limited to: market risk, liquidity risk, regulatory risk, smart-contract risk, platform-execution risk, counterparty risk, and total-loss risk. Forward-looking statements regarding future listing prices, platform adoption, transaction volumes, or revenue are projections only and are not guarantees. Past performance of comparable projects is not indicative of future results.</p>
 
-          <p>CLXT is <strong>not</strong> a financial product in every jurisdiction; classification varies by country of residence. Australian residents: GDN Enterprise Pty Ltd is operating under ASIC&apos;s transitional sector-wide no-action position (in effect to 30 June 2026) and is preparing for compliance with the Digital Assets Framework regime. This page does not constitute personal financial advice, a securities offering, or an invitation to invest. Information presented here is general in nature and does not take account of your individual objectives, financial situation, or needs.</p>
+          <p>CLXT is a utility token issued by GDN Enterprise Pty Ltd. Its classification varies by jurisdiction and may change as Australian law is reformed. GDN does not hold an Australian Financial Services Licence. Prospective participants should obtain their own legal and financial advice as to whether participation is appropriate and lawful in their jurisdiction. This page does not constitute personal financial advice, a securities offering, or an invitation to invest. Information presented here is general in nature and does not take account of your individual objectives, financial situation, or needs.</p>
 
           <p>Conduct your own research and obtain independent legal, tax, and financial advice from licensed professionals before participating. Only commit funds you can afford to lose entirely. By connecting a wallet and committing a transaction, you confirm acceptance of these terms and the jurisdictional restrictions set out above.</p>
 
