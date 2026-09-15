@@ -587,7 +587,7 @@ export default function HomePage() {
 
             <a href="/CrossLedger-CLXT-Whitepaper.pdf" target="_blank" rel="noopener">Whitepaper</a>
 
-            <a href="#presale" className="btn-primary">Buy CLXT →</a>
+            <a href="#presale" className="btn-primary">Purchase status →</a>
 
           </div>
 
@@ -1140,7 +1140,7 @@ export default function HomePage() {
 
           <div className="sec-grid">
 
-            <div className="sec-cell"><span className="tag pending">REVIEW · ISSUES IDENTIFIED</span><h4>Smart Contract Audit</h4><p>An AI-assisted contract review identified a USDT purchase failure and a staking supply-accounting issue. Website purchases are unavailable while corrections are assessed. This review is not an independent professional audit or a security certification.</p><div className="meta">Review date: 16 September 2026 · Remediation pending</div></div>
+            <div className="sec-cell"><span className="tag pending">REVIEW · ISSUES IDENTIFIED</span><h4>Smart Contract Review</h4><p>An AI-assisted contract review identified a USDT purchase failure and a staking supply-accounting issue. Website purchases are unavailable while corrections are assessed. This review is not an independent professional audit or a security certification.</p><div className="meta">Review date: 16 September 2026 · Remediation pending</div></div>
 
             <div className="sec-cell"><span className="tag live">CONTRACTS · VERIFIED</span><h4>On-Chain Transparency</h4><p>The contracts are deployed on Ethereum mainnet. Etherscan labels the token source Exact Match and the presale source Similar Match. The owner can change the sale rate and treasury, control sale availability, and withdraw presale inventory. Editing this website cannot repair the deployed contracts.</p><div className="meta"><a href={`https://etherscan.io/address/${PRESALE_CONTRACT_ADDRESS}`}>Presale ↗</a> · <a href={`https://etherscan.io/address/${CLX_TOKEN_ADDRESS}`}>Token ↗</a></div></div>
 
@@ -1459,7 +1459,7 @@ export default function HomePage() {
 
                 <li><a href="#security">Security &amp; Audit</a></li>
 
-                <li><a href="#presale">Buy CLXT</a></li>
+                <li><a href="#presale">Purchase status</a></li>
 
               </ul>
 
@@ -1780,7 +1780,7 @@ export default function HomePage() {
 
         .widget { background: var(--navy-deep); border: 1px solid rgba(201,164,73,0.32); padding: 38px; position: relative; }
 
-        .widget::before { content: 'STAGE 1 · LIVE'; position: absolute; top: -1px; left: -1px; background: var(--gold); color: var(--navy); font-size: 10px; font-weight: 700; letter-spacing: 0.18em; padding: 7px 14px; }
+        .widget::before { content: 'CHECKOUT UNAVAILABLE'; position: absolute; top: -1px; left: -1px; background: var(--gold); color: var(--navy); font-size: 10px; font-weight: 700; letter-spacing: 0.18em; padding: 7px 14px; }
 
         .widget h3 { font-size: 26px; font-weight: 600; letter-spacing: -0.01em; margin: 30px 0 6px; color: var(--white); }
 
