@@ -27,6 +27,11 @@ const TOKEN_SYMBOL        = "CLXT";
 const TAGLINE             = "Settlement infrastructure for cross-border commodity trade";
 const CURRENT_PRICE_USD   = 0.10;
 const MIN_PURCHASE_USD    = 200;
+// A funded, approved purchase reverted against the deployed contract in the
+// 2026-09-16 read-only review. Re-enable only after the replacement contract and
+// its configured payment token pass an end-to-end purchase verification.
+const CHECKOUT_UNAVAILABLE = true;
+const SALES_EMAIL = "gnardo@gdngroup.com.au";
 
 // These must be run through viem's parseAbi(). Passing the human-readable strings
 // straight to wagmi makes viem evaluate `'name' in "function buyWithUSDT(...)"`,
@@ -55,7 +60,7 @@ const TOKEN_ALLOCATION = [
   ];
 
 const PRESALE_STAGES = [
-  { stage: "01", name: "Stage 1", price: "$0.10", delta: "–",     cap: "5,000,000 CLXT", live: true },
+  { stage: "01", name: "Stage 1", price: "$0.10", delta: "–",     cap: "5,000,000 CLXT" },
   { stage: "02", name: "Stage 2", price: "$0.20", delta: "+100%", cap: "5,000,000 CLXT" },
   { stage: "03", name: "Stage 3", price: "$0.25", delta: "+150%", cap: "4,000,000 CLXT" },
   { stage: "04", name: "Stage 4", price: "$0.50", delta: "+400%", cap: "3,000,000 CLXT" },
@@ -300,6 +305,8 @@ export default function HomePage() {
 
   async function handleApproveUSDT() {
 
+    if (CHECKOUT_UNAVAILABLE) return;
+
     if (!amountValid || !hasBalance || pending) return;
 
     setMsg("info", "Confirm the USDT approval in your wallet…");
@@ -335,6 +342,8 @@ export default function HomePage() {
   }
 
   async function handleBuy() {
+
+    if (CHECKOUT_UNAVAILABLE) return;
 
     if (!amountValid || !hasBalance || !hasAllowance || pending) return;
 
@@ -410,13 +419,13 @@ export default function HomePage() {
 
       } else {
 
-        setContactStatus({ kind: "error", text: "Could not send. Please try again or email hello@crossledger.trade." });
+        setContactStatus({ kind: "error", text: `Could not send. Your message has not been submitted. Please email ${SALES_EMAIL}.` });
 
       }
 
     } catch {
 
-      setContactStatus({ kind: "error", text: "Could not send. Please check your connection and try again." });
+      setContactStatus({ kind: "error", text: `Could not send. Your message has not been submitted. Please email ${SALES_EMAIL}.` });
 
     } finally {
 
@@ -429,6 +438,10 @@ export default function HomePage() {
   /* ====== BUTTON STATE MACHINE ====== */
 
   const buttonState = useMemo(() => {
+
+    if (CHECKOUT_UNAVAILABLE) {
+      return { left: "Approvals unavailable", leftDisabled: true, right: "Purchases unavailable", rightDisabled: true };
+    }
 
     if (geoBlocked) {
 
@@ -590,11 +603,11 @@ export default function HomePage() {
 
             <span className="dot"></span>
 
-            <span>CrossLedger Presale · Stage 1 of 4 · Live on Ethereum at {displayPrice}</span>
+            <span>CrossLedger · Purchases temporarily unavailable · Contract correction in progress</span>
 
           </div>
 
-          <a href="#presale">View live contract →</a>
+          <a href={`https://etherscan.io/address/${PRESALE_CONTRACT_ADDRESS}#code`}>View deployed contract →</a>
 
         </div>
 
@@ -610,17 +623,17 @@ export default function HomePage() {
 
             <h1 className="h-display">Institutional-Grade Settlement. Early-Stage Entry.</h1>
 
-            <p className="hero-lede">A blockchain-anchored platform purpose-built by GDN Group to modernise the world&apos;s commodity corridors. Smart escrow, verified documentation, real-time visibility, and token-enabled settlement. CLXT presale Stage 1 live on Ethereum mainnet.</p>
+            <p className="hero-lede">CrossLedger is developing blockchain infrastructure for commodity trade documentation, verification and settlement. CLXT purchases are temporarily unavailable while a payment-contract issue is corrected. Contact the team with your enquiry.</p>
 
             <div className="hero-actions">
 
-              <a href="#presale" className="btn-primary">Secure Your Allocation</a>
+              <a href="#contact" className="btn-primary">Contact CrossLedger</a>
 
               <a href="#token" className="btn-link">Platform overview →</a>
 
             </div>
 
-            <CountdownTimer />
+            {!CHECKOUT_UNAVAILABLE && <CountdownTimer />}
 
           </div>
 
@@ -768,11 +781,12 @@ export default function HomePage() {
 
             <div>
 
-              <div className="eyebrow">STAGE 1 PRESALE · USDT ON ETHEREUM</div>
+              <div className="eyebrow">CLXT · USDT PAYMENT REVIEW</div>
 
-              <h2 className="h-section">Direct-send purchase. Tokens land on confirmation.</h2>
+              <h2 className="h-section">Purchases temporarily unavailable.</h2>
 
-              <p>The CrossLedger presale is live on the Ethereum mainnet through a verified, publicly-readable smart contract. Purchases are made in USDT — CLXT transfers to your wallet within the same transaction. No claim portal, no waiting period, no intermediaries.</p>
+              <p>A read-only review reproduced a USDT purchase failure in the deployed presale contract. Website approvals and purchases are disabled while the correction is prepared. This website notice does not pause the on-chain contract. Please do not send funds directly to the contract.</p>
+              <p><a href={`mailto:${SALES_EMAIL}?subject=CrossLedger%20purchase%20enquiry`}>Email CrossLedger about purchase availability</a></p>
 
               <div className="quick-stats">
 
@@ -786,7 +800,7 @@ export default function HomePage() {
 
               </div>
 
-              <div className="steps">
+              {!CHECKOUT_UNAVAILABLE && <div className="steps">
 
                 <div className="step"><div className="n">01</div><h4>Connect wallet</h4><p>MetaMask, WalletConnect, Coinbase Wallet, Trust, Rainbow — desktop or mobile.</p></div>
 
@@ -796,15 +810,15 @@ export default function HomePage() {
 
                 <div className="step"><div className="n">04</div><h4>Receive CLXT</h4><p>Tokens transfer to your wallet in the same transaction.</p></div>
 
-              </div>
+              </div>}
 
             </div>
 
             <div id="presale" className="widget">
 
-              <h3>Buy CLXT</h3>
+              <h3>CLXT purchase status</h3>
 
-              <div className="sub">STAGE 1 ACTIVE · USDT ON ETHEREUM</div>
+              <div className="sub">CHECKOUT UNAVAILABLE · CONTRACT CORRECTION IN PROGRESS</div>
 
               <div className="row"><span className="k">Current Price</span><span className="v acc">{displayPrice}</span></div>
 
@@ -914,11 +928,7 @@ export default function HomePage() {
 
               <div className="widget-note">
 
-                ✓ Tokens sent directly to your wallet on purchase — no claim step required.<br />
-
-                ✓ Works on desktop (MetaMask) and mobile (WalletConnect QR scan).<br />
-
-                ⚠ All transactions are final. Presale tokens are non-refundable.
+                Website approvals and purchases are disabled. Contact <a href={`mailto:${SALES_EMAIL}?subject=CrossLedger%20purchase%20enquiry`}>{SALES_EMAIL}</a> for current availability. Do not send funds directly to the contract.
 
               </div>
 
@@ -936,9 +946,9 @@ export default function HomePage() {
 
           <div className="eyebrow">PRESALE STAGES</div>
 
-          <h2 className="h-section" style={{ marginBottom: 24, maxWidth: "24ch" }}>A staged price ladder. Hard caps at every step.</h2>
+          <h2 className="h-section" style={{ marginBottom: 24, maxWidth: "24ch" }}>Published pricing plan.</h2>
 
-          <p className="lede">Each stage carries a fixed price and a dedicated allocation. When a stage caps out, the contract advances. Earlier participants benefit from the lower entry; later participants buy into a more developed platform. The reference listing price is indicative, not guaranteed.</p>
+          <p className="lede">The table below records the published stage plan. The current deployed presale does not enforce these stage allocations or advance automatically between stages; its owner can change the exchange rate. Purchases are temporarily unavailable while the payment issue is corrected.</p>
 
           <div className="ladder">
 
@@ -964,7 +974,7 @@ export default function HomePage() {
 
           </div>
 
-          <p className="ladder-note">The Listing Reference is an indicative target tied to platform progress, market conditions, and final tokenomics at the time of DEX listing. It is not a guarantee of value and should not be interpreted as a forecast of future market price. Stage allocations are subject to adjustment by the contract operator before a stage opens; once a stage is live, its parameters are immutable.</p>
+          <p className="ladder-note">The Listing Reference is an indicative target, not a guarantee of a listing or future value. The published stage plan is not enforced by the current contract. Review the confirmed terms and deployed contract before any future participation.</p>
 
         </div>
 
@@ -978,7 +988,7 @@ export default function HomePage() {
 
           <h2 className="h-section" style={{ marginBottom: 24, maxWidth: "26ch" }}>Structured for adoption. Weighted toward the ecosystem.</h2>
 
-          <p className="lede">Total CLXT supply is fixed at 1 billion tokens at issuance. Allocations are weighted toward ecosystem incentives and treasury / compliance reserves — the buckets that fund real platform usage and underpin regulatory readiness. Vesting schedules will be published in the technical addendum prior to Stage 4 close.</p>
+          <p className="lede">CLXT was issued with 1 billion tokens. The AI-assisted review reproduced staking rewards that increase spendable balances without updating the reported total supply. A lasting supply cap is therefore not established; this issue requires correction. Allocations are weighted toward ecosystem incentives and treasury / compliance reserves — the buckets that fund real platform usage and underpin regulatory readiness. Vesting schedules will be published in the technical addendum prior to Stage 4 close.</p>
 
           <div className="alloc-grid">
 
@@ -1130,9 +1140,9 @@ export default function HomePage() {
 
           <div className="sec-grid">
 
-            <div className="sec-cell"><span className="tag pending">AUDIT · IN ENGAGEMENT</span><h4>Smart Contract Audit</h4><p>Audit engagement under negotiation with an Australian-based independent security firm with prior protocol-level work on Sushi, Gala, and Redbelly Network. Pre-audit code is publicly verifiable on Etherscan now; the formal audit report will be published prior to Stage 2 opening.</p><div className="meta">Engagement: in negotiation · Publication: prior to Stage 2 opening</div></div>
+            <div className="sec-cell"><span className="tag pending">REVIEW · ISSUES IDENTIFIED</span><h4>Smart Contract Audit</h4><p>An AI-assisted contract review identified a USDT purchase failure and a staking supply-accounting issue. Website purchases are unavailable while corrections are assessed. This review is not an independent professional audit or a security certification.</p><div className="meta">Review date: 16 September 2026 · Remediation pending</div></div>
 
-            <div className="sec-cell"><span className="tag live">CONTRACTS · VERIFIED</span><h4>On-Chain Transparency</h4><p>The presale contract and CLXT token contract are both deployed and verified on Ethereum mainnet. Source code, ABIs, and full transaction history are visible on Etherscan. No upgradeable proxies, no admin mint backdoors, no transfer pause functions.</p><div className="meta"><a href={`https://etherscan.io/address/${PRESALE_CONTRACT_ADDRESS}`}>Presale ↗</a> · <a href={`https://etherscan.io/address/${CLX_TOKEN_ADDRESS}`}>Token ↗</a></div></div>
+            <div className="sec-cell"><span className="tag live">CONTRACTS · VERIFIED</span><h4>On-Chain Transparency</h4><p>The contracts are deployed on Ethereum mainnet. Etherscan labels the token source Exact Match and the presale source Similar Match. The owner can change the sale rate and treasury, control sale availability, and withdraw presale inventory. Editing this website cannot repair the deployed contracts.</p><div className="meta"><a href={`https://etherscan.io/address/${PRESALE_CONTRACT_ADDRESS}`}>Presale ↗</a> · <a href={`https://etherscan.io/address/${CLX_TOKEN_ADDRESS}`}>Token ↗</a></div></div>
 
             <div className="sec-cell"><span className="tag pending">REGULATORY · AUSTRALIA</span><h4>Australian Regulatory Position</h4><p>GDN Enterprise Pty Ltd (ACN 666 495 263) is an Australian proprietary company registered with ASIC and in good standing. GDN does not hold an Australian Financial Services Licence. Australia&apos;s regulatory framework for digital assets is undergoing reform under the Digital Assets Framework. GDN is obtaining Australian legal advice on the classification of CLXT and the licensing obligations that may apply, and will update this page as that position is confirmed.</p><div className="meta">Memo: legal position under review · ACN 666 495 263</div></div>
 
@@ -1276,15 +1286,15 @@ export default function HomePage() {
 
             <details className="faq"><summary>What is the relationship between CrossLedger and GDN Group?</summary><div className="answer"><p>CrossLedger is a product of GDN Group (GDN Enterprise Pty Ltd, ACN 666 495 263), an Australian trade, advisory, and technology house headquartered in Brisbane with regional offices in Dubai, Orlando and São Paulo. GDN Group&apos;s existing physical commodity trade desk (petroleum, sugar, agri-protein) provides the corridor relationships, deal flow, and counterparty network that CrossLedger uses as its initial deployment surface.</p></div></details>
 
-            <details className="faq"><summary>What is the CLXT presale price and what are the stages?</summary><div className="answer"><p>Stage 1 is live at US$0.10 per CLXT. The four-stage ladder runs $0.10 → $0.20 → $0.25 → $0.50, with each stage carrying a fixed allocation cap. The Listing Reference price of $1.00 is an indicative target tied to platform progress and market conditions at the time of DEX listing — it is not a guarantee of value.</p></div></details>
+            <details className="faq"><summary>What is the CLXT presale price and what are the stages?</summary><div className="answer"><p>Purchases are temporarily unavailable. The published plan lists $0.10, $0.20, $0.25 and $0.50 stages, but the current contract does not enforce stage allocations or automatic transitions, and its owner can change the exchange rate. The $1.00 listing reference is an indicative target, not a guarantee of a listing or future value.</p></div></details>
 
             <details className="faq"><summary>What wallets can I use to buy?</summary><div className="answer"><p>Any Ethereum wallet that supports the WalletConnect protocol — including MetaMask (browser extension and mobile app), Coinbase Wallet, Trust Wallet, Rainbow, Ledger, and many others. On desktop, the wallet picker will detect installed browser extensions automatically. On mobile, you can either open this site inside your wallet&apos;s built-in browser, or scan a WalletConnect QR code from any wallet app.</p></div></details>
 
-            <details className="faq"><summary>Do buyers receive tokens immediately?</summary><div className="answer"><p>Yes. This is a direct-send presale. When your <code>buyWithUSDT</code> transaction is confirmed on-chain, CLXT tokens transfer to your wallet within the same transaction. There is no separate claim step, no portal log-in, and no waiting period.</p></div></details>
+            <details className="faq"><summary>Can I buy CLXT now?</summary><div className="answer"><p>Website purchases and approvals are temporarily disabled. A read-only review reproduced a USDT transfer compatibility failure in the deployed presale. Contact the team for availability; do not send funds directly to the contract. We will update the purchase flow after the correction is deployed and verified.</p></div></details>
 
             <details className="faq"><summary>What is the minimum purchase?</summary><div className="answer"><p>200 USDT, which yields 2,000 CLXT at the Stage 1 price of US$0.10. The minimum is enforced at the website level. The smart contract itself accepts any amount greater than zero.</p></div></details>
 
-            <details className="faq"><summary>Is the smart contract audited?</summary><div className="answer"><p>Audit engagement is in negotiation with an Australian-based independent security firm at the time of writing. The pre-audit contract code is publicly verifiable on Etherscan now, and the full audit report will be published prior to Stage 2 opening.</p></div></details>
+            <details className="faq"><summary>Is the smart contract audited?</summary><div className="answer"><p>An AI-assisted review completed on 16 September 2026 identified purchase and staking supply-accounting defects. It is not an independent professional audit, and does not establish that the contracts are safe. Remediation and further verification are pending.</p></div></details>
 
             <details className="faq"><summary>How is GDN Enterprise positioned under Australian regulation?</summary><div className="answer"><p>GDN Enterprise Pty Ltd is an Australian proprietary company registered with ASIC and in good standing. GDN does not hold an Australian Financial Services Licence. Australia&apos;s framework for digital assets is undergoing reform under the Digital Assets Framework, and GDN is obtaining Australian legal advice on the classification of CLXT and the licensing obligations that may apply. AUSTRAC registration scope and AML/CTF programme requirements are under review. This page will be updated as those positions are confirmed.</p></div></details>
 
@@ -1300,7 +1310,7 @@ export default function HomePage() {
 
       </section>
 
-      <section className="cream">
+      <section id="contact" className="cream">
 
         <div className="wrap">
 
@@ -1315,6 +1325,9 @@ export default function HomePage() {
               <p className="lede" style={{ marginBottom: 32 }}>Whether you&apos;re a buyer, seller, institution, or government entity — we&apos;d welcome the opportunity to understand your needs and explore how CrossLedger and GDN Group can support you.</p>
 
               <dl className="contact-info">
+
+                <dt>DIRECT ENQUIRIES</dt>
+                <dd><a href={`mailto:${SALES_EMAIL}?subject=CrossLedger%20enquiry`}>{SALES_EMAIL}</a></dd>
 
                 <dt>HEADQUARTERS</dt>
 
@@ -1387,6 +1400,8 @@ export default function HomePage() {
                 <div className={`contact-status ${contactStatus.kind}`}>{contactStatus.text}</div>
 
               )}
+
+              <p>Prefer email? <a href={`mailto:${SALES_EMAIL}?subject=CrossLedger%20enquiry`}>Contact CrossLedger directly</a>.</p>
 
             </form>
 
