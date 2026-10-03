@@ -1,4 +1,4 @@
-import '../styles/globals.css'
+import '../styles/site.css'
 import { createAppKit } from '@reown/appkit/react'
 import { WagmiProvider, http, fallback } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -49,7 +49,8 @@ createAppKit({
   adapters: [wagmiAdapter],
   networks,
   projectId,
-  metadata
+  metadata,
+  themeVariables: { '--w3m-accent': '#3355ff', '--w3m-font-family': 'Inter, system-ui, sans-serif' }
 })
 
 export default function App({ Component, pageProps }) {
