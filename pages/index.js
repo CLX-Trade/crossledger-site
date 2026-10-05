@@ -320,7 +320,7 @@ export default function HomePage() {
             </div>
             <p className="small muted" style={{ marginTop: 20 }}>
               CLXT presale: {saleOpen ? <>open at {displayPrice} per CLXT.</> : <>{CHECKOUT_UNAVAILABLE ? "purchases paused while the presale contract is replaced." : "paused."}</>}{" "}
-              <a href="#presale">Presale status</a> · <a href="#security">Security status</a>
+              <a href="#presale"><strong>Buy CLXT →</strong></a> · <a href="#security">Security status</a>
             </p>
           </div>
           <div className="hero-art"><HeroArt /></div>

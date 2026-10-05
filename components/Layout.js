@@ -81,7 +81,7 @@ export function SiteHeader() {
           </nav>
           <div className="header-actions">
             <ThemeToggle />
-            <Link href="/#presale" className="btn btn-primary">Presale status</Link>
+            <Link href="/#presale" className="btn btn-primary btn-buy">Buy CLXT</Link>
             <button type="button" className="icon-btn menu-btn" aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} onClick={() => setOpen(!open)}>
               {open ? (
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 6l12 12M18 6 6 18" /></svg>
@@ -95,7 +95,7 @@ export function SiteHeader() {
       {open && (
         <nav className="mobile-nav" aria-label="Mobile">
           {NAV.map((n) => <Link key={n.href} href={n.href} onClick={() => setOpen(false)}>{n.label}</Link>)}
-          <Link href="/#presale" className="btn btn-primary btn-lg" onClick={() => setOpen(false)}>Presale status</Link>
+          <Link href="/#presale" className="btn btn-primary btn-lg" onClick={() => setOpen(false)}>Buy CLXT</Link>
         </nav>
       )}
     </>

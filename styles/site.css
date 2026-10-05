@@ -402,3 +402,64 @@ table.data td.num, table.data th.num { text-align: right; font-variant-numeric: 
 }
 
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; animation: none !important; } }
+
+/* ── Mobile fixes (6 Oct 2026) ────────────────────────────────────────────
+   Grid items default to min-width:auto, so a wide child (the stage table in
+   the presale section) stretched its column past the screen and phones
+   zoomed the whole page out. min-width:0 lets columns shrink to the viewport
+   and the table scroll inside its own box instead. */
+.hero-grid > *, .presale > *, .contact-grid > *, .grid > *, .doc > *, .flow > *, .roadmap > *, .stats > * { min-width: 0; }
+@media (max-width: 640px) {
+  table.data { min-width: 0; font-size: 14px; }
+  table.data th, table.data td { padding: 10px 12px; }
+  table.data thead th { font-size: 11px; letter-spacing: 0.04em; }
+  .widget { padding: 20px; }
+  .widget .actions { grid-template-columns: 1fr; }
+  .hero { padding: 32px 0 48px; }
+  .hero-actions .btn { flex: 1 1 auto; }
+  .display { font-size: clamp(36px, 10vw, 48px); }
+  .h-section { font-size: clamp(26px, 7.5vw, 34px); }
+  .lede { font-size: 17px; }
+  .section { padding: 56px 0; }
+  .section-head { margin-bottom: 32px; }
+  .card { padding: 22px; }
+  .callout { padding: 22px; }
+  .prose { font-size: 16px; }
+  .steps { grid-template-columns: 1fr; }
+  .doc-title { font-size: 34px; }
+  .pill { font-size: 12px; }
+}
+
+/* Header "Buy CLXT" stays visible on phones: the presale widget is far down
+   the page, so buyers arriving from social links need a one-tap route. */
+@media (max-width: 1120px) {
+  .header-actions .btn-buy { display: inline-flex; padding: 8px 14px; font-size: 14px; }
+}
+/* .mobile-nav a set colour: var(--text), which beat .btn-primary's white text. */
+.mobile-nav a.btn-primary { color: #fff; }
+:root[data-theme="dark"] .mobile-nav a.btn-primary { color: #0d0f1a; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .mobile-nav a.btn-primary { color: #0d0f1a; } }
+/* Stats as a compact 2x2 grid on phones instead of four tall cards. */
+@media (max-width: 480px) {
+  .stats { grid-template-columns: 1fr 1fr; }
+  .stat { padding: 18px 16px; }
+  .stat + .stat { border-top: none; }
+  .stat:nth-child(odd) { border-left: none; }
+  .stat:nth-child(even) { border-left: 1px solid var(--border); }
+  .stat:nth-child(n+3) { border-top: 1px solid var(--border); }
+  .stat .v { font-size: 24px; }
+  .stat .l { font-size: 13px; }
+  .stat .s { font-size: 11px; }
+}
+/* Small phones: brand + theme toggle + Buy + menu must fit in 320-390px. */
+@media (max-width: 420px) {
+  .site-header .container { gap: 8px; }
+  .header-actions { gap: 2px; }
+  .brand { font-size: 16px; gap: 8px; }
+  .brand-mark { width: 26px; height: 26px; }
+  .icon-btn { width: 36px; height: 36px; }
+  .header-actions .btn-buy { padding: 7px 11px; font-size: 13px; }
+}
+@media (max-width: 340px) {
+  .brand span { display: none; }
+}
