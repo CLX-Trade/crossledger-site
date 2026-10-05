@@ -310,15 +310,18 @@ export default function HomePage() {
       <section className="hero">
         <div className="container hero-grid">
           <div>
-            {saleOpen
-              ? <a href="#presale" className="pill ok" style={{ textDecoration: "none" }}><span className="dot" />Presale open · {displayPrice} per CLXT</a>
-              : <a href="#presale" className="pill warn" style={{ textDecoration: "none" }}><span className="dot" />{CHECKOUT_UNAVAILABLE ? "CLXT purchases paused · corrected contract in final testing" : "CLXT presale paused"}</a>}
+            <Link href="/contact" className="pill" style={{ textDecoration: "none" }}><span className="dot" style={{ background: "var(--primary)" }} />In development · now inviting pilot partners</Link>
             <h1 className="display">Commodity trade, settled on proof.</h1>
-            <p className="lede">CrossLedger registers trade documents on Ethereum and holds payment in escrow that releases only when the documents and an independent inspection check out. Built by GDN Group, a commodity trading house, for the trades it does every day.</p>
+            <p className="lede">CrossLedger is building settlement infrastructure for physical commodity trade: documents fingerprinted on Ethereum, and payment held in escrow that releases only when the documents and an independent inspection check out. Built by GDN Group, a commodity trading house, for the trades it does every day.</p>
             <div className="hero-actions">
-              <Link href="/whitepaper" className="btn btn-primary btn-lg">Read the whitepaper</Link>
-              <Link href="/how-it-works" className="btn btn-outline btn-lg">How it works</Link>
+              <Link href="/contact" className="btn btn-primary btn-lg">Discuss a pilot trade</Link>
+              <Link href="/whitepaper" className="btn btn-outline btn-lg">Read the whitepaper</Link>
+              <Link href="/how-it-works" className="btn btn-ghost btn-lg">How it works →</Link>
             </div>
+            <p className="small muted" style={{ marginTop: 20 }}>
+              CLXT presale: {saleOpen ? <>open at {displayPrice} per CLXT.</> : <>{CHECKOUT_UNAVAILABLE ? "purchases paused while the presale contract is replaced." : "paused."}</>}{" "}
+              <a href="#presale">Presale status</a> · <a href="#security">Security status</a>
+            </p>
           </div>
           <div className="hero-art"><HeroArt /></div>
         </div>
@@ -332,6 +335,31 @@ export default function HomePage() {
             <div className="stat"><div className="v">5–14 days</div><div className="l">Typical letter of credit settlement</div><div className="s">After document presentation</div></div>
             <div className="stat"><div className="v">Up to 36</div><div className="l">Original documents per shipment</div><div className="s">ICC Digital Standards Initiative</div></div>
             <div className="stat"><div className="v">0.2–0.4%</div><div className="l">Target platform fee</div><div className="s">Design target, not yet in operation</div></div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Two paths ── */}
+      <section style={{ padding: "48px 0 0" }}>
+        <div className="container grid grid-2">
+          <div className="card">
+            <span className="tag">Traders, inspectors, financiers</span>
+            <h2 className="h-card">Settle a trade on proof</h2>
+            <p>We are inviting pilot partners on the corridors GDN already trades. See how a trade settles, then tell us your commodity, parcel size and route.</p>
+            <div className="hero-actions" style={{ marginTop: 18 }}>
+              <Link href="/contact" className="btn btn-primary">Discuss a pilot trade</Link>
+              <Link href="/how-it-works" className="btn btn-outline">How it works</Link>
+            </div>
+          </div>
+          <div className="card">
+            <span className="tag">CLXT holders and followers</span>
+            <h2 className="h-card">Token, presale and security status</h2>
+            <p>On-chain facts, the planned allocation, the presale contract status and every known contract issue, stated plainly.</p>
+            <div className="hero-actions" style={{ marginTop: 18 }}>
+              <a href="#token" className="btn btn-outline">CLXT token</a>
+              <a href="#presale" className="btn btn-outline">Presale status</a>
+              <a href="#security" className="btn btn-ghost">Security →</a>
+            </div>
           </div>
         </div>
       </section>

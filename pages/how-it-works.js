@@ -24,7 +24,7 @@ export default function HowItWorks() {
         <div className="container" style={{ maxWidth: 900 }}>
           <nav className="breadcrumb" aria-label="Breadcrumb"><Link href="/">crossledger.trade</Link><span>/</span><span aria-current="page">How it works</span></nav>
           <h1 className="display" style={{ marginTop: 22 }}>How a trade settles on CrossLedger.</h1>
-          <p className="lede" style={{ marginTop: 20 }}>The buyer wants documents before paying. The seller wants payment before shipping. Both are right, and many first deals stall there. CrossLedger commits the buyer&apos;s money first and releases it only on proof, so neither side has to move on trust.</p>
+          <p className="lede" style={{ marginTop: 20 }}>The buyer wants documents before paying. The seller wants payment before shipping. Both are right, and many first deals stall there. CrossLedger is designed to commit the buyer&apos;s money first and release it only on proof, so neither side has to move on trust. It is in development, and we are inviting pilot partners now.</p>
         </div>
       </section>
 
@@ -45,7 +45,7 @@ export default function HowItWorks() {
         <div className="container">
           <div className="section-head">
             <span className="eyebrow">Compared with a letter of credit</span>
-            <h2 className="h-section">Same protection, fewer hands.</h2>
+            <h2 className="h-section">Designed for the same protection, with fewer hands.</h2>
             <p className="lede">CrossLedger figures below are design targets for a platform still in development, not measured results.</p>
           </div>
           <div className="table-wrap">
