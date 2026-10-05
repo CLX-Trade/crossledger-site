@@ -6,8 +6,8 @@ import { CONTRACTS, SITE, shortAddr } from "../lib/site";
 
 // Version and status. Update the date and the "Before you read" box whenever a
 // fact below changes on-chain.
-const VERSION = "2.0";
-const UPDATED = "3 October 2026";
+const VERSION = "2.1";
+const UPDATED = "5 October 2026";
 
 const TOC = [
   { id: "abstract", title: "A settlement layer for physical commodity trade" },
@@ -229,7 +229,7 @@ export default function Whitepaper() {
                 <span className="badge-outline">Before you read</span>
                 <h2 style={{ marginTop: 14 }}>What is true today</h2>
                 <p>CrossLedger is in development. The token and a first presale contract are live on Ethereum; the trade platform described in <a href="#design">Section 3</a> is not yet processing commercial trades. This paper separates what exists from what is planned, and says which is which.</p>
-                <p><strong>CLXT purchases are paused as at {UPDATED}.</strong> The first presale contract cannot complete a purchase (see <a href="#presale-defect">The V1 presale defect</a>). A corrected contract has been written and tested against a copy of mainnet. It will only be enabled after deployment and a live test purchase. Do not send funds to any contract address directly.</p>
+                <p><strong>CLXT purchases reopened on 5 October 2026</strong> through a corrected presale contract, <Addr a={CONTRACTS.presaleV2 || "0x8F190E1764bfE57ddd2Daff5F55a79C64760c14F"} />, whose source code is verified on Etherscan. The first presale contract could not complete a purchase (see <a href="#presale-defect">The V1 presale defect</a>). Buy only through crossledger.trade or the verified V2 contract, and never send funds to any address directly.</p>
                 <div className="actions">
                   <Link href="/#presale" className="btn btn-primary">Check presale status →</Link>
                   <Link href="/how-it-works" className="btn btn-outline">How CrossLedger works</Link>
@@ -241,6 +241,7 @@ export default function Whitepaper() {
                     <li>The &quot;US$13.50 launch target&quot; and all projected listing prices are withdrawn. CrossLedger publishes no price targets.</li>
                     <li>Presale mechanics now describe the deployed contract (instant delivery, owner-set rate), not the claim-based design v1.0 described.</li>
                     <li>Two contract defects are disclosed: the presale purchase failure and the staking supply-accounting issue.</li>
+                    <li>Version 2.1 (5 October 2026): the corrected presale contract is deployed, verified and funded, and purchases have reopened.</li>
                     <li>Regulatory section rewritten. Australia is a restricted jurisdiction pending legal advice.</li>
                   </ul>
                 </div>
@@ -343,8 +344,9 @@ export default function Whitepaper() {
                     <tr><td>Reported total supply</td><td>1,000,000,000 CLXT (a fixed constant; see <a href="#supply">Supply accounting</a>)</td></tr>
                     <tr><td>Transfers</td><td>Enabled</td></tr>
                     <tr><td>Owner and treasury</td><td><Addr a={CONTRACTS.owner} /></td></tr>
-                    <tr><td>Held by owner address</td><td>About 823.9 million CLXT (82.4%)</td></tr>
-                    <tr><td>Held by V1 presale contract</td><td>20,000,000 CLXT</td></tr>
+                    <tr><td>Held by owner address</td><td>About 803.9 million CLXT (80.4%)</td></tr>
+                    <tr><td>Held by V2 presale contract (for sale)</td><td>20,000,000 CLXT</td></tr>
+                    <tr><td>Held by V1 presale contract (retired)</td><td>20,000,000 CLXT, to be withdrawn by the owner</td></tr>
                     <tr><td>Registered escrow contract</td><td><Addr a={CONTRACTS.escrow} /> (not independently audited)</td></tr>
                   </tbody>
                 </table>
@@ -392,7 +394,7 @@ export default function Whitepaper() {
                   </tbody>
                 </table>
               </div>
-              <p>Be clear about what the contract enforces. It sells at a single rate set by the owner; it does not enforce stage allocations or move between stages automatically. The owner can change the rate, pause the sale and withdraw unsold tokens. The website applies a 200 USDT minimum, and the corrected contract will also enforce that minimum on-chain. Stage pricing is a commitment by GDN, not a property of the code.</p>
+              <p>Be clear about what the contract enforces. It sells at a single rate set by the owner; it does not enforce stage allocations or move between stages automatically. The owner can change the rate, pause the sale and withdraw unsold tokens. The website applies a 200 USDT minimum, and the V2 contract also enforces a minimum on-chain. Stage pricing is a commitment by GDN, not a property of the code.</p>
               <p>Each stage price is a sale price, not a valuation. CrossLedger publishes no listing price, target price or expected return, and nothing guarantees that CLXT will be listed on any exchange or trade at or above the price paid.</p>
 
               <h3 id="presale-defect">The V1 presale defect</h3>
@@ -402,7 +404,7 @@ export default function Whitepaper() {
         external returns (bool);   // mainnet USDT returns nothing
 }`}</code></pre>
               <p>Mainnet USDT predates the final ERC-20 standard and returns no value from <code>transfer</code> or <code>transferFrom</code>. Since Solidity 0.8, a call declared to return a value reverts if the callee returns nothing. Every <code>buyWithUSDT</code> call therefore reverts, even for a buyer who holds enough USDT and has approved the contract. No buyer funds can be lost to this defect; the transaction simply fails and only gas is spent.</p>
-              <p>GDN reproduced the failure against live mainnet state on 3 October 2026, confirming the contract was active, funded and given full approval, and that the revert carries none of the contract&apos;s own error messages. The corrected contract, CLXPresaleV2, keeps the same purchase flow but makes token calls through a wrapper that accepts both standard tokens and USDT&apos;s empty return. It also adds an on-chain minimum and a buyer-set minimum output that protects a pending purchase against a rate change. In a mainnet-fork test it completed a 200 USDT purchase, paying the treasury and delivering 2,000 CLXT to the buyer, and correctly rolled back every failure case tested. The website checkout stays disabled until V2 is deployed, funded and has passed a live test purchase.</p>
+              <p>GDN reproduced the failure against live mainnet state on 3 October 2026, confirming the contract was active, funded and given full approval, and that the revert carries none of the contract&apos;s own error messages. The corrected contract, CLXPresaleV2, keeps the same purchase flow but makes token calls through a wrapper that accepts both standard tokens and USDT&apos;s empty return. It also adds an on-chain minimum and a buyer-set minimum output that protects a pending purchase against a rate change. In a mainnet-fork test it completed a 200 USDT purchase, paying the treasury and delivering 2,000 CLXT to the buyer, and correctly rolled back every failure case tested. V2 was deployed on 5 October 2026 at <Addr a={CONTRACTS.presaleV2 || "0x8F190E1764bfE57ddd2Daff5F55a79C64760c14F"} />, its source verified on Etherscan as an exact match, and it was funded with 20,000,000 CLXT. The website checkout now uses V2.</p>
 
               <h2 id="business">Business model</h2>
               <p>CrossLedger earns revenue from use, not from token sales.</p>
@@ -420,8 +422,8 @@ export default function Whitepaper() {
                   <thead><tr><th>Component</th><th>Status at {UPDATED}</th></tr></thead>
                   <tbody>
                     <tr><td>CLXT token</td><td>Live on Ethereum mainnet. Staking supply defect disclosed; remedy pending.</td></tr>
-                    <tr><td>Presale V1</td><td>Deployed; cannot complete purchases. Website checkout disabled.</td></tr>
-                    <tr><td>Presale V2</td><td>Written and fork-tested. Awaiting deployment and live verification.</td></tr>
+                    <tr><td>Presale V1</td><td>Retired. It could not complete purchases and is no longer used.</td></tr>
+                    <tr><td>Presale V2</td><td>Live since 5 October 2026. Source verified on Etherscan; funded with 20,000,000 CLXT.</td></tr>
                     <tr><td>Escrow contract</td><td>First version deployed to mainnet and registered with the token. Not audited; not in commercial use.</td></tr>
                     <tr><td>Document registry</td><td>Prototype deployed to the Polygon Amoy test network.</td></tr>
                     <tr><td>Trade platform and dashboard</td><td>In development.</td></tr>
@@ -430,7 +432,7 @@ export default function Whitepaper() {
                 </table>
               </div>
               <div className="roadmap" style={{ marginTop: 24 }}>
-                <div className="road active"><div className="phase">PHASE 1 · NOW</div><h4>Foundation</h4><ul><li>Deploy and verify presale V2</li><li>Complete independent audit</li><li>Remedy staking supply defect</li><li>Obtain Australian legal advice</li></ul></div>
+                <div className="road active"><div className="phase">PHASE 1 · NOW</div><h4>Foundation</h4><ul><li>✓ Presale V2 deployed and verified</li><li>Complete independent audit</li><li>Remedy staking supply defect</li><li>Obtain Australian legal advice</li></ul></div>
                 <div className="road"><div className="phase">PHASE 2</div><h4>First trades</h4><ul><li>Registry on mainnet</li><li>Audited escrow</li><li>Pilot trades on GDN&apos;s desk</li><li>Inspector attestation format</li></ul></div>
                 <div className="road"><div className="phase">PHASE 3</div><h4>Open corridors</h4><ul><li>Third-party traders onboarded</li><li>Financier registry checks</li><li>Verifier bonding in CLXT</li><li>Time-locked allocations</li></ul></div>
                 <div className="road"><div className="phase">PHASE 4</div><h4>Network</h4><ul><li>Bonded arbitration panel</li><li>Enterprise integrations</li><li>Governance for fee schedules</li><li>Additional corridors</li></ul></div>
