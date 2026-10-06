@@ -1,6 +1,6 @@
 // Contact page. Email-first on purpose: pages/api/contact.js needs SMTP_* and
 // CONTACT_TO environment variables that the Vercel project does not have, so a
-// form posting there would lose enquiries. mailto and tel links cannot fail.
+// form posting there would lose enquiries. mailto links cannot fail.
 // The homepage form posts to Formspree instead, which is configured.
 //
 // Platform-focused: no price and no presale call to action on this page.
@@ -8,8 +8,6 @@ import Link from "next/link";
 import Layout from "../components/Layout";
 import Seo from "../components/Seo";
 import { SITE } from "../lib/site";
-
-const PHONE = "+61 403 707 735";
 
 export default function Contact() {
   return (
@@ -27,7 +25,6 @@ export default function Contact() {
             <p className="lede" style={{ marginTop: 20 }}>A person reads every message, usually with a reply within one business day. It helps to include the commodity, a typical parcel size, the corridor, and where your deals currently stall.</p>
             <dl className="dl">
               <dt>Email</dt><dd><a href={`mailto:${SITE.email}?subject=CrossLedger%20enquiry`}>{SITE.email}</a></dd>
-              <dt>Phone</dt><dd><a href={`tel:${PHONE.replace(/\s/g, "")}`}>{PHONE}</a></dd>
               <dt>Office</dt><dd>{SITE.address}</dd>
               <dt>Hours</dt><dd>Monday to Friday, 9am to 5pm AEST</dd>
             </dl>
