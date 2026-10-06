@@ -44,16 +44,18 @@ export default function TokenFacts() {
           <h2 className="h-section">Who holds CLXT</h2>
           <div className="table-wrap" style={{ marginTop: 20 }}>
             <table className="data">
-              <thead><tr><th>Holder</th><th className="num">CLXT</th><th className="num">Share</th><th>Address</th></tr></thead>
+              <thead><tr><th>Holder</th><th className="num">CLXT</th><th className="num">Share</th></tr></thead>
               <tbody>
-                {HOLDINGS.map((h) => (
-                  <tr key={h.label}>
-                    <td>{h.label}</td>
-                    <td className="num">{fmt(h.amount)}</td>
-                    <td className="num">{pct(h.amount)}</td>
-                    <td>{h.address ? <Addr a={h.address} /> : h.href ? <a href={h.href} target="_blank" rel="noopener">View ↗</a> : <a href={`https://etherscan.io/token/${CONTRACTS.clxt}#balances`} target="_blank" rel="noopener">All holders ↗</a>}</td>
-                  </tr>
-                ))}
+                {HOLDINGS.map((h) => {
+                  const href = h.address ? `https://etherscan.io/address/${h.address}` : h.href || `https://etherscan.io/token/${CONTRACTS.clxt}#balances`;
+                  return (
+                    <tr key={h.label}>
+                      <td><a href={href} target="_blank" rel="noopener">{h.label} ↗</a>{h.address && <><br /><code className="small">{shortAddr(h.address)}</code></>}</td>
+                      <td className="num">{fmt(h.amount)}</td>
+                      <td className="num">{pct(h.amount)}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -65,20 +67,16 @@ export default function TokenFacts() {
         <div className="container" style={{ maxWidth: 900 }}>
           <h2 className="h-section">Vesting locks</h2>
           <p className="lede" style={{ marginTop: 12 }}>{fmt(locked)} CLXT sit in three Sablier vesting streams. None of them can be cancelled, by GDN or anyone else, and the stream positions cannot be transferred. Tokens return to the owner address only on the schedule below.</p>
-          <div className="table-wrap" style={{ marginTop: 20 }}>
-            <table className="data">
-              <thead><tr><th>Allocation</th><th className="num">CLXT</th><th>Schedule</th><th>Verify</th></tr></thead>
-              <tbody>
-                {LOCKS.map((l) => (
-                  <tr key={l.id}>
-                    <td>{l.name}</td>
-                    <td className="num">{fmt(l.amount)}</td>
-                    <td>{l.schedule}</td>
-                    <td><a href={lockUrl(l.id)} target="_blank" rel="noopener">Sablier #{l.id} ↗</a><br /><a href={lockNftUrl(l.id)} target="_blank" rel="noopener">Etherscan ↗</a></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="grid grid-3" style={{ marginTop: 20 }}>
+            {LOCKS.map((l) => (
+              <div key={l.id} className="card">
+                <span className="tag ok">Locked · non-cancelable</span>
+                <h3 className="h-card">{l.name}</h3>
+                <div style={{ marginTop: 6 }}><div style={{ fontSize: 28, fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1.1 }}>{fmt(l.amount)}</div><div className="small" style={{ marginTop: 6, color: "var(--text-muted)" }}>CLXT · {pct(l.amount)} of supply</div></div>
+                <p style={{ marginTop: 14 }}>{l.schedule}.</p>
+                <div className="card-meta"><a href={lockUrl(l.id)} target="_blank" rel="noopener">Sablier #{l.id} ↗</a> · <a href={lockNftUrl(l.id)} target="_blank" rel="noopener">Etherscan ↗</a></div>
+              </div>
+            ))}
           </div>
           <p className="small" style={{ marginTop: 12 }}>Sablier Lockup contract: <Addr a={CONTRACTS.sablierLockup} />. It also holds a 10 CLXT one-day test stream (#1782) that released back to the owner. The treasury, compliance and operations allocations are drawn from the owner address&apos;s unlocked balance.</p>
         </div>
