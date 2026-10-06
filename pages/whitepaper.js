@@ -242,7 +242,8 @@ export default function Whitepaper() {
                     <li>Presale mechanics now describe the deployed contract (instant delivery, owner-set rate), not the claim-based design v1.0 described.</li>
                     <li>Two contract defects are disclosed: the presale purchase failure and the staking supply-accounting issue.</li>
                     <li>Version 2.1 (5 October 2026): the corrected presale contract is deployed, verified and funded, and purchases have reopened.</li>
-                    <li>Regulatory section rewritten. Australia is a restricted jurisdiction pending legal advice.</li>
+                    <li>Regulatory section rewritten.</li>
+                    <li>6 October 2026: GDN received Australian legal advice and Australian residents may now take part in the presale.</li>
                   </ul>
                 </div>
               </div>
@@ -432,7 +433,7 @@ export default function Whitepaper() {
                 </table>
               </div>
               <div className="roadmap" style={{ marginTop: 24 }}>
-                <div className="road active"><div className="phase">PHASE 1 · NOW</div><h4>Foundation</h4><ul><li>✓ Presale V2 deployed and verified</li><li>Complete independent audit</li><li>Remedy staking supply defect</li><li>Obtain Australian legal advice</li></ul></div>
+                <div className="road active"><div className="phase">PHASE 1 · NOW</div><h4>Foundation</h4><ul><li>✓ Presale V2 deployed and verified</li><li>Complete independent audit</li><li>Remedy staking supply defect</li><li>✓ Australian legal advice received</li></ul></div>
                 <div className="road"><div className="phase">PHASE 2</div><h4>First trades</h4><ul><li>Registry on mainnet</li><li>Audited escrow</li><li>Pilot trades on GDN&apos;s desk</li><li>Inspector attestation format</li></ul></div>
                 <div className="road"><div className="phase">PHASE 3</div><h4>Open corridors</h4><ul><li>Third-party traders onboarded</li><li>Financier registry checks</li><li>Verifier bonding in CLXT</li><li>Time-locked allocations</li></ul></div>
                 <div className="road"><div className="phase">PHASE 4</div><h4>Network</h4><ul><li>Bonded arbitration panel</li><li>Enterprise integrations</li><li>Governance for fee schedules</li><li>Additional corridors</li></ul></div>
@@ -448,8 +449,8 @@ export default function Whitepaper() {
 
               <h2 id="regulatory">Regulatory position and restrictions</h2>
               <p>CrossLedger is a product of GDN Enterprise Pty Ltd (ACN {SITE.acn}), an Australian proprietary company registered with ASIC. GDN does not hold an Australian Financial Services Licence and is not an authorised representative of a licence holder.</p>
-              <p>Australia is reforming the regulation of digital assets and digital asset platforms. Whether CLXT, the presale or the escrow service is a financial product or financial service under Australian law has not been determined. GDN is obtaining Australian legal advice and will publish its position when that advice is received. Until then, Australia is a restricted jurisdiction.</p>
-              <p>CLXT is not offered to residents of the United States, Canada, the People&apos;s Republic of China, Australia, North Korea, Iran, Syria, Cuba, or any jurisdiction subject to comprehensive sanctions or where the offer would require a licence or registration GDN does not hold. The purchase interface is disabled for visitors whose IP address resolves to a restricted jurisdiction. That screen is not proof of residence, and each participant remains responsible for confirming eligibility under their own law. GDN will apply identity verification through a regulated provider above thresholds that it will publish before purchases reopen.</p>
+              <p>Australia is reforming the regulation of digital assets and digital asset platforms. GDN obtained Australian legal advice on CLXT and the presale and, on that advice, opened the presale to Australian residents on 6 October 2026. GDN still does not hold an Australian Financial Services Licence, and the classification of digital assets in Australia may change as the reforms proceed.</p>
+              <p>CLXT is not offered to residents of the United States, Canada, the People&apos;s Republic of China, North Korea, Iran, Syria, Cuba, or any jurisdiction subject to comprehensive sanctions or where the offer would require a licence or registration GDN does not hold. The purchase interface is disabled for visitors whose IP address resolves to a restricted jurisdiction. That screen is not proof of residence, and each participant remains responsible for confirming eligibility under their own law. GDN will apply identity verification through a regulated provider above thresholds that it will publish before purchases reopen.</p>
 
               <h2 id="risks">Risk factors</h2>
               <ul>
