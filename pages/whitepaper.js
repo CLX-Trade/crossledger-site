@@ -2,12 +2,12 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
 import Seo from "../components/Seo";
-import { CONTRACTS, SITE, shortAddr } from "../lib/site";
+import { CONTRACTS, SITE, lockUrl, shortAddr } from "../lib/site";
 
 // Version and status. Update the date and the "Before you read" box whenever a
 // fact below changes on-chain.
 const VERSION = "2.1";
-const UPDATED = "5 October 2026";
+const UPDATED = "6 October 2026";
 
 const TOC = [
   { id: "abstract", title: "A settlement layer for physical commodity trade" },
@@ -244,6 +244,7 @@ export default function Whitepaper() {
                     <li>Version 2.1 (5 October 2026): the corrected presale contract is deployed, verified and funded, and purchases have reopened.</li>
                     <li>Regulatory section rewritten.</li>
                     <li>6 October 2026: GDN received Australian legal advice and Australian residents may now take part in the presale.</li>
+                    <li>6 October 2026: 600,000,000 CLXT (60% of supply) locked in public, non-cancelable vesting; token contract ownership renounced; two retired presale contracts switched off and emptied.</li>
                   </ul>
                 </div>
               </div>
@@ -344,10 +345,13 @@ export default function Whitepaper() {
                     <tr><td>Initial supply</td><td>1,000,000,000 CLXT, minted once to the treasury at creation</td></tr>
                     <tr><td>Reported total supply</td><td>1,000,000,000 CLXT (a fixed constant; see <a href="#supply">Supply accounting</a>)</td></tr>
                     <tr><td>Transfers</td><td>Enabled</td></tr>
-                    <tr><td>Owner and treasury</td><td><Addr a={CONTRACTS.owner} /></td></tr>
-                    <tr><td>Held by owner address</td><td>About 803.9 million CLXT (80.4%)</td></tr>
+                    <tr><td>Token contract owner</td><td>Renounced on 6 October 2026 (transferred to <Addr a={CONTRACTS.dead} />)</td></tr>
+                    <tr><td>Owner and treasury address</td><td><Addr a={CONTRACTS.owner} /></td></tr>
+                    <tr><td>Locked in vesting</td><td>600,000,000 CLXT (60%) in three non-cancelable Sablier streams; see <a href="#allocation">Allocation</a></td></tr>
+                    <tr><td>Held by owner address, unlocked</td><td>About 243.9 million CLXT (24.4%)</td></tr>
+                    <tr><td>Strategic allocation wallet, unlocked</td><td>125,001,000 CLXT (12.5%), <Addr a={CONTRACTS.strategic} /></td></tr>
                     <tr><td>Held by V2 presale contract (for sale)</td><td>20,000,000 CLXT</td></tr>
-                    <tr><td>Held by V1 presale contract (retired)</td><td>20,000,000 CLXT, to be withdrawn by the owner</td></tr>
+                    <tr><td>Retired presale contracts</td><td>V1 and an earlier unused presale, both switched off and emptied</td></tr>
                     <tr><td>Registered escrow contract</td><td><Addr a={CONTRACTS.escrow} /> (not independently audited)</td></tr>
                   </tbody>
                 </table>
@@ -367,20 +371,20 @@ export default function Whitepaper() {
                 <table className="data">
                   <thead><tr><th>Category</th><th className="num">Share</th><th className="num">CLXT</th><th>Purpose</th></tr></thead>
                   <tbody>
-                    <tr><td>Ecosystem and trade incentives</td><td className="num">35%</td><td className="num">350,000,000</td><td>Rebates for early trades, corridor onboarding, verifier incentives</td></tr>
+                    <tr><td>Ecosystem and trade incentives</td><td className="num">35%</td><td className="num">350,000,000</td><td>Rebates for early trades, corridor onboarding, verifier incentives. Locked: nothing released until 6 April 2027, then linear to 6 October 2029 (<a href={lockUrl(1783)} target="_blank" rel="noopener">Sablier #1783</a>)</td></tr>
                     <tr><td>Treasury and compliance</td><td className="num">20%</td><td className="num">200,000,000</td><td>Licensing, audits, legal, operating reserve</td></tr>
-                    <tr><td>Founders and team</td><td className="num">15%</td><td className="num">150,000,000</td><td>Planned 12-month cliff, then 24-month linear vesting</td></tr>
-                    <tr><td>Strategic investors (includes public presale)</td><td className="num">15%</td><td className="num">150,000,000</td><td>Seed partners and the staged public presale</td></tr>
-                    <tr><td>Exchange and liquidity</td><td className="num">10%</td><td className="num">100,000,000</td><td>Liquidity pools and market-making at listing, to be time-locked</td></tr>
+                    <tr><td>Founders and team</td><td className="num">15%</td><td className="num">150,000,000</td><td>Locked: nothing released until 6 October 2027, then linear to 6 October 2029 (<a href={lockUrl(1784)} target="_blank" rel="noopener">Sablier #1784</a>)</td></tr>
+                    <tr><td>Strategic investors (includes public presale)</td><td className="num">15%</td><td className="num">150,000,000</td><td>A 125,001,000 CLXT strategic allocation (unlocked) and the staged public presale</td></tr>
+                    <tr><td>Exchange and liquidity</td><td className="num">10%</td><td className="num">100,000,000</td><td>Liquidity pools and market-making at listing. Timelocked until 6 October 2027 (<a href={lockUrl(1785)} target="_blank" rel="noopener">Sablier #1785</a>)</td></tr>
                     <tr><td>Operations and partnerships</td><td className="num">5%</td><td className="num">50,000,000</td><td>Integrations and commercial partnerships</td></tr>
                   </tbody>
                 </table>
               </div>
-              <p><strong>These allocations are plans, not on-chain controls.</strong> As of {UPDATED} no vesting or lock contracts hold the team, treasury or liquidity allocations; most of the supply sits in the owner address shown above. GDN will move allocations into published, time-locked contracts before any exchange listing and will publish those addresses here.</p>
+              <p><strong>60% of supply is locked on-chain.</strong> Since 6 October 2026 the ecosystem, team and liquidity allocations, 600,000,000 CLXT in total, sit in three Sablier vesting streams that cannot be cancelled by GDN or anyone else. They pay back to the owner address only on the schedules above. The treasury, compliance and operations allocations are drawn from the owner address&apos;s unlocked balance, and the strategic allocation wallet is not locked. Holdings and locks are summarised on the <Link href="/token">Token facts</Link> page.</p>
 
               <h3 id="supply">Supply accounting and staking</h3>
               <p>The token contract includes a staking function that pays a 10 percent annual reward. When a holder unstakes, the reward is added to their balance as newly created tokens, but the contract&apos;s <code>totalSupply()</code> returns a hard-coded 1,000,000,000 and no transfer event is emitted for the new tokens. If staking is used, the real number of tokens in existence can rise above one billion while every explorer and exchange still reports one billion.</p>
-              <p>CrossLedger treats this as a defect, not a feature. GDN does not promote staking and will not use it. The token contract cannot be upgraded, so the only technical fix is migrating to a corrected token contract, with balances carried across one for one. An independent audit can measure the exposure but cannot remove it. GDN will publish its remedy before any listing. Until then, the fixed one-billion figure should be read as the initial supply, not a guaranteed cap.</p>
+              <p>CrossLedger treats this as a defect, not a feature. GDN does not promote staking and will not use it. The token contract cannot be upgraded, so the only technical fix is migrating to a corrected token contract, with balances carried across one for one. Tokens held in the vesting streams would need a migration path that preserves their schedules; GDN will publish that mechanism with the remedy. An independent audit can measure the exposure but cannot remove it. GDN will publish its remedy before any listing. Until then, the fixed one-billion figure should be read as the initial supply, not a guaranteed cap.</p>
 
               <h3 id="presale">Presale</h3>
               <p>The public presale sells CLXT for USDT on Ethereum through a contract that delivers tokens to the buyer in the same transaction. The published plan has four stages:</p>
@@ -423,7 +427,8 @@ export default function Whitepaper() {
                   <thead><tr><th>Component</th><th>Status at {UPDATED}</th></tr></thead>
                   <tbody>
                     <tr><td>CLXT token</td><td>Live on Ethereum mainnet. Staking supply defect disclosed; remedy pending.</td></tr>
-                    <tr><td>Presale V1</td><td>Retired. It could not complete purchases and is no longer used.</td></tr>
+                    <tr><td>Presale V1</td><td>Retired. It could not complete purchases; switched off and emptied on 6 October 2026, along with an earlier unused presale contract.</td></tr>
+                    <tr><td>Token ownership and vesting</td><td>Token contract ownership renounced and 60% of supply locked in non-cancelable vesting on 6 October 2026.</td></tr>
                     <tr><td>Presale V2</td><td>Live since 5 October 2026. Source verified on Etherscan; funded with 20,000,000 CLXT.</td></tr>
                     <tr><td>Escrow contract</td><td>First version deployed to mainnet and registered with the token. Not audited; not in commercial use.</td></tr>
                     <tr><td>Document registry</td><td>Prototype deployed to the Polygon Amoy test network.</td></tr>
@@ -433,9 +438,9 @@ export default function Whitepaper() {
                 </table>
               </div>
               <div className="roadmap" style={{ marginTop: 24 }}>
-                <div className="road active"><div className="phase">PHASE 1 · NOW</div><h4>Foundation</h4><ul><li>✓ Presale V2 deployed and verified</li><li>Complete independent audit</li><li>Remedy staking supply defect</li><li>✓ Australian legal advice received</li></ul></div>
+                <div className="road active"><div className="phase">PHASE 1 · NOW</div><h4>Foundation</h4><ul><li>✓ Presale V2 deployed and verified</li><li>✓ 60% of supply locked in vesting</li><li>Complete independent audit</li><li>Remedy staking supply defect</li><li>✓ Australian legal advice received</li></ul></div>
                 <div className="road"><div className="phase">PHASE 2</div><h4>First trades</h4><ul><li>Registry on mainnet</li><li>Audited escrow</li><li>Pilot trades on GDN&apos;s desk</li><li>Inspector attestation format</li></ul></div>
-                <div className="road"><div className="phase">PHASE 3</div><h4>Open corridors</h4><ul><li>Third-party traders onboarded</li><li>Financier registry checks</li><li>Verifier bonding in CLXT</li><li>Time-locked allocations</li></ul></div>
+                <div className="road"><div className="phase">PHASE 3</div><h4>Open corridors</h4><ul><li>Third-party traders onboarded</li><li>Financier registry checks</li><li>Verifier bonding in CLXT</li></ul></div>
                 <div className="road"><div className="phase">PHASE 4</div><h4>Network</h4><ul><li>Bonded arbitration panel</li><li>Enterprise integrations</li><li>Governance for fee schedules</li><li>Additional corridors</li></ul></div>
               </div>
               <p>Phases are sequenced by readiness, not by date. Each starts only when the previous phase&apos;s deliverables exist and can be verified.</p>
@@ -458,7 +463,7 @@ export default function Whitepaper() {
                 <li><strong>Development risk.</strong> The platform described here may never be completed, or may work differently.</li>
                 <li><strong>Smart-contract risk.</strong> Two defects have already been found in deployed contracts. Others may exist. No independent audit has been completed.</li>
                 <li><strong>Supply risk.</strong> Until the staking defect is remedied, the number of tokens in existence can exceed the reported supply.</li>
-                <li><strong>Concentration and control.</strong> Most of the supply is held by one owner address, and the owner can change presale terms. Planned vesting and locks are not yet enforced on-chain.</li>
+                <li><strong>Concentration and control.</strong> 60% of supply is locked in vesting, but the owner address holds about 24% unlocked, a strategic wallet holds 12.5% unlocked, and locked tokens return to the owner address over time. The presale owner can change presale terms.</li>
                 <li><strong>Regulatory risk.</strong> Laws may change or be applied in ways that restrict CLXT, the presale or the platform, including in Australia.</li>
                 <li><strong>Liquidity risk.</strong> There may be no market in which to sell CLXT. No exchange listing is guaranteed.</li>
                 <li><strong>Adoption risk.</strong> Traders, inspectors and financiers may not use the platform.</li>

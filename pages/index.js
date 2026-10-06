@@ -42,11 +42,11 @@ const ERC20_ABI = parseAbi([
 ]);
 
 const ALLOCATION = [
-  { title: "Ecosystem and trade incentives", pct: 35, color: "#3355ff", desc: "Rebates for early trades, corridor onboarding and verifier incentives." },
+  { title: "Ecosystem and trade incentives", pct: 35, color: "#3355ff", desc: "Rebates for early trades, corridor onboarding and verifier incentives. Locked until April 2027, then vests to October 2029." },
   { title: "Treasury and compliance", pct: 20, color: "#7b5cff", desc: "Licensing, audits, legal work and operating reserve." },
-  { title: "Founders and team", pct: 15, color: "#14b8a6", desc: "Planned 12-month cliff, then 24-month linear vesting." },
+  { title: "Founders and team", pct: 15, color: "#14b8a6", desc: "Locked until October 2027, then vests to October 2029." },
   { title: "Strategic investors", pct: 15, color: "#f59e0b", desc: "Seed partners and the staged public presale." },
-  { title: "Exchange and liquidity", pct: 10, color: "#ec4899", desc: "Liquidity at listing, to be time-locked." },
+  { title: "Exchange and liquidity", pct: 10, color: "#ec4899", desc: "Liquidity at listing. Timelocked until October 2027." },
   { title: "Operations and partnerships", pct: 5, color: "#64748b", desc: "Integrations and commercial partnerships." },
 ];
 
@@ -461,7 +461,7 @@ export default function HomePage() {
           <div className="notice" style={{ marginTop: 32 }}>
             {Icon.warn}
             <div>
-              <p><strong>Allocations are plans, not on-chain locks yet.</strong> No vesting or lock contracts hold these allocations today, and most of the supply sits in the owner address. GDN will move them into published time-locked contracts before any exchange listing.</p>
+              <p><strong>60% of supply is locked on-chain.</strong> The ecosystem, team and liquidity allocations sit in non-cancelable Sablier vesting streams, and token contract ownership is renounced. <Link href="/token">See every holder and lock →</Link></p>
               <p>The token&apos;s staking function creates rewards without updating the reported total supply. GDN does not promote or use staking and will publish a remedy before any listing. <Link href="/whitepaper#supply">Details in the whitepaper →</Link></p>
             </div>
           </div>
@@ -550,10 +550,10 @@ export default function HomePage() {
             <p className="lede">A plain statement of where the contracts and the company stand today, updated when anything changes.</p>
           </div>
           <div className="grid grid-3">
-            <div className="card"><span className="tag ok">Defect · fixed</span><h3 className="h-card">Presale V1 purchase failure</h3><p>V1 could not complete a purchase because of how it called USDT. It is retired and replaced by V2, deployed on 5 October 2026 with source verified on Etherscan.</p><div className="card-meta"><a href={`https://etherscan.io/address/${CONTRACTS.presaleV1}#code`} target="_blank" rel="noopener">V1 (retired) ↗</a> · <a href="https://etherscan.io/address/0x8F190E1764bfE57ddd2Daff5F55a79C64760c14F#code" target="_blank" rel="noopener">V2 (live) ↗</a></div></div>
+            <div className="card"><span className="tag ok">Defect · fixed</span><h3 className="h-card">Presale V1 purchase failure</h3><p>V1 could not complete a purchase because of how it called USDT. It is switched off and emptied, and replaced by V2, deployed on 5 October 2026 with source verified on Etherscan.</p><div className="card-meta"><a href={`https://etherscan.io/address/${CONTRACTS.presaleV1}#code`} target="_blank" rel="noopener">V1 (retired) ↗</a> · <a href="https://etherscan.io/address/0x8F190E1764bfE57ddd2Daff5F55a79C64760c14F#code" target="_blank" rel="noopener">V2 (live) ↗</a></div></div>
             <div className="card"><span className="tag warn">Disclosed · remedy pending</span><h3 className="h-card">Token supply accounting</h3><p>Staking rewards add to balances without updating the reported 1 billion supply. GDN does not use staking; a remedy will be published before any listing.</p><div className="card-meta"><Link href="/whitepaper#supply">Whitepaper section →</Link></div></div>
             <div className="card"><span className="tag warn">Not yet completed</span><h3 className="h-card">Independent audit</h3><p>No independent professional audit has been completed. One is required before the escrow handles any third-party funds.</p><div className="card-meta">Earlier reviews were internal and AI-assisted</div></div>
-            <div className="card"><span className="tag ok">Verified source</span><h3 className="h-card">On-chain transparency</h3><p>Token and presale source code is published on Etherscan. The owner can set the sale rate and treasury, pause sales and withdraw unsold tokens.</p><div className="card-meta"><a href={`https://etherscan.io/token/${CONTRACTS.clxt}`} target="_blank" rel="noopener">Token ↗</a> · <a href={`https://etherscan.io/address/${CONTRACTS.presale}`} target="_blank" rel="noopener">Presale ↗</a></div></div>
+            <div className="card"><span className="tag ok">Verified source</span><h3 className="h-card">Locks and ownership</h3><p>60% of supply is locked in non-cancelable vesting and token contract ownership is renounced. Source code is verified on Etherscan. The presale owner can set the sale rate and treasury, pause sales and withdraw unsold tokens.</p><div className="card-meta"><Link href="/token">Token facts →</Link> · <a href={`https://etherscan.io/token/${CONTRACTS.clxt}`} target="_blank" rel="noopener">Token ↗</a></div></div>
             <div className="card"><span className="tag ok">Advice received</span><h3 className="h-card">Australian regulatory position</h3><p>GDN Enterprise Pty Ltd is ASIC-registered and does not hold an Australian Financial Services Licence. GDN has received Australian legal advice and, on that advice, Australian residents may take part in the presale.</p><div className="card-meta">ACN {SITE.acn}</div></div>
             <div className="card"><span className="tag ok">Open</span><h3 className="h-card">Vulnerability disclosure</h3><p>Report vulnerabilities in the deployed contracts through the contact form. Reproducible findings are eligible for CLXT bounty rewards graded by severity.</p><div className="card-meta"><Link href="/contact">Report an issue →</Link></div></div>
           </div>
@@ -573,9 +573,9 @@ export default function HomePage() {
             <p className="lede">Each phase starts when the previous one&apos;s deliverables exist and can be checked on-chain.</p>
           </div>
           <div className="roadmap">
-            <div className="road active"><div className="phase">PHASE 1 · NOW</div><h4>Foundation</h4><ul><li>✓ Presale V2 deployed and verified</li><li>Complete independent audit</li><li>Remedy staking supply defect</li><li>✓ Australian legal advice received</li></ul></div>
+            <div className="road active"><div className="phase">PHASE 1 · NOW</div><h4>Foundation</h4><ul><li>✓ Presale V2 deployed and verified</li><li>✓ 60% of supply locked in vesting</li><li>Complete independent audit</li><li>Remedy staking supply defect</li><li>✓ Australian legal advice received</li></ul></div>
             <div className="road"><div className="phase">PHASE 2</div><h4>First trades</h4><ul><li>Registry on mainnet</li><li>Audited escrow</li><li>Pilot trades on GDN&apos;s desk</li><li>Inspector attestation format</li></ul></div>
-            <div className="road"><div className="phase">PHASE 3</div><h4>Open corridors</h4><ul><li>Third-party traders</li><li>Financier registry checks</li><li>Verifier bonding in CLXT</li><li>Time-locked allocations</li></ul></div>
+            <div className="road"><div className="phase">PHASE 3</div><h4>Open corridors</h4><ul><li>Third-party traders</li><li>Financier registry checks</li><li>Verifier bonding in CLXT</li></ul></div>
             <div className="road"><div className="phase">PHASE 4</div><h4>Network</h4><ul><li>Bonded arbitration panel</li><li>Enterprise integrations</li><li>Fee governance</li><li>More corridors</li></ul></div>
           </div>
         </div>
@@ -615,7 +615,7 @@ export default function HomePage() {
           <details className="faq"><summary>What wallets work?</summary><div className="answer"><p>Any Ethereum wallet supporting WalletConnect, including MetaMask, Coinbase Wallet, Trust Wallet, Rainbow and Ledger. On mobile, open this site in your wallet&apos;s browser or scan the WalletConnect QR code.</p></div></details>
           <details className="faq"><summary>How is GDN regulated in Australia?</summary><div className="answer"><p>GDN Enterprise Pty Ltd is an Australian proprietary company registered with ASIC. It does not hold an Australian Financial Services Licence. GDN has received Australian legal advice and, on that advice, Australian residents may take part in the presale. Digital asset regulation in Australia is being reformed and the position may change.</p></div></details>
           <details className="faq"><summary>Who can take part?</summary><div className="answer"><p>CLXT is not offered to residents of the United States, Canada, China, North Korea, Iran, Syria, Cuba or other comprehensively sanctioned jurisdictions. The IP-based screen is not proof of residence, so confirming eligibility under your own law is your responsibility.</p></div></details>
-          <details className="faq"><summary>What are the main risks?</summary><div className="answer"><p>Total loss, development risk, smart-contract risk (two defects already found, no independent audit yet), supply risk from the staking defect, concentration of supply in one owner address, regulatory change, and no guaranteed exchange listing. Read the <Link href="/whitepaper#risks">full risk factors</Link>.</p></div></details>
+          <details className="faq"><summary>What are the main risks?</summary><div className="answer"><p>Total loss, development risk, smart-contract risk (two defects already found, no independent audit yet), supply risk from the staking defect, concentration of supply (60% is locked, but about 37% sits unlocked in two wallets), regulatory change, and no guaranteed exchange listing. Read the <Link href="/whitepaper#risks">full risk factors</Link>.</p></div></details>
         </div>
       </section>
 

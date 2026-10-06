@@ -6,7 +6,7 @@ import { CONTRACTS, SITE } from "../lib/site";
 const NAV = [
   { href: "/how-it-works", label: "How it works" },
   { href: "/whitepaper", label: "Whitepaper" },
-  { href: "/#token", label: "CLXT token" },
+  { href: "/token", label: "Token facts" },
   { href: "/#security", label: "Security" },
   { href: "/#faq", label: "FAQ" },
   { href: "/contact", label: "Contact" },
@@ -139,6 +139,7 @@ export function SiteFooter() {
           <div>
             <h5>On-chain</h5>
             <ul>
+              <li><Link href="/token">Token facts and locks</Link></li>
               <li><a href={`https://etherscan.io/token/${CONTRACTS.clxt}`} target="_blank" rel="noopener">CLXT token ↗</a></li>
               <li><a href={`https://etherscan.io/address/${CONTRACTS.presale}`} target="_blank" rel="noopener">Presale contract ↗</a></li>
               <li><a href={`https://etherscan.io/token/${CONTRACTS.usdt}`} target="_blank" rel="noopener">USDT (payment) ↗</a></li>
