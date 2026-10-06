@@ -1,0 +1,34 @@
+ETHERSCAN TOKEN INFO UPDATE: CLXT (copy and paste each field)
+
+STEP 1. Sign in at https://etherscan.io/login (your own Etherscan account; create one if needed).
+
+STEP 2. Verify ownership (free, a signature only, no gas):
+  https://etherscan.io/verifyAddress/0xDa23800A2fc8d345Af55d9Bf88a7A910B2f90A6d
+  Choose "Sign with Web3", connect MetaMask, account ending 984b, and sign the message.
+  (Token ownership was renounced, so sign as the CONTRACT CREATOR: 0x0AA1BbF196a4Df3464d880f82FA4ACd4365C984b)
+
+STEP 3. Token update form (from the token page: "Update Token Info"):
+
+Token contract address:  0xDa23800A2fc8d345Af55d9Bf88a7A910B2f90A6d
+Official project website: https://crossledger.trade
+Official project email:   info@crossledger.trade
+   (Etherscan emails this address and expects it to be on the website's domain. Make sure that inbox works.)
+Logo: upload clxt-logo-32.png (and clxt-logo-256.png if a larger size is asked for), or link:
+   https://www.crossledger.trade/clxt-logo-cmc.png
+Project sector: Payments / Supply chain / Trade finance infrastructure
+
+Project description:
+CrossLedger is settlement infrastructure for cross-border physical commodity trade, built by GDN Group (GDN Enterprise Pty Ltd, ACN 666 495 263, Australia). It combines a public registry of trade-document fingerprints with per-trade escrow that releases payment only on verified documents and a signed independent inspection. CLXT is the platform's utility token, intended for fee discounts and verifier bonds. Token ownership is renounced, 60% of supply is locked in non-cancelable Sablier vesting, and holdings and locks are published at crossledger.trade/token. The platform is in development; see the whitepaper for status and risks.
+
+Whitepaper:  https://crossledger.trade/whitepaper
+             (PDF: https://crossledger.trade/CrossLedger-CLXT-Whitepaper.pdf)
+Twitter / X: https://x.com/CrossLedgerCLX
+Telegram:    (add your CLXT group link if you want it listed)
+CoinMarketCap / CoinGecko: leave blank (not listed)
+
+Requester name:  Gui Di Nardo
+Requester email: gnardo@gdngroup.com.au
+Relationship:    Director, GDN Enterprise Pty Ltd (token issuer)
+
+Comment / additional info:
+Token contract ownership was renounced on 6 October 2026 (owner() = 0x000000000000000000000000000000000000dEaD), so ownership is verified with the contract creator address 0x0AA1BbF196a4Df3464d880f82FA4ACd4365C984b. The only active presale contract is 0x8F190E1764bfE57ddd2Daff5F55a79C64760c14F (source verified). 60% of supply is locked in Sablier vesting (Lockup 0x93b37Bd5B6b278373217333Ac30D7E74c85fBDCB, streams 1783, 1784, 1785).
