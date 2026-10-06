@@ -196,7 +196,7 @@ export default function Whitepaper() {
         type="article"
         jsonLd={{
           "@context": "https://schema.org", "@type": "TechArticle",
-          headline: "CrossLedger Whitepaper", version: VERSION, dateModified: "2026-10-03",
+          headline: "CrossLedger Whitepaper", version: VERSION, dateModified: "2026-10-06",
           author: { "@type": "Organization", name: "GDN Group" },
           publisher: { "@type": "Organization", name: "GDN Enterprise Pty Ltd" },
           url: `${SITE.url}/whitepaper`,
@@ -215,10 +215,12 @@ export default function Whitepaper() {
             <div className="doc-tools">
               <a className="btn btn-outline" href="/CrossLedger-CLXT-Whitepaper.pdf" target="_blank" rel="noopener">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v12m0 0-4-4m4 4 4-4M5 21h14" /></svg>
-                Download PDF
+                Earlier PDF snapshot
               </a>
               <button type="button" className="btn btn-outline" onClick={() => window.print()}>Print</button>
             </div>
+
+            <p className="small muted">The downloadable PDF is an earlier snapshot. This page contains the latest disclosures; use Print to save the current version as a PDF.</p>
 
             <div className="mobile-toc">
               <details><summary>On this page</summary><Toc active={active} /></details>
@@ -384,7 +386,7 @@ export default function Whitepaper() {
 
               <h3 id="supply">Supply accounting and staking</h3>
               <p>The token contract includes a staking function that pays a 10 percent annual reward. When a holder unstakes, the reward is added to their balance as newly created tokens, but the contract&apos;s <code>totalSupply()</code> returns a hard-coded 1,000,000,000 and no transfer event is emitted for the new tokens. If staking is used, the real number of tokens in existence can rise above one billion while every explorer and exchange still reports one billion.</p>
-              <p>CrossLedger treats this as a defect, not a feature. GDN does not promote staking and will not use it. The token contract cannot be upgraded, so the only technical fix is migrating to a corrected token contract, with balances carried across one for one. Tokens held in the vesting streams would need a migration path that preserves their schedules; GDN will publish that mechanism with the remedy. An independent audit can measure the exposure but cannot remove it. GDN will publish its remedy before any listing. Until then, the fixed one-billion figure should be read as the initial supply, not a guaranteed cap.</p>
+              <p>CrossLedger treats this as a defect, not a feature. GDN does not promote staking and will not use it. The token contract cannot be upgraded, so the only technical fix is migrating to a corrected token contract, with balances carried across one for one. Tokens held in the vesting streams would need a migration path that preserves their schedules; GDN will publish that mechanism with the remedy. The migration mechanism is not yet published. It must explain how circulating balances, staked balances, presale inventory and tokens held in vesting streams will be handled, including how vesting schedules will be preserved. Ownership renunciation does not repair the staking supply-accounting defect. An independent audit can measure the exposure but cannot remove it. GDN will publish its remedy before any listing. Until then, the fixed one-billion figure should be read as the initial supply, not a guaranteed cap.</p>
 
               <h3 id="presale">Presale</h3>
               <p>The public presale sells CLXT for USDT on Ethereum through a contract that delivers tokens to the buyer in the same transaction. The published plan has four stages:</p>
@@ -399,7 +401,7 @@ export default function Whitepaper() {
                   </tbody>
                 </table>
               </div>
-              <p>Be clear about what the contract enforces. It sells at a single rate set by the owner; it does not enforce stage allocations or move between stages automatically. The owner can change the rate, pause the sale and withdraw unsold tokens. The website applies a 200 USDT minimum, and the V2 contract also enforces a minimum on-chain. Stage pricing is a commitment by GDN, not a property of the code.</p>
+              <p>Be clear about what the contract enforces. It sells at a single rate set by the owner; it does not enforce stage allocations or move between stages automatically. The owner can change the rate, minimum purchase and treasury, pause the sale and withdraw unsold tokens. The website applies a 200 USDT minimum, and the V2 contract also enforces a minimum on-chain. Stage pricing is a commitment by GDN, not a property of the code. The four stages total 17,000,000 CLXT, while V2 was funded with 20,000,000 CLXT. The additional 3,000,000 CLXT has no allocation in the published stage plan. The strategic wallet and V2 funding total 145,001,000 CLXT, compared with the planned 150,000,000 CLXT strategic allocation; the allocation of the remaining 4,999,000 CLXT is not specified here.</p>
               <p>Each stage price is a sale price, not a valuation. CrossLedger publishes no listing price, target price or expected return, and nothing guarantees that CLXT will be listed on any exchange or trade at or above the price paid.</p>
 
               <h3 id="presale-defect">The V1 presale defect</h3>
@@ -455,7 +457,7 @@ export default function Whitepaper() {
               <h2 id="regulatory">Regulatory position and restrictions</h2>
               <p>CrossLedger is a product of GDN Enterprise Pty Ltd (ACN {SITE.acn}), an Australian proprietary company registered with ASIC. GDN does not hold an Australian Financial Services Licence and is not an authorised representative of a licence holder.</p>
               <p>Australia is reforming the regulation of digital assets and digital asset platforms. GDN obtained Australian legal advice on CLXT and the presale and, on that advice, opened the presale to Australian residents on 6 October 2026. GDN still does not hold an Australian Financial Services Licence, and the classification of digital assets in Australia may change as the reforms proceed.</p>
-              <p>CLXT is not offered to residents of the United States, Canada, the People&apos;s Republic of China, North Korea, Iran, Syria, Cuba, or any jurisdiction subject to comprehensive sanctions or where the offer would require a licence or registration GDN does not hold. The purchase interface is disabled for visitors whose IP address resolves to a restricted jurisdiction. That screen is not proof of residence, and each participant remains responsible for confirming eligibility under their own law. GDN will apply identity verification through a regulated provider above thresholds that it will publish before purchases reopen.</p>
+              <p>CLXT is not offered to residents of the United States, Canada, the People&apos;s Republic of China, North Korea, Iran, Syria, Cuba, or any jurisdiction subject to comprehensive sanctions or where the offer would require a licence or registration GDN does not hold. The purchase interface is disabled for visitors whose IP address resolves to a restricted jurisdiction. That screen is not proof of residence, and each participant remains responsible for confirming eligibility under their own law. GDN will apply identity verification through a regulated provider. The provider and applicable purchase thresholds are not specified in this paper and will be published separately.</p>
 
               <h2 id="risks">Risk factors</h2>
               <ul>
