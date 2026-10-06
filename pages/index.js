@@ -80,7 +80,7 @@ export default function HomePage() {
   /* ====== CONTRACT READS ======
      No fallbacks: if the rate or status read fails, the widget shows "—" and
      stays disabled rather than quoting an assumed price. */
-  const { data: presaleReads } = useReadContracts({
+  const { data: presaleReads, isPending: presaleReadPending } = useReadContracts({
     contracts: [
       { address: PRESALE_ADDRESS, abi: PRESALE_READ_ABI, functionName: "clxtPerUsdt", chainId: mainnet.id },
       { address: PRESALE_ADDRESS, abi: PRESALE_READ_ABI, functionName: "presaleActive", chainId: mainnet.id },
@@ -90,6 +90,10 @@ export default function HomePage() {
   const rate = presaleReads?.[0]?.status === "success" && presaleReads[0].result > 0n ? presaleReads[0].result : null;
   const presaleActive = presaleReads?.[1]?.status === "success" && presaleReads[1].result === true;
   const saleOpen = IS_V2 && presaleActive && rate !== null;
+  const presaleStatusKnown = presaleReads?.[1]?.status === "success";
+  const saleStatusText = presaleReadPending ? "Checking presale status…"
+    : !presaleStatusKnown || (presaleActive && rate === null) ? "Presale status unavailable"
+    : "Presale paused";
 
   const { data: usdtBalance, refetch: refetchBalance } = useReadContract({
     address: CONTRACTS.usdt, abi: ERC20_ABI, functionName: "balanceOf", chainId: mainnet.id,
@@ -283,7 +287,7 @@ export default function HomePage() {
   else if (geoBlocked) btn = { left: geoUnknown ? "Region not confirmed" : "Not available in your region", leftDisabled: true, right: "Buy CLXT", rightDisabled: true };
   else if (!isConnected) btn = { left: "Connect wallet", leftAction: () => open(), right: "Buy CLXT", rightDisabled: true };
   else if (!chainOk) btn = { left: "Switch to Ethereum", leftAction: switchToMainnet, right: "Buy CLXT", rightDisabled: true };
-  else if (!saleOpen) btn = { left: "Presale paused", leftDisabled: true, right: "Buy CLXT", rightDisabled: true };
+  else if (!saleOpen) btn = { left: saleStatusText, leftDisabled: true, right: "Buy CLXT", rightDisabled: true };
   else if (!tosChecked || !amountValid || !hasBalance) btn = { left: "Approve USDT", leftDisabled: true, right: "Buy CLXT", rightDisabled: true };
   else if (!hasAllowance) btn = {
     left: resetting ? "Resetting allowance…" : approving ? "Awaiting wallet…" : approveConfirming ? "Approving…" : "Approve USDT",
@@ -319,7 +323,7 @@ export default function HomePage() {
               <Link href="/how-it-works" className="btn btn-ghost btn-lg">How it works →</Link>
             </div>
             <p className="small muted" style={{ marginTop: 20 }}>
-              CLXT presale: {saleOpen ? <>open at {displayPrice} per CLXT.</> : <>{CHECKOUT_UNAVAILABLE ? "purchases paused while the presale contract is replaced." : "paused."}</>}{" "}
+              CLXT presale: {saleOpen ? <>open at {displayPrice} per CLXT.</> : <>{CHECKOUT_UNAVAILABLE ? "purchases paused while the presale contract is replaced." : saleStatusText}</>}{" "}
               <a href="#presale"><strong>Buy CLXT →</strong></a> · <a href="#security">Security status</a>
             </p>
           </div>
@@ -498,7 +502,7 @@ export default function HomePage() {
                 <tbody>{STAGES.map((s) => <tr key={s.name}><td>{s.name}</td><td className="num">{s.price}</td><td className="num">{s.rate}</td><td className="num">{s.cap} CLXT</td></tr>)}</tbody>
               </table>
             </div>
-            <p className="small muted" style={{ marginTop: 12 }}>The contract sells at one owner-set rate; stages are a GDN commitment, not enforced in code. Stage prices are sale prices, not valuations. CrossLedger publishes no listing or target price.</p>
+            <p className="small muted" style={{ marginTop: 12 }}>The four published stages total 17,000,000 CLXT, compared with 20,000,000 CLXT funded into V2. The additional 3,000,000 CLXT has no allocation in the published stage plan. The contract sells at one owner-set rate; stages are a GDN commitment, not enforced in code. Stage prices are sale prices, not valuations. CrossLedger publishes no listing or target price.</p>
           </div>
 
           <div id="presale" className="widget">
@@ -554,7 +558,7 @@ export default function HomePage() {
             <div className="card"><span className="tag ok">Defect · fixed</span><h3 className="h-card">Presale V1 purchase failure</h3><p>V1 could not complete a purchase because of how it called USDT. It is switched off and emptied, and replaced by V2, deployed on 5 October 2026 with source verified on Etherscan.</p><div className="card-meta"><a href={`https://etherscan.io/address/${CONTRACTS.presaleV1}#code`} target="_blank" rel="noopener">V1 (retired) ↗</a> · <a href="https://etherscan.io/address/0x8F190E1764bfE57ddd2Daff5F55a79C64760c14F#code" target="_blank" rel="noopener">V2 (live) ↗</a></div></div>
             <div className="card"><span className="tag warn">Disclosed · remedy pending</span><h3 className="h-card">Token supply accounting</h3><p>Staking rewards add to balances without updating the reported 1 billion supply. GDN does not use staking; a remedy will be published before any listing.</p><div className="card-meta"><Link href="/whitepaper#supply">Whitepaper section →</Link></div></div>
             <div className="card"><span className="tag warn">Not yet completed</span><h3 className="h-card">Independent audit</h3><p>No independent professional audit has been completed. One is required before the escrow handles any third-party funds.</p><div className="card-meta">Earlier reviews were internal and AI-assisted</div></div>
-            <div className="card"><span className="tag ok">Verified source</span><h3 className="h-card">Locks and ownership</h3><p>60% of supply is locked in non-cancelable vesting and token contract ownership is renounced. Source code is verified on Etherscan. The presale owner can set the sale rate and treasury, pause sales and withdraw unsold tokens.</p><div className="card-meta"><Link href="/token">Token facts →</Link> · <a href={`https://etherscan.io/token/${CONTRACTS.clxt}`} target="_blank" rel="noopener">Token ↗</a></div></div>
+            <div className="card"><span className="tag ok">Verified source</span><h3 className="h-card">Locks and ownership</h3><p>60% of supply is locked in non-cancelable vesting and token contract ownership is renounced. Source code is verified on Etherscan. The presale owner can set the sale rate, minimum purchase and treasury, pause sales and withdraw unsold tokens.</p><div className="card-meta"><Link href="/token">Token facts →</Link> · <a href={`https://etherscan.io/token/${CONTRACTS.clxt}`} target="_blank" rel="noopener">Token ↗</a></div></div>
             <div className="card"><span className="tag ok">Advice received</span><h3 className="h-card">Australian regulatory position</h3><p>GDN Enterprise Pty Ltd is ASIC-registered and does not hold an Australian Financial Services Licence. GDN has received Australian legal advice and, on that advice, Australian residents may take part in the presale.</p><div className="card-meta">ACN {SITE.acn}</div></div>
             <div className="card"><span className="tag ok">Open</span><h3 className="h-card">Vulnerability disclosure</h3><p>Report vulnerabilities in the deployed contracts through the contact form. Reproducible findings are eligible for CLXT bounty rewards graded by severity.</p><div className="card-meta"><Link href="/contact">Report an issue →</Link></div></div>
           </div>

@@ -119,7 +119,7 @@ export function SiteFooter() {
             <ul>
               <li><Link href="/how-it-works">How it works</Link></li>
               <li><Link href="/whitepaper">Whitepaper</Link></li>
-              <li><a href="/CrossLedger-CLXT-Whitepaper.pdf" target="_blank" rel="noopener">Whitepaper (PDF)</a></li>
+              <li><a href="/CrossLedger-CLXT-Whitepaper.pdf" target="_blank" rel="noopener">Whitepaper (earlier PDF)</a></li>
               <li><Link href="/#faq">FAQ</Link></li>
               <li><Link href="/#risk">Risk disclosure</Link></li>
             </ul>
