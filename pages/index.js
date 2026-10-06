@@ -435,6 +435,7 @@ export default function HomePage() {
       <section id="token" className="section">
         <div className="container">
           <div className="section-head">
+            <img className="coin" src="/clxt-logo-cmc.png" width="96" height="96" alt="CLXT token logo" style={{ marginBottom: 18 }} />
             <span className="eyebrow">The CLXT token</span>
             <h2 className="h-section">A utility token with a narrow job.</h2>
             <p className="lede">Trades settle in stablecoins. CLXT is designed to pay platform fees at a discount and, later, to bond the inspectors and verifiers whose signatures release funds. It is not a share, and pays no dividend or interest.</p>
@@ -501,7 +502,7 @@ export default function HomePage() {
           </div>
 
           <div id="presale" className="widget">
-            <h3>CLXT presale</h3>
+            <h3><img className="coin" src="/clxt-coin-64.png" srcSet="/clxt-coin-64.png 1x, /clxt-coin-128.png 2x" width="30" height="30" alt="" />CLXT presale</h3>
             <div className="sub">{CHECKOUT_UNAVAILABLE ? "CHECKOUT PAUSED · CONTRACT REPLACEMENT IN PROGRESS" : `CONTRACT ${shortAddr(PRESALE_ADDRESS)} · ETHEREUM`}</div>
             <div className="row"><span className="k">Current price</span><span className="v">{displayPrice}</span></div>
             <div className="row"><span className="k">Minimum purchase</span><span className="v">{MIN_PURCHASE_USD} USDT</span></div>

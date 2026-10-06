@@ -13,20 +13,8 @@ const NAV = [
 ];
 
 export function BrandMark({ className = "brand-mark" }) {
-  // Two ledgers crossing: the CrossLedger mark, drawn so it survives both themes.
-  return (
-    <svg className={className} viewBox="0 0 32 32" aria-hidden="true">
-      <defs>
-        <linearGradient id="clg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#3355ff" />
-          <stop offset="1" stopColor="#7b5cff" />
-        </linearGradient>
-      </defs>
-      <rect x="1" y="1" width="30" height="30" rx="8" fill="url(#clg)" />
-      <path d="M9 10.5h9.5M9 16h14M13.5 21.5H23" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" />
-      <path d="M21.5 8.5 10.5 23.5" stroke="#fff" strokeOpacity=".55" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  );
+  // The CLXT coin: the same mark used on X, CryptoTotem and Etherscan.
+  return <img className={className} src="/clxt-coin-64.png" srcSet="/clxt-coin-64.png 1x, /clxt-coin-128.png 2x" width="30" height="30" alt="" />;
 }
 
 function ThemeToggle() {

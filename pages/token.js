@@ -28,7 +28,8 @@ export default function TokenFacts() {
       <section className="hero" style={{ paddingBottom: 48 }}>
         <div className="container" style={{ maxWidth: 900 }}>
           <nav className="breadcrumb" aria-label="Breadcrumb"><Link href="/">crossledger.trade</Link><span>/</span><span aria-current="page">Token facts</span></nav>
-          <h1 className="display" style={{ marginTop: 22 }}>CLXT token facts.</h1>
+          <img className="coin" src="/clxt-logo-cmc.png" width="88" height="88" alt="CLXT token logo" style={{ marginTop: 24 }} />
+          <h1 className="display" style={{ marginTop: 18 }}>CLXT token facts.</h1>
           <p className="lede" style={{ marginTop: 20 }}>Who holds CLXT, what is locked and until when, and what the contracts allow. Every figure links to the chain so you can check it yourself. Holdings were read from Ethereum mainnet on {HOLDINGS_DATE}.</p>
           <div className="stats" style={{ marginTop: 32 }}>
             <div className="stat"><div className="v">{pct(locked)}</div><div className="l">of supply locked in vesting</div></div>
