@@ -465,3 +465,9 @@ table.data td.num, table.data th.num { text-align: right; font-variant-numeric: 
 @media (max-width: 340px) {
   .brand span { display: none; }
 }
+
+/* ── Simple document pages (privacy) ───────────────────────────────────── */
+.doc-body p { margin-top: 10px; line-height: 1.7; color: var(--text-muted); }
+.doc-body ul { margin-top: 10px; padding-left: 22px; display: grid; gap: 12px; }
+.doc-body li { line-height: 1.65; color: var(--text-muted); }
+.doc-body li strong { color: var(--text); }

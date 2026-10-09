@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useAppKit, useAppKitAccount } from "@reown/appkit/react";
 import { mainnet } from "@reown/appkit/networks";
 import { useChainId, useSwitchChain, useReadContracts, useReadContract, useWriteContract, useWaitForTransactionReceipt, usePublicClient } from "wagmi";
@@ -20,7 +20,6 @@ const IS_V2 = Boolean(CONTRACTS.presaleV2);
 const PRESALE_ADDRESS = CONTRACTS.presale;
 const CHECKOUT_UNAVAILABLE = !IS_V2;
 const FORMSPREE_ENDPOINT = "https://formspree.io/f/mlgpnvbk";
-const MIN_PURCHASE_USD = 200;
 
 // These must go through viem's parseAbi(). Human-readable strings passed straight
 // to wagmi make viem evaluate `'name' in "function ..."`, which throws and
@@ -28,6 +27,8 @@ const MIN_PURCHASE_USD = 200;
 const PRESALE_READ_ABI = parseAbi([
   "function clxtPerUsdt() view returns (uint256)",
   "function presaleActive() view returns (bool)",
+  "function minPurchase() view returns (uint256)",
+  "function clxtAvailable() view returns (uint256)",
 ]);
 const PRESALE_V2_ABI = parseAbi([
   "function buyWithUSDT(uint256 usdtAmount, uint256 minClxtOut)",
@@ -84,15 +85,22 @@ export default function HomePage() {
     contracts: [
       { address: PRESALE_ADDRESS, abi: PRESALE_READ_ABI, functionName: "clxtPerUsdt", chainId: mainnet.id },
       { address: PRESALE_ADDRESS, abi: PRESALE_READ_ABI, functionName: "presaleActive", chainId: mainnet.id },
+      { address: PRESALE_ADDRESS, abi: PRESALE_READ_ABI, functionName: "minPurchase", chainId: mainnet.id },
+      { address: PRESALE_ADDRESS, abi: PRESALE_READ_ABI, functionName: "clxtAvailable", chainId: mainnet.id },
     ],
     query: { refetchInterval: 30_000 },
   });
   const rate = presaleReads?.[0]?.status === "success" && presaleReads[0].result > 0n ? presaleReads[0].result : null;
   const presaleActive = presaleReads?.[1]?.status === "success" && presaleReads[1].result === true;
-  const saleOpen = IS_V2 && presaleActive && rate !== null;
+  // Minimum and remaining inventory come from the contract, not constants, so
+  // the checkout always enforces what the chain enforces.
+  const minPurchaseWei = presaleReads?.[2]?.status === "success" ? presaleReads[2].result : null;
+  const availableClxtWei = presaleReads?.[3]?.status === "success" ? presaleReads[3].result : null;
+  const contractReadsOk = rate !== null && minPurchaseWei !== null && availableClxtWei !== null;
+  const saleOpen = IS_V2 && presaleActive && contractReadsOk;
   const presaleStatusKnown = presaleReads?.[1]?.status === "success";
   const saleStatusText = presaleReadPending ? "Checking presale status…"
-    : !presaleStatusKnown || (presaleActive && rate === null) ? "Presale status unavailable"
+    : !presaleStatusKnown || (presaleActive && !contractReadsOk) ? "Presale status unavailable"
     : "Presale paused";
 
   const { data: usdtBalance, refetch: refetchBalance } = useReadContract({
@@ -113,6 +121,10 @@ export default function HomePage() {
   const { writeContractAsync: writeApprove, data: approveTxHash, isPending: approving } = useWriteContract();
   const { data: approveReceipt, isLoading: approveConfirming, isError: approveWaitFailed } = useWaitForTransactionReceipt({ hash: approveTxHash, chainId: mainnet.id });
   const { writeContractAsync: writeBuy, data: buyTxHash, isPending: buying } = useWriteContract();
+  // The wallet that sent the purchase. The connected account can change while
+  // a transaction confirms, so the receipt is matched against this, not the
+  // wallet connected at confirmation time.
+  const buyerRef = useRef(null);
   const { data: buyReceipt, isLoading: buyConfirming, isError: buyWaitFailed } = useWaitForTransactionReceipt({ hash: buyTxHash, chainId: mainnet.id });
   const [resetting, setResetting] = useState(false);
 
@@ -136,7 +148,8 @@ export default function HomePage() {
     const m = document.cookie.match(/(?:^|;\s*)clxt_geo=([A-Za-z]{2})/);
     setGeoCountry(m ? m[1].toUpperCase() : "UNKNOWN");
   }, []);
-  const geoUnknown = geoCountry === null || geoCountry === "UNKNOWN";
+  // "XX" is what the middleware writes when the host supplies no country: unknown, so blocked.
+  const geoUnknown = geoCountry === null || geoCountry === "UNKNOWN" || geoCountry === "XX";
   const geoBlocked = geoUnknown || RESTRICTED_JURISDICTIONS.includes(geoCountry);
 
   /* ====== RECEIPT HANDLING ====== */
@@ -159,21 +172,33 @@ export default function HomePage() {
     // Report only what the chain says: the TokensPurchased event emitted by
     // the presale contract for this buyer. A cancelled or replaced transaction
     // has no such event and is not reported as a purchase.
-    let bought = null;
+    let purchase = null;
+    let unmatched = false;
     if (buyReceipt.status === "success") {
       try {
+        // The wallet captured when Buy was clicked; tx.from only if that is missing.
+        const sender = [buyerRef.current || buyReceipt.from].filter(Boolean).map((a) => a.toLowerCase());
         const events = parseEventLogs({ abi: PRESALE_EVENTS_ABI, logs: buyReceipt.logs, eventName: "TokensPurchased" })
-          .filter((ev) => ev.address.toLowerCase() === PRESALE_ADDRESS.toLowerCase() && ev.args.buyer.toLowerCase() === (address || "").toLowerCase());
-        if (events.length) bought = events[0].args.clxtReceived;
+          .filter((ev) => ev.address.toLowerCase() === PRESALE_ADDRESS.toLowerCase());
+        // Only a purchase credited to the wallet that sent it counts. A bundled
+        // smart-wallet transaction can carry other people's purchases too.
+        purchase = events.find((ev) => sender.includes(ev.args.buyer.toLowerCase())) || null;
+        if (!purchase && events.length) unmatched = true;
       } catch { /* no matching event */ }
     }
-    if (bought !== null) {
-      const n = Number(formatUnits(bought, 18)).toLocaleString("en-US", { maximumFractionDigits: 2 });
-      setMsg("info", `Purchase confirmed: ${n} CLXT sent to your wallet.`, buyReceipt.transactionHash);
+    if (purchase) {
+      const n = Number(formatUnits(purchase.args.clxtReceived, 18)).toLocaleString("en-US", { maximumFractionDigits: 2 });
+      const to = purchase.args.buyer.toLowerCase() === (address || "").toLowerCase() ? "your wallet" : shortAddr(purchase.args.buyer);
+      setMsg("info", `Purchase confirmed: ${n} CLXT sent to ${to}.`, buyReceipt.transactionHash);
       setUsdtAmount("");
+    } else if (unmatched) {
+      setMsg("error", "The transaction confirmed, but the purchase it records is not credited to the wallet that sent it. Check the transaction before trying again.", buyReceipt.transactionHash);
+    } else if (buyReceipt.status === "reverted") {
+      setMsg("error", "The purchase failed on-chain, so no CLXT was delivered and no USDT was taken. Only the network fee was spent.", buyReceipt.transactionHash);
     } else {
-      setMsg("error", "The transaction did not complete a purchase. No CLXT was delivered and your USDT was not taken.", buyReceipt.transactionHash);
+      setMsg("error", "The transaction confirmed, but the presale contract did not record a purchase in it. Check the transaction before trying again.", buyReceipt.transactionHash);
     }
+    buyerRef.current = null;
     refetchBalance(); refetchAllowance();
   }, [buyReceipt]); // eslint-disable-line
 
@@ -190,7 +215,7 @@ export default function HomePage() {
     if (!/^\d{1,12}(\.\d{1,6})?$/.test(t)) return 0n;
     try { return parseUnits(t, 6); } catch { return 0n; }
   }, [usdtAmount]);
-  const amountValid = amountWei >= BigInt(MIN_PURCHASE_USD) * 10n ** 6n;
+  const amountValid = minPurchaseWei !== null && amountWei > 0n && amountWei >= minPurchaseWei;
   // Exact CLXT the buyer expects at the rate shown, passed as the V2 slippage
   // guard: a rate change before mining makes the purchase revert instead of
   // filling at a worse rate.
@@ -198,10 +223,16 @@ export default function HomePage() {
   const estimatedClxt = rate && amountWei > 0n
     ? Number(formatUnits(amountWei * rate * 10n ** 12n, 18)).toLocaleString("en-US", { maximumFractionDigits: 0 }) + " CLXT"
     : "—";
+  const hasInventory = availableClxtWei !== null && expectedClxtWei > 0n && expectedClxtWei <= availableClxtWei;
+  // True when not even a minimum-sized purchase can be filled.
+  const soldOut = rate !== null && minPurchaseWei !== null && availableClxtWei !== null && minPurchaseWei * rate * 10n ** 12n > availableClxtWei;
   const hasBalance = amountValid && usdtBalance !== undefined && usdtBalance >= amountWei;
   const hasAllowance = amountValid && usdtAllowance !== undefined && usdtAllowance >= amountWei;
   const pending = approving || approveConfirming || buying || buyConfirming || resetting;
 
+  // Minimums are shown to full USDT precision so a buyer never sees a rounded-down figure.
+  const fmtUsdtExact = (n) => (n === undefined || n === null ? "—" :
+    Number(formatUnits(n, 6)).toLocaleString("en-US", { maximumFractionDigits: 6 }) + " USDT");
   const fmtUsdt = (n) => (n === undefined || n === null ? "—" :
     Number(formatUnits(n, 6)).toLocaleString("en-US", { maximumFractionDigits: 2 }) + " USDT");
 
@@ -217,7 +248,7 @@ export default function HomePage() {
   };
 
   async function handleApproveUSDT() {
-    if (!saleOpen || geoBlocked || !chainOk || !amountValid || !hasBalance || pending) return;
+    if (!saleOpen || geoBlocked || !chainOk || !amountValid || !hasInventory || !hasBalance || pending) return;
     const amount = amountWei;
     try {
       // USDT rejects approve() from one non-zero allowance to another. Reset to
@@ -241,8 +272,9 @@ export default function HomePage() {
   }
 
   async function handleBuy() {
-    if (!saleOpen || geoBlocked || !chainOk || !amountValid || !hasBalance || !hasAllowance || pending || expectedClxtWei === 0n) return;
+    if (!saleOpen || geoBlocked || !chainOk || !amountValid || !hasInventory || !hasBalance || !hasAllowance || pending || expectedClxtWei === 0n) return;
     setMsg("info", "Confirm the purchase in your wallet.");
+    buyerRef.current = address;
     try {
       const hash = await writeBuy({ chainId: mainnet.id, address: PRESALE_ADDRESS, abi: PRESALE_V2_ABI, functionName: "buyWithUSDT", args: [amountWei, expectedClxtWei] });
       setMsg("info", "Purchase submitted. Waiting for confirmation.", hash);
@@ -252,9 +284,10 @@ export default function HomePage() {
       else if (m.includes("Presale not active")) m = "The presale is paused.";
       else if (m.includes("Insufficient CLXT")) m = "The presale contract does not hold enough CLXT for this purchase.";
       else if (m.includes("Rate changed")) m = "The sale rate changed before your transaction. Refresh and try again.";
-      else if (m.includes("Below minimum")) m = `The minimum purchase is ${MIN_PURCHASE_USD} USDT.`;
+      else if (m.includes("Below minimum")) m = `The minimum purchase is ${fmtUsdtExact(minPurchaseWei)}.`;
       else if (m.includes("USDT transfer failed")) m = "USDT transfer failed. Check your USDT balance and approval.";
       else m = `Purchase failed: ${m}`;
+      buyerRef.current = null;
       setMsg("error", m);
     }
   }
@@ -288,7 +321,7 @@ export default function HomePage() {
   else if (!isConnected) btn = { left: "Connect wallet", leftAction: () => open(), right: "Buy CLXT", rightDisabled: true };
   else if (!chainOk) btn = { left: "Switch to Ethereum", leftAction: switchToMainnet, right: "Buy CLXT", rightDisabled: true };
   else if (!saleOpen) btn = { left: saleStatusText, leftDisabled: true, right: "Buy CLXT", rightDisabled: true };
-  else if (!tosChecked || !amountValid || !hasBalance) btn = { left: "Approve USDT", leftDisabled: true, right: "Buy CLXT", rightDisabled: true };
+  else if (!tosChecked || !amountValid || !hasInventory || !hasBalance) btn = { left: "Approve USDT", leftDisabled: true, right: "Buy CLXT", rightDisabled: true };
   else if (!hasAllowance) btn = {
     left: resetting ? "Resetting allowance…" : approving ? "Awaiting wallet…" : approveConfirming ? "Approving…" : "Approve USDT",
     leftAction: handleApproveUSDT, leftDisabled: pending, right: "Buy CLXT", rightDisabled: true,
@@ -509,18 +542,23 @@ export default function HomePage() {
             <h3><img className="coin" src="/clxt-coin-64.png" srcSet="/clxt-coin-64.png 1x, /clxt-coin-128.png 2x" width="30" height="30" alt="" />CLXT presale</h3>
             <div className="sub">{CHECKOUT_UNAVAILABLE ? "CHECKOUT PAUSED · CONTRACT REPLACEMENT IN PROGRESS" : `CONTRACT ${shortAddr(PRESALE_ADDRESS)} · ETHEREUM`}</div>
             <div className="row"><span className="k">Current price</span><span className="v">{displayPrice}</span></div>
-            <div className="row"><span className="k">Minimum purchase</span><span className="v">{MIN_PURCHASE_USD} USDT</span></div>
+            <div className="row"><span className="k">Minimum purchase</span><span className="v">{fmtUsdtExact(minPurchaseWei)}</span></div>
+            <div className="row"><span className="k">CLXT available</span><span className="v">{availableClxtWei === null ? "—" : Number(formatUnits(availableClxtWei, 18)).toLocaleString("en-US", { maximumFractionDigits: 0 })}</span></div>
             <div className="row"><span className="k">Wallet</span><span className={`v ${walletStatus[1]}`}>{walletStatus[0]}</span></div>
             <div className="row"><span className="k">USDT balance</span><span className="v">{isConnected && chainOk ? fmtUsdt(usdtBalance) : "—"}</span></div>
             <div className="row"><span className="k">Approved allowance</span><span className="v">{isConnected && chainOk ? fmtUsdt(usdtAllowance) : "—"}</span></div>
             <div className="pills">
-              {[200, 500, 1000, 2500].map((amt) => (
+              {[200, 500, 1000, 2500].filter((amt) => minPurchaseWei === null || BigInt(amt) * 10n ** 6n >= minPurchaseWei).map((amt) => (
                 <button key={amt} type="button" disabled={CHECKOUT_UNAVAILABLE} onClick={() => setUsdtAmount(String(amt))}>{amt}</button>
               ))}
             </div>
             <label className="visually-hidden" htmlFor="usdt-amount">Amount in USDT</label>
             <input id="usdt-amount" type="text" inputMode="decimal" autoComplete="off" placeholder="Amount in USDT" value={usdtAmount} disabled={CHECKOUT_UNAVAILABLE} onChange={(e) => setUsdtAmount(e.target.value.replace(/[^0-9.]/g, ""))} />
             <div className="row"><span className="k">You receive</span><span className="v">{estimatedClxt}</span></div>
+            {amountWei > 0n && minPurchaseWei !== null && amountWei < minPurchaseWei && <div className="widget-msg error" role="status">The minimum purchase is {fmtUsdtExact(minPurchaseWei)}.</div>}
+            {soldOut
+              ? <div className="widget-msg error" role="status">The presale has fewer CLXT left than a minimum purchase, so no purchase can be filled right now.</div>
+              : amountValid && expectedClxtWei > 0n && availableClxtWei !== null && !hasInventory && <div className="widget-msg error" role="status">Only {Number(formatUnits(availableClxtWei, 18)).toLocaleString("en-US", { maximumFractionDigits: 0 })} CLXT remain in the presale. Enter a smaller amount.</div>}
             <div className="tos">
               <label>
                 <input type="checkbox" checked={tosChecked} disabled={CHECKOUT_UNAVAILABLE} onChange={(e) => setTosChecked(e.target.checked)} />
@@ -540,7 +578,7 @@ export default function HomePage() {
             <div className="widget-note">
               {CHECKOUT_UNAVAILABLE
                 ? <>Purchases are paused. Questions: <a href={`mailto:${SITE.email}?subject=CLXT%20presale`}>{SITE.email}</a>.</>
-                : <>The minimum is enforced by the contract. Your purchase reverts, rather than filling at a different price, if the rate changes before it confirms.</>}
+                : <>The minimum is enforced by the contract. If the rate changes before your purchase confirms so that you would receive fewer CLXT than quoted, the purchase reverts instead.</>}
             </div>
           </div>
         </div>
@@ -615,7 +653,7 @@ export default function HomePage() {
           <details className="faq"><summary>Can I buy CLXT right now?</summary><div className="answer"><p>{CHECKOUT_UNAVAILABLE ? "Not yet. The first presale contract cannot complete purchases, so the checkout is paused. A corrected contract has been tested and will go live after deployment and a live test purchase. Do not send funds directly to any contract." : "Yes, from the presale widget on this page, unless you are in a restricted jurisdiction."}</p></div></details>
           <details className="faq"><summary>Did anyone lose money in the V1 presale?</summary><div className="answer"><p>No buyer funds can be taken by the defect. Purchase transactions revert, so the USDT never leaves the buyer&apos;s wallet; only the network fee for the failed transaction is spent.</p></div></details>
           <details className="faq"><summary>What are the presale prices?</summary><div className="answer"><p>The published plan is US$0.10, US$0.20, US$0.25 and US$0.50 across four stages. The contract sells at a single owner-set rate and does not enforce stages; the plan is a commitment by GDN. These are sale prices, not valuations, and CrossLedger publishes no listing or target price.</p></div></details>
-          <details className="faq"><summary>What is the minimum purchase?</summary><div className="answer"><p>200 USDT, which buys 2,000 CLXT at Stage 1. The corrected contract enforces the minimum on-chain.</p></div></details>
+          <details className="faq"><summary>What is the minimum purchase?</summary><div className="answer"><p>Currently 200 USDT, which buys 2,000 CLXT at Stage 1. The contract enforces the minimum on-chain, and the presale box above always shows the live figure.</p></div></details>
           <details className="faq"><summary>Is the code audited?</summary><div className="answer"><p>No independent professional audit has been completed. Internal and AI-assisted reviews found the presale purchase defect and the staking supply-accounting issue, both disclosed on this page and in the whitepaper. An independent audit is required before the escrow handles third-party funds.</p></div></details>
           <details className="faq"><summary>What wallets work?</summary><div className="answer"><p>Any Ethereum wallet supporting WalletConnect, including MetaMask, Coinbase Wallet, Trust Wallet, Rainbow and Ledger. On mobile, open this site in your wallet&apos;s browser or scan the WalletConnect QR code.</p></div></details>
           <details className="faq"><summary>How is GDN regulated in Australia?</summary><div className="answer"><p>GDN Enterprise Pty Ltd is an Australian proprietary company registered with ASIC. It does not hold an Australian Financial Services Licence. GDN has received Australian legal advice and, on that advice, Australian residents may take part in the presale. Digital asset regulation in Australia is being reformed and the position may change.</p></div></details>
@@ -658,6 +696,7 @@ export default function HomePage() {
               </select>
             </label>
             <label>Message<textarea name="message" rows={5} required /></label>
+            <p className="small muted">We use your details only to reply to your enquiry. The form is delivered by our form provider, Formspree. See our <Link href="/privacy">privacy notice</Link>.</p>
             <button type="submit" className="btn btn-primary btn-lg" disabled={contactSending}>{contactSending ? "Sending…" : "Send enquiry"}</button>
             {contactStatus && <div className={`form-status ${contactStatus.kind === "error" ? "error" : ""}`} role="status">{contactStatus.text}</div>}
           </form>

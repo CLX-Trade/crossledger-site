@@ -139,6 +139,7 @@ export function SiteFooter() {
             <ul>
               <li><a href="https://gdngroup.com.au" target="_blank" rel="noopener">GDN Group ↗</a></li>
               <li><Link href="/contact">Contact</Link></li>
+              <li><Link href="/privacy">Privacy</Link></li>
               <li><a href={`mailto:${SITE.email}`}>{SITE.email}</a></li>
               <li><a href="https://x.com/CrossLedgerCLX" target="_blank" rel="noopener">X / @CrossLedgerCLX ↗</a></li>
             </ul>

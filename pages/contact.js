@@ -22,7 +22,7 @@ export default function Contact() {
           <div>
             <nav className="breadcrumb" aria-label="Breadcrumb"><Link href="/">crossledger.trade</Link><span>/</span><span aria-current="page">Contact</span></nav>
             <h1 className="display" style={{ marginTop: 22, fontSize: "clamp(38px,5vw,60px)" }}>Talk to the team.</h1>
-            <p className="lede" style={{ marginTop: 20 }}>A person reads every message, usually with a reply within one business day. It helps to include the commodity, a typical parcel size, the corridor, and where your deals currently stall.</p>
+            <p className="lede" style={{ marginTop: 20 }}>A person reads every message, and we aim to reply within two business days. It helps to include the commodity, a typical parcel size, the corridor, and where your deals currently stall.</p>
             <dl className="dl">
               <dt>Email</dt><dd><a href={`mailto:${SITE.email}?subject=CrossLedger%20enquiry`}>{SITE.email}</a></dd>
               <dt>Office</dt><dd>{SITE.address}</dd>
