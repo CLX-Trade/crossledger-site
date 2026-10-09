@@ -45,7 +45,7 @@ export default function HowItWorks() {
         <div className="container">
           <div className="section-head">
             <span className="eyebrow">Compared with a letter of credit</span>
-            <h2 className="h-section">Designed for the same protection, with fewer hands.</h2>
+            <h2 className="h-section">Payment committed up front, released on agreed proof.</h2>
             <p className="lede">CrossLedger figures below are design targets for a platform still in development, not measured results.</p>
           </div>
           <div className="table-wrap">
