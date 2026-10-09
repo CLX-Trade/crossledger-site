@@ -40,6 +40,22 @@ export default function TokenFacts() {
         </div>
       </section>
 
+      <section id="wallet-warning" className="section" style={{ paddingTop: 24, paddingBottom: 24 }}>
+        <div className="container" style={{ maxWidth: 900 }}>
+          <div className="callout">
+            <span className="badge-outline">Wallet warnings</span>
+            <h2>Why some wallets show a warning on CLXT</h2>
+            <p>MetaMask and some other wallets use an automated security service that labels CLXT &quot;malicious&quot;, citing a &quot;token backdoor&quot; and &quot;suspicious code&quot;. Here is what in the code triggers it, and what it does and does not mean.</p>
+            <ul>
+              <li><strong>The staking function.</strong> The token contract has a staking feature that credits rewards as new tokens without a transfer record and without updating the reported supply of 1,000,000,000. Automated scanners treat any balance change without a transfer as a possible backdoor. This is a real, publicly disclosed defect: if anyone stakes, the actual number of tokens can rise above the reported supply. It is open to every holder on the same terms; no account has special rights over it. GDN does not use or promote staking. <Link href="/whitepaper#supply">Details in the whitepaper</Link>.</li>
+              <li><strong>The original trading switch.</strong> The contract had a switch to turn trading on. It was turned on at launch, and the contract has no function to turn it off.</li>
+            </ul>
+            <p><strong>What it does not mean.</strong> No one, including GDN, can take, freeze or block your tokens. Token ownership was renounced to an address nobody controls, so the contract&apos;s owner functions can never be used again, and the code cannot be changed. 60% of supply is locked in vesting that cannot be cancelled.</p>
+            <p><strong>What we are doing.</strong> We have asked the security provider to review the label. Because the contract cannot be changed, the permanent fix for the staking defect is a migration to a corrected token, which GDN will publish before any exchange listing. Check every point yourself: <a href={`https://etherscan.io/address/${CONTRACTS.clxt}#code`} target="_blank" rel="noopener">token source code</a> and <a href={`https://etherscan.io/address/${CONTRACTS.clxt}#readContract`} target="_blank" rel="noopener">owner()</a> on Etherscan.</p>
+          </div>
+        </div>
+      </section>
+
       <section className="section" style={{ paddingTop: 24 }}>
         <div className="container" style={{ maxWidth: 900 }}>
           <h2 className="h-section">Who holds CLXT</h2>

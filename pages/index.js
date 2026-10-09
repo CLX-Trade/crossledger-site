@@ -578,7 +578,7 @@ export default function HomePage() {
             <div className="widget-note">
               {CHECKOUT_UNAVAILABLE
                 ? <>Purchases are paused. Questions: <a href={`mailto:${SITE.email}?subject=CLXT%20presale`}>{SITE.email}</a>.</>
-                : <>The minimum is enforced by the contract. If the rate changes before your purchase confirms so that you would receive fewer CLXT than quoted, the purchase reverts instead.</>}
+                : <>Some wallets show a warning on CLXT; <Link href="/token#wallet-warning">here is why</Link>. The minimum is enforced by the contract. If the rate changes before your purchase confirms so that you would receive fewer CLXT than quoted, the purchase reverts instead.</>}
             </div>
           </div>
         </div>
@@ -652,6 +652,7 @@ export default function HomePage() {
           </div>
           <details className="faq" open><summary>What is CrossLedger?</summary><div className="answer"><p>Settlement infrastructure for cross-border commodity trade: a public registry of trade document fingerprints, a per-trade escrow that releases on verified documents and a signed inspection, and a dispute path. It is built by GDN Group, an Australian trade and advisory group, and is in development.</p></div></details>
           <details className="faq"><summary>Can I buy CLXT right now?</summary><div className="answer"><p>{CHECKOUT_UNAVAILABLE ? "Not yet. The first presale contract cannot complete purchases, so the checkout is paused. A corrected contract has been tested and will go live after deployment and a live test purchase. Do not send funds directly to any contract." : "Yes, from the presale widget on this page, unless you are in a restricted jurisdiction."}</p></div></details>
+          <details className="faq"><summary>Why does my wallet show a warning on CLXT?</summary><div className="answer"><p>Some wallets, including MetaMask, use an automated scanner that flags CLXT because of its staking function, which credits rewards as new tokens without a transfer record. That is a real, disclosed defect, but it gives no one special power: ownership is renounced, so no one can take, freeze or block your tokens, and 60% of supply is locked. We have asked for a review. <Link href="/token#wallet-warning">Full explanation →</Link></p></div></details>
           <details className="faq"><summary>Did anyone lose money in the V1 presale?</summary><div className="answer"><p>No buyer funds can be taken by the defect. Purchase transactions revert, so the USDT never leaves the buyer&apos;s wallet; only the network fee for the failed transaction is spent.</p></div></details>
           <details className="faq"><summary>What are the presale prices?</summary><div className="answer"><p>The published plan is US$0.10, US$0.20, US$0.25 and US$0.50 across four stages. The contract sells at a single owner-set rate and does not enforce stages; the plan is a commitment by GDN. These are sale prices, not valuations, and CrossLedger publishes no listing or target price.</p></div></details>
           <details className="faq"><summary>What is the minimum purchase?</summary><div className="answer"><p>Currently 200 USDT, which buys 2,000 CLXT at Stage 1. The contract enforces the minimum on-chain, and the presale box above always shows the live figure.</p></div></details>
