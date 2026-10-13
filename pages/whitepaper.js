@@ -6,8 +6,8 @@ import { CONTRACTS, SITE, lockUrl, shortAddr } from "../lib/site";
 
 // Version and status. Update the date and the "Before you read" box whenever a
 // fact below changes on-chain.
-const VERSION = "2.1";
-const UPDATED = "6 October 2026";
+const VERSION = "2.2";
+const UPDATED = "13 October 2026";
 
 const TOC = [
   { id: "abstract", title: "A settlement layer for physical commodity trade" },
@@ -32,7 +32,7 @@ const TOC = [
     { id: "token-facts", title: "On-chain facts" },
     { id: "utility", title: "Intended utility" },
     { id: "allocation", title: "Allocation" },
-    { id: "supply", title: "Supply accounting and staking" },
+    { id: "supply", title: "Token migration and supply" },
     { id: "presale", title: "Presale" },
     { id: "presale-defect", title: "The V1 presale defect" },
   ]},
@@ -230,7 +230,7 @@ export default function Whitepaper() {
                 <span className="badge-outline">Before you read</span>
                 <h2 style={{ marginTop: 14 }}>What is true today</h2>
                 <p>CrossLedger is in development. The token and a first presale contract are live on Ethereum; the trade platform described in <a href="#design">Section 3</a> is not yet processing commercial trades. This paper separates what exists from what is planned, and says which is which.</p>
-                <p><strong>CLXT purchases reopened on 5 October 2026</strong> through a corrected presale contract, <Addr a={CONTRACTS.presaleV2 || "0x8F190E1764bfE57ddd2Daff5F55a79C64760c14F"} />, whose source code is verified on Etherscan. The first presale contract could not complete a purchase (see <a href="#presale-defect">The V1 presale defect</a>). Buy only through crossledger.trade or the verified V2 contract, and never send funds to any address directly.</p>
+                <p><strong>CLXT moved to a new token contract on 13 October 2026</strong> (see <a href="#supply">Token migration and supply</a>). Purchases run through the presale contract <Addr a={CONTRACTS.presaleV2 || CONTRACTS.presaleCurrent} />, whose source code is verified on Etherscan. The first presale contract could not complete a purchase (see <a href="#presale-defect">The V1 presale defect</a>). Buy only through crossledger.trade or the verified V2 contract, and never send funds to any address directly.</p>
                 <div className="actions">
                   <Link href="/#presale" className="btn btn-primary">Check presale status →</Link>
                   <Link href="/how-it-works" className="btn btn-outline">How CrossLedger works</Link>
@@ -246,6 +246,7 @@ export default function Whitepaper() {
                     <li>Regulatory section rewritten.</li>
                     <li>6 October 2026: GDN received Australian legal advice and Australian residents may now take part in the presale.</li>
                     <li>6 October 2026: 600,000,000 CLXT (60% of supply) locked in public, non-cancelable vesting; token contract ownership renounced; two retired presale contracts switched off and emptied.</li>
+                    <li>Version 2.2 (13 October 2026): CLXT moved to a new, standard token contract with a fixed supply and no owner, which removes the staking defect. The vesting locks were re-created with the same amounts and dates, and the presale moved to the new token.</li>
                   </ul>
                 </div>
               </div>
@@ -342,18 +343,17 @@ export default function Whitepaper() {
                   <tbody>
                     <tr><td>Name / symbol</td><td>CrossLedger Token (CLXT)</td></tr>
                     <tr><td>Standard</td><td>ERC-20, 18 decimals</td></tr>
-                    <tr><td>Token contract</td><td><Addr a={CONTRACTS.clxt} kind="token" /> (source verified on Etherscan)</td></tr>
-                    <tr><td>Initial supply</td><td>1,000,000,000 CLXT, minted once to the treasury at creation</td></tr>
-                    <tr><td>Reported total supply</td><td>1,000,000,000 CLXT (a fixed constant; see <a href="#supply">Supply accounting</a>)</td></tr>
-                    <tr><td>Transfers</td><td>Enabled</td></tr>
-                    <tr><td>Token contract owner</td><td>Renounced on 6 October 2026 (transferred to <Addr a={CONTRACTS.dead} />)</td></tr>
+                    <tr><td>Token contract</td><td><Addr a={CONTRACTS.clxt} kind="token" /> (source verified on Etherscan; unmodified OpenZeppelin ERC-20)</td></tr>
+                    <tr><td>Retired original contract</td><td><Addr a={CONTRACTS.clxtRetired} kind="token" />, replaced on 13 October 2026 (see <a href="#supply">Token migration</a>)</td></tr>
+                    <tr><td>Supply</td><td>1,000,000,000 CLXT, created once at deployment and sent to the owner address. Fixed: the contract has no mint function</td></tr>
+                    <tr><td>Transfers</td><td>Always enabled; no pause, blocklist or transfer fee</td></tr>
+                    <tr><td>Token contract owner</td><td>None. The contract has no owner and no admin functions</td></tr>
                     <tr><td>Owner and treasury address</td><td><Addr a={CONTRACTS.owner} /></td></tr>
                     <tr><td>Locked in vesting</td><td>600,000,000 CLXT (60%) in three non-cancelable Sablier streams; see <a href="#allocation">Allocation</a></td></tr>
-                    <tr><td>Held by owner address, unlocked</td><td>About 243.9 million CLXT (24.4%)</td></tr>
-                    <tr><td>Strategic allocation wallet, unlocked</td><td>125,001,000 CLXT (12.5%), <Addr a={CONTRACTS.strategic} /></td></tr>
+                    <tr><td>Held by owner address, unlocked</td><td>380,000,000 CLXT (38%)</td></tr>
                     <tr><td>Held by V2 presale contract (for sale)</td><td>20,000,000 CLXT</td></tr>
-                    <tr><td>Retired presale contracts</td><td>V1 and an earlier unused presale, both switched off and emptied</td></tr>
-                    <tr><td>Registered escrow contract</td><td><Addr a={CONTRACTS.escrow} /> (not independently audited)</td></tr>
+                    <tr><td>Retired presale contracts</td><td>V1, an earlier unused presale and the V2 contract on the original token, all switched off and emptied</td></tr>
+                    <tr><td>Escrow contract</td><td><Addr a={CONTRACTS.escrow} /> (first version; not independently audited, not in commercial use)</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -372,20 +372,22 @@ export default function Whitepaper() {
                 <table className="data">
                   <thead><tr><th>Category</th><th className="num">Share</th><th className="num">CLXT</th><th>Purpose</th></tr></thead>
                   <tbody>
-                    <tr><td>Ecosystem and trade incentives</td><td className="num">35%</td><td className="num">350,000,000</td><td>Rebates for early trades, corridor onboarding, verifier incentives. Locked: nothing released until 6 April 2027, then linear to 6 October 2029 (<a href={lockUrl(1783)} target="_blank" rel="noopener">Sablier #1783</a>)</td></tr>
+                    <tr><td>Ecosystem and trade incentives</td><td className="num">35%</td><td className="num">350,000,000</td><td>Rebates for early trades, corridor onboarding, verifier incentives. Locked: nothing released until 6 April 2027, then linear to 6 October 2029 (<a href={lockUrl(1797)} target="_blank" rel="noopener">Sablier #1797</a>)</td></tr>
                     <tr><td>Treasury and compliance</td><td className="num">20%</td><td className="num">200,000,000</td><td>Licensing, audits, legal, operating reserve</td></tr>
-                    <tr><td>Founders and team</td><td className="num">15%</td><td className="num">150,000,000</td><td>Locked: nothing released until 6 October 2027, then linear to 6 October 2029 (<a href={lockUrl(1784)} target="_blank" rel="noopener">Sablier #1784</a>)</td></tr>
-                    <tr><td>Strategic investors (includes public presale)</td><td className="num">15%</td><td className="num">150,000,000</td><td>A 125,001,000 CLXT strategic allocation (unlocked) and the staged public presale</td></tr>
-                    <tr><td>Exchange and liquidity</td><td className="num">10%</td><td className="num">100,000,000</td><td>Liquidity pools and market-making at listing. Timelocked until 6 October 2027 (<a href={lockUrl(1785)} target="_blank" rel="noopener">Sablier #1785</a>)</td></tr>
+                    <tr><td>Founders and team</td><td className="num">15%</td><td className="num">150,000,000</td><td>Locked: nothing released until 6 October 2027, then linear to 6 October 2029 (<a href={lockUrl(1798)} target="_blank" rel="noopener">Sablier #1798</a>)</td></tr>
+                    <tr><td>Strategic investors (includes public presale)</td><td className="num">15%</td><td className="num">150,000,000</td><td>A 125,001,000 CLXT strategic allocation, held unlocked in the owner address since the 13 October 2026 migration, and the staged public presale</td></tr>
+                    <tr><td>Exchange and liquidity</td><td className="num">10%</td><td className="num">100,000,000</td><td>Liquidity pools and market-making at listing. Timelocked until 6 October 2027 (<a href={lockUrl(1799)} target="_blank" rel="noopener">Sablier #1799</a>)</td></tr>
                     <tr><td>Operations and partnerships</td><td className="num">5%</td><td className="num">50,000,000</td><td>Integrations and commercial partnerships</td></tr>
                   </tbody>
                 </table>
               </div>
-              <p><strong>60% of supply is locked on-chain.</strong> Since 6 October 2026 the ecosystem, team and liquidity allocations, 600,000,000 CLXT in total, sit in three Sablier vesting streams that cannot be cancelled by GDN or anyone else. They pay back to the owner address only on the schedules above. The treasury, compliance and operations allocations are drawn from the owner address&apos;s unlocked balance, and the strategic allocation wallet is not locked. Holdings and locks are summarised on the <Link href="/token">Token facts</Link> page.</p>
+              <p><strong>60% of supply is locked on-chain.</strong> The ecosystem, team and liquidity allocations, 600,000,000 CLXT in total, sit in three Sablier vesting streams that cannot be cancelled by GDN or anyone else. The schedules were set on 6 October 2026, and the streams were re-created on the new token on 13 October 2026 with the same amounts and dates. They pay back to the owner address only on the schedules above. The treasury, compliance, operations and strategic allocations are held, unlocked, in the owner address. Holdings and locks are summarised on the <Link href="/token">Token facts</Link> page.</p>
 
-              <h3 id="supply">Supply accounting and staking</h3>
-              <p>The token contract includes a staking function that pays a 10 percent annual reward. When a holder unstakes, the reward is added to their balance as newly created tokens, but the contract&apos;s <code>totalSupply()</code> returns a hard-coded 1,000,000,000 and no transfer event is emitted for the new tokens. If staking is used, the real number of tokens in existence can rise above one billion while every explorer and exchange still reports one billion.</p>
-              <p>CrossLedger treats this as a defect, not a feature. GDN does not promote staking and will not use it. The token contract cannot be upgraded, so the only technical fix is migrating to a corrected token contract, with balances carried across one for one. Tokens held in the vesting streams would need a migration path that preserves their schedules; GDN will publish that mechanism with the remedy. The migration mechanism is not yet published. It must explain how circulating balances, staked balances, presale inventory and tokens held in vesting streams will be handled, including how vesting schedules will be preserved. Ownership renunciation does not repair the staking supply-accounting defect. An independent audit can measure the exposure but cannot remove it. GDN will publish its remedy before any listing. Until then, the fixed one-billion figure should be read as the initial supply, not a guaranteed cap.</p>
+              <h3 id="supply">Token migration and supply</h3>
+              <p>The original CLXT contract, <Addr a={CONTRACTS.clxtRetired} kind="token" />, included a staking function that paid a 10 percent annual reward by adding newly created tokens to a holder&apos;s balance, while its <code>totalSupply()</code> returned a hard-coded 1,000,000,000 and no transfer event was emitted. Had staking been used, the real number of tokens could have risen above the reported supply. The contract also carried a trading switch controlled by its owner. Wallet security scanners flagged both. Staking was never used: the contract emitted no staking event in its lifetime.</p>
+              <p>That contract could not be upgraded, so on 13 October 2026 CLXT was reissued as a new contract, <Addr a={CONTRACTS.clxt} kind="token" />: the unmodified OpenZeppelin ERC-20, with all 1,000,000,000 tokens created once at deployment, no owner, no mint function, no staking, no pause and no fees. Its total supply is the actual supply.</p>
+              <p>How balances were handled. The three vesting locks were re-created on the new token with the same amounts and release dates (Sablier #1797, #1798 and #1799, replacing #1783, #1784 and #1785, which remain locked on the retired token). The presale moved to the same verified contract code on the new token and was funded with the same 20,000,000 CLXT. No other balances were carried over: wallets outside the owner address that held the original token, including the strategic allocation wallet, received no new CLXT, and the equivalent amount is part of the owner address&apos;s unlocked balance. No purchase was ever completed through a presale contract for the original token.</p>
+              <p>Every step was rehearsed on a copy of Ethereum mainnet before it was signed, and the resulting state was checked on-chain afterwards. That was an internal review, not an independent audit.</p>
 
               <h3 id="presale">Presale</h3>
               <p>The public presale sells CLXT for USDT on Ethereum through a contract that delivers tokens to the buyer in the same transaction. The published plan has four stages:</p>
@@ -400,7 +402,7 @@ export default function Whitepaper() {
                   </tbody>
                 </table>
               </div>
-              <p>Be clear about what the contract enforces. It sells at a single rate set by the owner; it does not enforce stage allocations or move between stages automatically. The owner can change the rate, minimum purchase and treasury, pause the sale and withdraw unsold tokens. The website applies a 200 USDT minimum, and the V2 contract also enforces a minimum on-chain. Stage pricing is a commitment by GDN, not a property of the code. The four stages total 17,000,000 CLXT, while V2 was funded with 20,000,000 CLXT. The additional 3,000,000 CLXT has no allocation in the published stage plan. The strategic wallet and V2 funding total 145,001,000 CLXT, compared with the planned 150,000,000 CLXT strategic allocation; the allocation of the remaining 4,999,000 CLXT is not specified here.</p>
+              <p>Be clear about what the contract enforces. It sells at a single rate set by the owner; it does not enforce stage allocations or move between stages automatically. The owner can change the rate, minimum purchase and treasury, pause the sale and withdraw unsold tokens. The website applies a 200 USDT minimum, and the V2 contract also enforces a minimum on-chain. Stage pricing is a commitment by GDN, not a property of the code. The four stages total 17,000,000 CLXT, while V2 was funded with 20,000,000 CLXT. The additional 3,000,000 CLXT has no allocation in the published stage plan. The strategic allocation (125,001,000 CLXT, now in the owner address) and the V2 funding total 145,001,000 CLXT, compared with the planned 150,000,000 CLXT strategic allocation; the allocation of the remaining 4,999,000 CLXT is not specified here.</p>
               <p>Each stage price is a sale price, not a valuation. CrossLedger publishes no listing price, target price or expected return, and nothing guarantees that CLXT will be listed on any exchange or trade at or above the price paid.</p>
 
               <h3 id="presale-defect">The V1 presale defect</h3>
@@ -427,11 +429,11 @@ export default function Whitepaper() {
                 <table className="data">
                   <thead><tr><th>Component</th><th>Status at {UPDATED}</th></tr></thead>
                   <tbody>
-                    <tr><td>CLXT token</td><td>Live on Ethereum mainnet. Staking supply defect disclosed; remedy pending.</td></tr>
+                    <tr><td>CLXT token</td><td>Migrated on 13 October 2026 to a new, standard contract with a fixed supply and no owner, which removes the staking defect. The original contract is retired.</td></tr>
                     <tr><td>Presale V1</td><td>Retired. It could not complete purchases; switched off and emptied on 6 October 2026, along with an earlier unused presale contract.</td></tr>
-                    <tr><td>Token ownership and vesting</td><td>Token contract ownership renounced and 60% of supply locked in non-cancelable vesting on 6 October 2026.</td></tr>
-                    <tr><td>Presale V2</td><td>Live since 5 October 2026. Source verified on Etherscan; funded with 20,000,000 CLXT.</td></tr>
-                    <tr><td>Escrow contract</td><td>First version deployed to mainnet and registered with the token. Not audited; not in commercial use.</td></tr>
+                    <tr><td>Token ownership and vesting</td><td>The token contract has no owner. 60% of supply is locked in non-cancelable vesting, on the schedules set on 6 October 2026.</td></tr>
+                    <tr><td>Presale V2</td><td>Live since 5 October 2026. Moved to the new token on 13 October 2026 with the same verified code; funded with 20,000,000 CLXT.</td></tr>
+                    <tr><td>Escrow contract</td><td>First version deployed to mainnet. Not audited; not in commercial use.</td></tr>
                     <tr><td>Document registry</td><td>Prototype deployed to the Polygon Amoy test network.</td></tr>
                     <tr><td>Trade platform and dashboard</td><td>In development.</td></tr>
                     <tr><td>Independent security audit</td><td>Not yet completed. Required before the escrow handles third-party funds.</td></tr>
@@ -439,7 +441,7 @@ export default function Whitepaper() {
                 </table>
               </div>
               <div className="roadmap" style={{ marginTop: 24 }}>
-                <div className="road active"><div className="phase">PHASE 1 · NOW</div><h4>Foundation</h4><ul><li>✓ Presale V2 deployed and verified</li><li>✓ 60% of supply locked in vesting</li><li>Complete independent audit</li><li>Remedy staking supply defect</li><li>✓ Australian legal advice received</li></ul></div>
+                <div className="road active"><div className="phase">PHASE 1 · NOW</div><h4>Foundation</h4><ul><li>✓ Presale V2 deployed and verified</li><li>✓ 60% of supply locked in vesting</li><li>Complete independent audit</li><li>✓ Staking supply defect fixed by token migration</li><li>✓ Australian legal advice received</li></ul></div>
                 <div className="road"><div className="phase">PHASE 2</div><h4>First trades</h4><ul><li>Registry on mainnet</li><li>Audited escrow</li><li>Pilot trades on GDN&apos;s desk</li><li>Inspector attestation format</li></ul></div>
                 <div className="road"><div className="phase">PHASE 3</div><h4>Open corridors</h4><ul><li>Third-party traders onboarded</li><li>Financier registry checks</li><li>Verifier bonding in CLXT</li></ul></div>
                 <div className="road"><div className="phase">PHASE 4</div><h4>Network</h4><ul><li>Bonded arbitration panel</li><li>Enterprise integrations</li><li>Governance for fee schedules</li><li>Additional corridors</li></ul></div>
@@ -462,9 +464,9 @@ export default function Whitepaper() {
               <ul>
                 <li><strong>Total loss.</strong> CLXT may become worthless. Commit only what you can afford to lose entirely.</li>
                 <li><strong>Development risk.</strong> The platform described here may never be completed, or may work differently.</li>
-                <li><strong>Smart-contract risk.</strong> Two defects have already been found in deployed contracts. Others may exist. No independent audit has been completed.</li>
-                <li><strong>Supply risk.</strong> Until the staking defect is remedied, the number of tokens in existence can exceed the reported supply.</li>
-                <li><strong>Concentration and control.</strong> 60% of supply is locked in vesting, but the owner address holds about 24% unlocked, a strategic wallet holds 12.5% unlocked, and locked tokens return to the owner address over time. The presale owner can change presale terms.</li>
+                <li><strong>Smart-contract risk.</strong> Two defects were found in earlier contracts, and both contracts have been replaced. Others may exist. No independent audit has been completed.</li>
+                <li><strong>Wrong-contract risk.</strong> The retired original CLXT contract still exists on-chain and can still be transferred. Only <Addr a={CONTRACTS.clxt} kind="token" /> is CLXT.</li>
+                <li><strong>Concentration and control.</strong> 60% of supply is locked in vesting, but the owner address holds 38% unlocked, and locked tokens return to the owner address over time. The presale owner can change presale terms.</li>
                 <li><strong>Regulatory risk.</strong> Laws may change or be applied in ways that restrict CLXT, the presale or the platform, including in Australia.</li>
                 <li><strong>Liquidity risk.</strong> There may be no market in which to sell CLXT. No exchange listing is guaranteed.</li>
                 <li><strong>Adoption risk.</strong> Traders, inspectors and financiers may not use the platform.</li>
