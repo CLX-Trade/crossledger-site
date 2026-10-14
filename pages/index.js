@@ -8,6 +8,7 @@ import Layout from "../components/Layout";
 import Seo from "../components/Seo";
 import HeroArt from "../components/HeroArt";
 import { CONTRACTS, SITE, RESTRICTED_JURISDICTIONS, shortAddr } from "../lib/site";
+import { trackEvent, trackOnce } from "../lib/analytics";
 
 /* ==========================================================
    PRESALE CONFIGURATION
@@ -159,12 +160,15 @@ export default function HomePage() {
       setMsg("info", "USDT approved. You can now buy CLXT.", approveReceipt.transactionHash);
     } else {
       setMsg("error", "The approval transaction failed on-chain. No allowance was set.", approveReceipt.transactionHash);
+      trackEvent("presale_tx_failed", { step: "approve", reason: "reverted" });
     }
     refetchAllowance(); refetchBalance();
   }, [approveReceipt]); // eslint-disable-line
 
   useEffect(() => {
-    if (approveWaitFailed) setMsg("error", "Could not confirm the approval. Check your wallet's activity before trying again.", approveTxHash);
+    if (!approveWaitFailed) return;
+    setMsg("error", "Could not confirm the approval. Check your wallet's activity before trying again.", approveTxHash);
+    trackEvent("presale_tx_failed", { step: "approve", reason: "unconfirmed" });
   }, [approveWaitFailed]); // eslint-disable-line
 
   useEffect(() => {
@@ -191,19 +195,26 @@ export default function HomePage() {
       const to = purchase.args.buyer.toLowerCase() === (address || "").toLowerCase() ? "your wallet" : shortAddr(purchase.args.buyer);
       setMsg("info", `Purchase confirmed: ${n} CLXT sent to ${to}.`, buyReceipt.transactionHash);
       setUsdtAmount("");
+      // USDT spent, reported as USD so GA4 and Google Ads can total it.
+      trackEvent("presale_purchase", { value: Number(formatUnits(purchase.args.usdtSpent, 6)), currency: "USD" });
     } else if (unmatched) {
       setMsg("error", "The transaction confirmed, but the purchase it records is not credited to the wallet that sent it. Check the transaction before trying again.", buyReceipt.transactionHash);
+      trackEvent("presale_tx_failed", { step: "buy", reason: "error" });
     } else if (buyReceipt.status === "reverted") {
       setMsg("error", "The purchase failed on-chain, so no CLXT was delivered and no USDT was taken. Only the network fee was spent.", buyReceipt.transactionHash);
+      trackEvent("presale_tx_failed", { step: "buy", reason: "reverted" });
     } else {
       setMsg("error", "The transaction confirmed, but the presale contract did not record a purchase in it. Check the transaction before trying again.", buyReceipt.transactionHash);
+      trackEvent("presale_tx_failed", { step: "buy", reason: "error" });
     }
     buyerRef.current = null;
     refetchBalance(); refetchAllowance();
   }, [buyReceipt]); // eslint-disable-line
 
   useEffect(() => {
-    if (buyWaitFailed) setMsg("error", "Could not confirm the purchase transaction. Check your wallet's activity before trying again.", buyTxHash);
+    if (!buyWaitFailed) return;
+    setMsg("error", "Could not confirm the purchase transaction. Check your wallet's activity before trying again.", buyTxHash);
+    trackEvent("presale_tx_failed", { step: "buy", reason: "unconfirmed" });
   }, [buyWaitFailed]); // eslint-disable-line
 
   /* ====== DERIVED ====== */
@@ -236,6 +247,44 @@ export default function HomePage() {
   const fmtUsdt = (n) => (n === undefined || n === null ? "—" :
     Number(formatUnits(n, 6)).toLocaleString("en-US", { maximumFractionDigits: 2 }) + " USDT");
 
+  /* ====== FUNNEL TRACKING ======
+     Steps in order: presale_view, presale_connect_click, presale_wallet_connected,
+     presale_amount_entered, presale_terms_accepted, presale_approve_click,
+     presale_usdt_approved, presale_buy_click, presale_purchase. Clicks and
+     transaction results are sent from the handlers; the states below are sent
+     once per page load. See lib/analytics.js. */
+  const presaleRef = useRef(null);
+  useEffect(() => {
+    const el = presaleRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) { trackOnce("presale_view"); io.disconnect(); }
+    }, { threshold: 0.25 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  useEffect(() => { if (isConnected) trackOnce("presale_wallet_connected"); }, [isConnected]);
+  useEffect(() => { if (amountValid) trackOnce("presale_amount_entered"); }, [amountValid]);
+  useEffect(() => { if (tosChecked) trackOnce("presale_terms_accepted"); }, [tosChecked]);
+  useEffect(() => { if (hasAllowance) trackOnce("presale_usdt_approved"); }, [hasAllowance]);
+
+  // Everything that stops a visitor from buying, each sent once per page load
+  // as presale_blocked with its reason. The conditions mirror the button state
+  // below and the status text above.
+  const blockedReasons = Object.entries({
+    checkout_off: CHECKOUT_UNAVAILABLE,
+    region_unknown: geoCountry !== null && geoUnknown,
+    region_restricted: geoCountry !== null && !geoUnknown && geoBlocked,
+    sale_unavailable: !presaleReadPending && (!presaleStatusKnown || (presaleActive && !contractReadsOk)),
+    sale_paused: !presaleReadPending && presaleStatusKnown && !presaleActive,
+    sold_out: soldOut,
+    wrong_network: isConnected && !chainOk,
+    not_enough_usdt: isConnected && chainOk && usdtBalance !== undefined && minPurchaseWei !== null && usdtBalance < minPurchaseWei,
+  }).filter(([, on]) => on).map(([reason]) => reason).join(",");
+  useEffect(() => {
+    blockedReasons.split(",").filter(Boolean).forEach((reason) => trackOnce("presale_blocked", { reason }));
+  }, [blockedReasons]);
+
   /* ====== ACTIONS ====== */
   async function switchToMainnet() {
     try { await switchChainAsync({ chainId: mainnet.id }); }
@@ -250,6 +299,7 @@ export default function HomePage() {
   async function handleApproveUSDT() {
     if (!saleOpen || geoBlocked || !chainOk || !amountValid || !hasInventory || !hasBalance || pending) return;
     const amount = amountWei;
+    trackEvent("presale_approve_click");
     try {
       // USDT rejects approve() from one non-zero allowance to another. Reset to
       // zero first, or the approval reverts for anyone with a leftover allowance.
@@ -268,18 +318,21 @@ export default function HomePage() {
       setResetting(false);
       const m = friendly(e, "Unknown error");
       setMsg("error", m ? `Approval failed: ${m}` : "Approval cancelled.");
+      trackEvent("presale_tx_failed", { step: "approve", reason: m ? "error" : "rejected" });
     }
   }
 
   async function handleBuy() {
     if (!saleOpen || geoBlocked || !chainOk || !amountValid || !hasInventory || !hasBalance || !hasAllowance || pending || expectedClxtWei === 0n) return;
     setMsg("info", "Confirm the purchase in your wallet.");
+    trackEvent("presale_buy_click");
     buyerRef.current = address;
     try {
       const hash = await writeBuy({ chainId: mainnet.id, address: PRESALE_ADDRESS, abi: PRESALE_V2_ABI, functionName: "buyWithUSDT", args: [amountWei, expectedClxtWei] });
       setMsg("info", "Purchase submitted. Waiting for confirmation.", hash);
     } catch (e) {
       let m = friendly(e, "Unknown error");
+      trackEvent("presale_tx_failed", { step: "buy", reason: m === null ? "rejected" : "error" });
       if (m === null) m = "Purchase cancelled.";
       else if (m.includes("Presale not active")) m = "The presale is paused.";
       else if (m.includes("Insufficient CLXT")) m = "The presale contract does not hold enough CLXT for this purchase.";
@@ -318,7 +371,7 @@ export default function HomePage() {
   let btn;
   if (CHECKOUT_UNAVAILABLE) btn = { left: "Approve USDT", leftDisabled: true, right: "Buy CLXT", rightDisabled: true };
   else if (geoBlocked) btn = { left: geoUnknown ? "Region not confirmed" : "Not available in your region", leftDisabled: true, right: "Buy CLXT", rightDisabled: true };
-  else if (!isConnected) btn = { left: "Connect wallet", leftAction: () => open(), right: "Buy CLXT", rightDisabled: true };
+  else if (!isConnected) btn = { left: "Connect wallet", leftAction: () => { trackEvent("presale_connect_click"); open(); }, right: "Buy CLXT", rightDisabled: true };
   else if (!chainOk) btn = { left: "Switch to Ethereum", leftAction: switchToMainnet, right: "Buy CLXT", rightDisabled: true };
   else if (!saleOpen) btn = { left: saleStatusText, leftDisabled: true, right: "Buy CLXT", rightDisabled: true };
   else if (!tosChecked || !amountValid || !hasInventory || !hasBalance) btn = { left: "Approve USDT", leftDisabled: true, right: "Buy CLXT", rightDisabled: true };
@@ -538,7 +591,7 @@ export default function HomePage() {
             <p className="small muted" style={{ marginTop: 12 }}>The four published stages total 17,000,000 CLXT, compared with 20,000,000 CLXT funded into V2. The additional 3,000,000 CLXT has no allocation in the published stage plan. The contract sells at one owner-set rate; stages are a GDN commitment, not enforced in code. Stage prices are sale prices, not valuations. CrossLedger publishes no listing or target price.</p>
           </div>
 
-          <div id="presale" className="widget">
+          <div id="presale" className="widget" ref={presaleRef}>
             <h3><img className="coin" src="/clxt-coin-64.png" srcSet="/clxt-coin-64.png 1x, /clxt-coin-128.png 2x" width="30" height="30" alt="" />CLXT presale</h3>
             <div className="sub">{CHECKOUT_UNAVAILABLE ? "CHECKOUT PAUSED · CONTRACT REPLACEMENT IN PROGRESS" : `CONTRACT ${shortAddr(PRESALE_ADDRESS)} · ETHEREUM`}</div>
             <div className="row"><span className="k">Current price</span><span className="v">{displayPrice}</span></div>
