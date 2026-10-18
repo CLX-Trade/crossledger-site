@@ -32,7 +32,8 @@ const DOTS = (() => {
 
 export default function HeroArt() {
   return (
-    <svg viewBox="0 0 580 440" role="img" aria-label="A cargo route between continents with a registered document, an inspection attestation and an escrow release recorded along it" style={{ width: "100%", height: "auto" }}>
+    <figure style={{ margin: 0 }}>
+    <svg viewBox="0 0 580 440" role="img" aria-label="Illustration, not a real trade: a cargo route between continents with a registered document, an inspection attestation and an escrow release recorded along it" style={{ width: "100%", height: "auto" }}>
       <defs>
         <linearGradient id="hg-route" x1="0" x2="1">
           <stop offset="0" stopColor="#3355ff" />
@@ -84,5 +85,7 @@ export default function HeroArt() {
       <text x="398" y="68" fontSize="13" fontWeight="700" fill="var(--text)" fontFamily="Inter, sans-serif">Escrow released</text>
       <text x="398" y="87" fontSize="11.5" fill="var(--text-dim)" fontFamily="Inter, sans-serif">USDT to seller, on proof</text>
     </svg>
+      <figcaption className="small muted" style={{ textAlign: "center", marginTop: 8 }}>Illustration of how a settlement would flow. Not a real trade.</figcaption>
+    </figure>
   );
 }
