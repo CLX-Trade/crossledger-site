@@ -1,6 +1,6 @@
 // Privacy notice. Keep it aligned with what the site actually runs: the
 // Formspree form (pages/index.js), Google tags (pages/_document.js) and the
-// presale funnel events sent through them (lib/analytics.js), the
+// presale funnel and enquiry events sent through them (lib/analytics.js), the
 // clxt_geo cookie (middleware.js), wallet connection (pages/_app.js) and the
 // theme preference (components/Layout.js).
 import Link from "next/link";
@@ -8,7 +8,7 @@ import Layout from "../components/Layout";
 import Seo from "../components/Seo";
 import { SITE } from "../lib/site";
 
-const UPDATED = "14 October 2026";
+const UPDATED = "18 October 2026";
 
 export default function Privacy() {
   return (
@@ -35,7 +35,7 @@ export default function Privacy() {
           <ul>
             <li><strong>Enquiry form.</strong> Your first and last name, email address, organisation (optional), enquiry type and message. We use these only to reply to you and to follow up on that enquiry. The form is delivered through Formspree (formspree.io), our form provider, which sends it to our team by email.</li>
             <li><strong>Emails you send us.</strong> Your email address and what you write, used to reply.</li>
-            <li><strong>Analytics and advertising measurement.</strong> The site uses Google Analytics and the Google Ads conversion tag. They use cookies to record pages visited, device and browser details and approximate location, so we can see how the site is used and measure our advertising. On the presale widget they also record which steps you reach, such as connecting a wallet or starting a purchase, why a purchase could not proceed (for example, a restricted region or the wrong network) and the USDT amount of a completed purchase. They never receive your wallet address or transaction hash.</li>
+            <li><strong>Analytics and advertising measurement.</strong> The site uses Google Analytics and the Google Ads conversion tag. They use cookies to record pages visited, device and browser details and approximate location, so we can see how the site is used and measure our advertising. On the presale widget they also record which steps you reach, such as connecting a wallet or starting a purchase, why a purchase could not proceed (for example, a restricted region or the wrong network) and the USDT amount of a completed purchase. They never receive your wallet address or transaction hash. When you send the enquiry form or click an email link on the contact page, they also record that you did and the enquiry type or topic, never your name, email address or message.</li>
             <li><strong>Region check.</strong> Our host, Vercel, tells the site which country your IP address is in. We store only that two-letter country code in a cookie named <code>clxt_geo</code>, for one hour, to decide whether to show the purchase interface. We do not store your IP address.</li>
             <li><strong>Wallet connection.</strong> If you connect a wallet, your public wallet address is read in your browser to show balances and prepare transactions. The connection is handled by Reown (WalletConnect). To read balances and contract data, your browser sends requests, including your wallet address and your IP address, to public Ethereum network providers: dRPC, PublicNode, MEV Blocker and Merkle. We never receive your private keys or seed phrase, and we will never ask for them.</li>
             <li><strong>Blockchain records.</strong> Purchases are Ethereum transactions. They are public and permanent, and neither we nor anyone else can alter or delete them.</li>

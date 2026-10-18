@@ -354,6 +354,9 @@ export default function HomePage() {
       const res = await fetch(FORMSPREE_ENDPOINT, { method: "POST", body: new FormData(form), headers: { Accept: "application/json" } });
       if (res.ok) {
         setContactStatus({ kind: "ok", text: "Thanks. Your message has been sent and we will reply within two business days." });
+        // Counted in GA4 as a lead, with the enquiry type only: never the
+        // name, email address or message. Read before reset() clears it.
+        trackEvent("generate_lead", { enquiry_type: form.elements.enquiryType?.value || "unspecified" });
         form.reset();
       } else {
         setContactStatus({ kind: "error", text: `Your message could not be sent. Please email ${SITE.email}.` });
