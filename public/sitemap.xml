@@ -30,6 +30,20 @@
   </url>
 
   <url>
+    <loc>https://www.crossledger.trade/guides/electronic-bills-of-lading</loc>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://www.crossledger.trade/guides/commodity-trade-fraud-warning-signs</loc>
+    <lastmod>2026-10-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
     <loc>https://www.crossledger.trade/contact</loc>
     <lastmod>2026-10-03</lastmod>
     <changefreq>yearly</changefreq>
