@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { useState, useEffect, useMemo, useRef } from "react";
-import { useAppKit, useAppKitAccount } from "@reown/appkit/react";
+import { useAppKit, useAppKitAccount, useAppKitNetwork } from "@reown/appkit/react";
 import { mainnet } from "@reown/appkit/networks";
-import { useConnection, useSwitchChain, useReadContracts, useReadContract, useWriteContract, useWaitForTransactionReceipt, usePublicClient } from "wagmi";
+import { useConnection, useReadContracts, useReadContract, useWriteContract, useWaitForTransactionReceipt, usePublicClient } from "wagmi";
 import { parseUnits, formatUnits, parseAbi, parseEventLogs } from "viem";
 import Layout from "../components/Layout";
 import Seo from "../components/Seo";
@@ -21,6 +21,7 @@ const IS_V2 = Boolean(CONTRACTS.presaleV2);
 const PRESALE_ADDRESS = CONTRACTS.presale;
 const CHECKOUT_UNAVAILABLE = !IS_V2;
 const FORMSPREE_ENDPOINT = "https://formspree.io/f/mlgpnvbk";
+const NETWORK_NOT_SWITCHED = "The network was not switched. Switch your wallet to Ethereum and try again.";
 
 // These must go through viem's parseAbi(). Human-readable strings passed straight
 // to wagmi make viem evaluate `'name' in "function ..."`, which throws and
@@ -77,8 +78,8 @@ export default function HomePage() {
   // The wallet's network comes from the wallet connection, not useChainId():
   // wagmi's chain state ignores networks this site does not configure, so with
   // the wallet on Base useChainId() still reports mainnet.
-  const { chainId } = useConnection();
-  const { switchChainAsync } = useSwitchChain();
+  const { chainId, connector } = useConnection();
+  const { switchNetwork } = useAppKitNetwork();
   const publicClient = usePublicClient({ chainId: mainnet.id });
   // Only a network the wallet reports counts as wrong. isConnected comes from
   // AppKit and chainId from wagmi, so until wagmi has the connection an unknown
@@ -144,6 +145,10 @@ export default function HomePage() {
   const [contactStatus, setContactStatus] = useState(null);
   const [contactSending, setContactSending] = useState(false);
   const setMsg = (kind, text, txHash) => setStatusMsg(text ? { kind, text, txHash } : null);
+  // A "not switched" notice is stale once the wallet is on Ethereum, however it got there.
+  useEffect(() => {
+    if (chainOk) setStatusMsg((m) => (m?.text === NETWORK_NOT_SWITCHED ? null : m));
+  }, [chainOk]);
 
   /* ====== JURISDICTION SCREEN ======
      middleware.js stamps the visitor's IP country into a readable cookie on
@@ -292,9 +297,17 @@ export default function HomePage() {
   }, [blockedReasons]);
 
   /* ====== ACTIONS ====== */
+  // Through AppKit, not wagmi's switchChain: AppKit opens its own "Switch
+  // Network" sheet for unsupported networks, and a switch it did not make
+  // can leave that sheet stuck open. AppKit swallows wallet errors here, so
+  // the outcome is read back from the wallet.
   async function switchToMainnet() {
-    try { await switchChainAsync({ chainId: mainnet.id }); }
-    catch (e) { setMsg("error", "Could not switch network: " + (e.shortMessage || e.message)); }
+    try {
+      await switchNetwork(mainnet);
+      if (connector && (await connector.getChainId()) !== mainnet.id) {
+        setMsg("error", NETWORK_NOT_SWITCHED);
+      }
+    } catch (e) { setMsg("error", "Could not switch network: " + (e.shortMessage || e.message)); }
   }
 
   const friendly = (e, fallback) => {
