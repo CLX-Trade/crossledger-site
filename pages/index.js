@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { useState, useEffect, useMemo, useRef } from "react";
-import { useAppKit, useAppKitAccount } from "@reown/appkit/react";
+import { useAppKit, useAppKitAccount, useAppKitNetwork } from "@reown/appkit/react";
 import { mainnet } from "@reown/appkit/networks";
-import { useChainId, useSwitchChain, useReadContracts, useReadContract, useWriteContract, useWaitForTransactionReceipt, usePublicClient } from "wagmi";
+import { useConnection, useReadContracts, useReadContract, useWriteContract, useWaitForTransactionReceipt, usePublicClient } from "wagmi";
 import { parseUnits, formatUnits, parseAbi, parseEventLogs } from "viem";
 import Layout from "../components/Layout";
 import Seo from "../components/Seo";
@@ -21,6 +21,7 @@ const IS_V2 = Boolean(CONTRACTS.presaleV2);
 const PRESALE_ADDRESS = CONTRACTS.presale;
 const CHECKOUT_UNAVAILABLE = !IS_V2;
 const FORMSPREE_ENDPOINT = "https://formspree.io/f/mlgpnvbk";
+const NETWORK_NOT_SWITCHED = "The network was not switched. Switch your wallet to Ethereum and try again.";
 
 // These must go through viem's parseAbi(). Human-readable strings passed straight
 // to wagmi make viem evaluate `'name' in "function ..."`, which throws and
@@ -74,10 +75,16 @@ export default function HomePage() {
   /* ====== APPKIT + WAGMI ====== */
   const { open } = useAppKit();
   const { address, isConnected } = useAppKitAccount();
-  const chainId = useChainId();
-  const { switchChainAsync } = useSwitchChain();
+  // The wallet's network comes from the wallet connection, not useChainId():
+  // wagmi's chain state ignores networks this site does not configure, so with
+  // the wallet on Base useChainId() still reports mainnet.
+  const { chainId, connector } = useConnection();
+  const { switchNetwork } = useAppKitNetwork();
   const publicClient = usePublicClient({ chainId: mainnet.id });
-  const chainOk = chainId === mainnet.id;
+  // Only a network the wallet reports counts as wrong. isConnected comes from
+  // AppKit and chainId from wagmi, so until wagmi has the connection an unknown
+  // network is treated as Ethereum, as before, rather than flash "wrong network".
+  const chainOk = chainId === undefined || chainId === mainnet.id;
 
   /* ====== CONTRACT READS ======
      No fallbacks: if the rate or status read fails, the widget shows "—" and
@@ -138,6 +145,10 @@ export default function HomePage() {
   const [contactStatus, setContactStatus] = useState(null);
   const [contactSending, setContactSending] = useState(false);
   const setMsg = (kind, text, txHash) => setStatusMsg(text ? { kind, text, txHash } : null);
+  // A "not switched" notice is stale once the wallet is on Ethereum, however it got there.
+  useEffect(() => {
+    if (chainOk) setStatusMsg((m) => (m?.text === NETWORK_NOT_SWITCHED ? null : m));
+  }, [chainOk]);
 
   /* ====== JURISDICTION SCREEN ======
      middleware.js stamps the visitor's IP country into a readable cookie on
@@ -286,9 +297,17 @@ export default function HomePage() {
   }, [blockedReasons]);
 
   /* ====== ACTIONS ====== */
+  // Through AppKit, not wagmi's switchChain: AppKit opens its own "Switch
+  // Network" sheet for unsupported networks, and a switch it did not make
+  // can leave that sheet stuck open. AppKit swallows wallet errors here, so
+  // the outcome is read back from the wallet.
   async function switchToMainnet() {
-    try { await switchChainAsync({ chainId: mainnet.id }); }
-    catch (e) { setMsg("error", "Could not switch network: " + (e.shortMessage || e.message)); }
+    try {
+      await switchNetwork(mainnet);
+      if (connector && (await connector.getChainId()) !== mainnet.id) {
+        setMsg("error", NETWORK_NOT_SWITCHED);
+      }
+    } catch (e) { setMsg("error", "Could not switch network: " + (e.shortMessage || e.message)); }
   }
 
   const friendly = (e, fallback) => {
@@ -615,6 +634,7 @@ export default function HomePage() {
             {soldOut
               ? <div className="widget-msg error" role="status">The presale has fewer CLXT left than a minimum purchase, so no purchase can be filled right now.</div>
               : amountValid && expectedClxtWei > 0n && availableClxtWei !== null && !hasInventory && <div className="widget-msg error" role="status">Only {Number(formatUnits(availableClxtWei, 18)).toLocaleString("en-US", { maximumFractionDigits: 0 })} CLXT remain in the presale. Enter a smaller amount.</div>}
+            {isConnected && chainOk && amountValid && usdtBalance !== undefined && !hasBalance && <div className="widget-msg error" role="status">Your wallet holds {fmtUsdtExact(usdtBalance)}. Enter a smaller amount or add USDT to your wallet.</div>}
             <div className="tos">
               <label>
                 <input type="checkbox" checked={tosChecked} disabled={CHECKOUT_UNAVAILABLE} onChange={(e) => setTosChecked(e.target.checked)} />
