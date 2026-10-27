@@ -2,7 +2,7 @@ import Link from "next/link";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useAppKit, useAppKitAccount } from "@reown/appkit/react";
 import { mainnet } from "@reown/appkit/networks";
-import { useChainId, useSwitchChain, useReadContracts, useReadContract, useWriteContract, useWaitForTransactionReceipt, usePublicClient } from "wagmi";
+import { useConnection, useSwitchChain, useReadContracts, useReadContract, useWriteContract, useWaitForTransactionReceipt, usePublicClient } from "wagmi";
 import { parseUnits, formatUnits, parseAbi, parseEventLogs } from "viem";
 import Layout from "../components/Layout";
 import Seo from "../components/Seo";
@@ -74,10 +74,16 @@ export default function HomePage() {
   /* ====== APPKIT + WAGMI ====== */
   const { open } = useAppKit();
   const { address, isConnected } = useAppKitAccount();
-  const chainId = useChainId();
+  // The wallet's network comes from the wallet connection, not useChainId():
+  // wagmi's chain state ignores networks this site does not configure, so with
+  // the wallet on Base useChainId() still reports mainnet.
+  const { chainId } = useConnection();
   const { switchChainAsync } = useSwitchChain();
   const publicClient = usePublicClient({ chainId: mainnet.id });
-  const chainOk = chainId === mainnet.id;
+  // Only a network the wallet reports counts as wrong. isConnected comes from
+  // AppKit and chainId from wagmi, so until wagmi has the connection an unknown
+  // network is treated as Ethereum, as before, rather than flash "wrong network".
+  const chainOk = chainId === undefined || chainId === mainnet.id;
 
   /* ====== CONTRACT READS ======
      No fallbacks: if the rate or status read fails, the widget shows "—" and
