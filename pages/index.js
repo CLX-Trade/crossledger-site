@@ -634,6 +634,7 @@ export default function HomePage() {
             {soldOut
               ? <div className="widget-msg error" role="status">The presale has fewer CLXT left than a minimum purchase, so no purchase can be filled right now.</div>
               : amountValid && expectedClxtWei > 0n && availableClxtWei !== null && !hasInventory && <div className="widget-msg error" role="status">Only {Number(formatUnits(availableClxtWei, 18)).toLocaleString("en-US", { maximumFractionDigits: 0 })} CLXT remain in the presale. Enter a smaller amount.</div>}
+            {isConnected && chainOk && amountValid && usdtBalance !== undefined && !hasBalance && <div className="widget-msg error" role="status">Your wallet holds {fmtUsdtExact(usdtBalance)}. Enter a smaller amount or add USDT to your wallet.</div>}
             <div className="tos">
               <label>
                 <input type="checkbox" checked={tosChecked} disabled={CHECKOUT_UNAVAILABLE} onChange={(e) => setTosChecked(e.target.checked)} />
