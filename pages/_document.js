@@ -1,4 +1,5 @@
 import { Html, Head, Main, NextScript } from "next/document";
+import { SITE } from "../lib/site";
 
 // Per-page title, description, canonical and social tags live in components/Seo.js.
 // Keep page-specific tags out of this file: a description here would be
@@ -7,12 +8,26 @@ import { Html, Head, Main, NextScript } from "next/document";
 // Runs before first paint so a saved dark or light choice never flashes.
 const themeScript = `(function(){try{var t=localStorage.getItem('cl-theme');if(t==='dark'||t==='light'){document.documentElement.dataset.theme=t;}}catch(e){}})();`;
 
+// The Google tag (GA4 and Google Ads) loads only on the production host from
+// SITE.url and on the apex, which Vercel redirects there today. next dev,
+// Vercel previews and crossledger-site.vercel.app get only the gtag() stub, so
+// lib/analytics.js events queue in window.dataLayer and are never sent.
+const tagHost = new URL(SITE.url).hostname;
+const tagHosts = [tagHost, tagHost.replace(/^www\./, "")];
+
 const gaScript = `
 window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
-gtag('config', 'G-S6EMS4TTNP');
-gtag('config', 'AW-18190712729');
+(function(){
+  if (${JSON.stringify(tagHosts)}.indexOf(location.hostname) === -1) return;
+  var s = document.createElement('script');
+  s.async = true;
+  s.src = 'https://www.googletagmanager.com/gtag/js?id=G-S6EMS4TTNP';
+  document.head.appendChild(s);
+  gtag('js', new Date());
+  gtag('config', 'G-S6EMS4TTNP');
+  gtag('config', 'AW-18190712729');
+})();
 `;
 
 export default function Document() {
@@ -20,7 +35,6 @@ export default function Document() {
     <Html lang="en">
       <Head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-S6EMS4TTNP" />
         <script dangerouslySetInnerHTML={{ __html: gaScript }} />
         <meta name="google-site-verification" content="0567f50cc6b6dd62" />
         <link rel="icon" href="/favicon.ico" sizes="any" />
