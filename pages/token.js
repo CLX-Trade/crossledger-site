@@ -4,6 +4,7 @@
 import Link from "next/link";
 import Layout from "../components/Layout";
 import Seo from "../components/Seo";
+import AddTokenButton from "../components/AddTokenButton";
 import { CONTRACTS, HOLDINGS, HOLDINGS_DATE, LOCKS, SITE, lockUrl, lockNftUrl, shortAddr } from "../lib/site";
 
 const TOTAL = 1_000_000_000;
@@ -47,6 +48,7 @@ export default function TokenFacts() {
             <span className="badge-outline">Token migration · 13 October 2026</span>
             <h2>CLXT moved to a new contract</h2>
             <p>On 13 October 2026 CLXT moved to a new token contract, <Addr a={CONTRACTS.clxt} kind="token" />. The original contract, <Addr a={CONTRACTS.clxtRetired} kind="token" />, is retired. Use only the new address.</p>
+            <AddTokenButton />
             <ul>
               <li><strong>Why.</strong> Wallet security scanners, including the one MetaMask uses, labelled the original contract &quot;malicious&quot;, citing a &quot;token backdoor&quot; and &quot;suspicious code&quot;. Two things in its code caused that: a staking feature that credited rewards as new tokens without a transfer record or a change to the reported supply, and a trading switch controlled by the owner. Staking was never used and trading was switched on at launch, but the contract could not be changed, so the token was reissued.</li>
               <li><strong>What the new contract is.</strong> The standard OpenZeppelin ERC-20, unmodified. All 1,000,000,000 CLXT were created once, at deployment. It has no owner and no admin functions: nobody, including GDN, can create more tokens, pause transfers, block an address or charge a fee. Its source code is verified on Etherscan as an exact match.</li>

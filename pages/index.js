@@ -7,6 +7,7 @@ import { parseUnits, formatUnits, parseAbi, parseEventLogs } from "viem";
 import Layout from "../components/Layout";
 import Seo from "../components/Seo";
 import HeroArt from "../components/HeroArt";
+import AddTokenButton from "../components/AddTokenButton";
 import { CONTRACTS, SITE, RESTRICTED_JURISDICTIONS, shortAddr } from "../lib/site";
 import { trackEvent, trackOnce } from "../lib/analytics";
 
@@ -135,6 +136,8 @@ export default function HomePage() {
   const buyerRef = useRef(null);
   const { data: buyReceipt, isLoading: buyConfirming, isError: buyWaitFailed } = useWaitForTransactionReceipt({ hash: buyTxHash, chainId: mainnet.id });
   const [resetting, setResetting] = useState(false);
+  // Set once a purchase is confirmed on-chain, to offer adding CLXT to the wallet.
+  const [purchased, setPurchased] = useState(false);
 
   /* ====== UI STATE ====== */
   const [usdtAmount, setUsdtAmount] = useState("");
@@ -205,6 +208,7 @@ export default function HomePage() {
       const n = Number(formatUnits(purchase.args.clxtReceived, 18)).toLocaleString("en-US", { maximumFractionDigits: 2 });
       const to = purchase.args.buyer.toLowerCase() === (address || "").toLowerCase() ? "your wallet" : shortAddr(purchase.args.buyer);
       setMsg("info", `Purchase confirmed: ${n} CLXT sent to ${to}.`, buyReceipt.transactionHash);
+      setPurchased(true);
       setUsdtAmount("");
       // USDT spent, reported as USD so GA4 and Google Ads can total it.
       trackEvent("presale_purchase", { value: Number(formatUnits(purchase.args.usdtSpent, 6)), currency: "USD" });
@@ -551,6 +555,7 @@ export default function HomePage() {
             <span className="eyebrow">The CLXT token</span>
             <h2 className="h-section">A utility token with a narrow job.</h2>
             <p className="lede">Trades settle in stablecoins. CLXT is designed to pay platform fees at a discount and, later, to bond the inspectors and verifiers whose signatures release funds. It is not a share, and pays no dividend or interest.</p>
+            <AddTokenButton />
           </div>
           <div className="grid grid-4" style={{ marginBottom: 40 }}>
             <div className="card"><div className="muted small">Standard</div><h3 className="h-card" style={{ marginTop: 6 }}>ERC-20 · Ethereum</h3></div>
@@ -651,6 +656,7 @@ export default function HomePage() {
                 {statusMsg.txHash && <> <a href={`https://etherscan.io/tx/${statusMsg.txHash}`} target="_blank" rel="noopener">View transaction ↗</a></>}
               </div>
             )}
+            {purchased && <AddTokenButton />}
             <div className="widget-note">
               {CHECKOUT_UNAVAILABLE
                 ? <>Purchases are paused. Questions: <a href={`mailto:${SITE.email}?subject=CLXT%20presale`}>{SITE.email}</a>.</>
