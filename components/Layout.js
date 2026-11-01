@@ -10,6 +10,7 @@ const NAV = [
   { href: "/#security", label: "Security" },
   { href: "/#faq", label: "FAQ" },
   { href: "/contact", label: "Contact" },
+  { href: SITE.portal, label: "Client portal" },
 ];
 
 export function BrandMark({ className = "brand-mark" }) {
@@ -138,6 +139,7 @@ export function SiteFooter() {
             <h5>Company</h5>
             <ul>
               <li><a href="https://gdngroup.com.au" target="_blank" rel="noopener">GDN Group ↗</a></li>
+              <li><a href={SITE.portal}>Client portal</a></li>
               <li><Link href="/contact">Contact</Link></li>
               <li><Link href="/privacy">Privacy</Link></li>
               <li><a href={`mailto:${SITE.email}`}>{SITE.email}</a></li>
