@@ -480,6 +480,30 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── Client portal ── */}
+      <section id="portal" className="portal-band">
+        <div className="container portal-grid">
+          <div className="portal-copy">
+            <span className="portal-eyebrow">CrossLedger client portal</span>
+            <h2 className="portal-title">Ready to begin?</h2>
+            <p className="portal-lede">Buyers, sellers and brokers can now open a CrossLedger account. Apply once, with your company documents, owners and trade profile, and we review it before your first trade.</p>
+            <ul className="portal-points">
+              <li>KYC and due diligence for buyers, sellers and brokers</li>
+              <li>Every applicant screened against the OFAC and UN sanctions lists</li>
+              <li>Its own secure site, separate from this one: app.crossledger.trade</li>
+            </ul>
+            <div className="hero-actions">
+              <a href={SITE.portal} className="btn btn-lg portal-btn">Open the client portal →</a>
+            </div>
+            <p className="portal-note">Onboarding is open now. Escrow and the trade instruments are not in use yet: an independent audit is required before they handle third-party funds.</p>
+          </div>
+          <a href={SITE.portal} className="portal-shot" aria-label="Open the CrossLedger client portal">
+            <span className="portal-bar" aria-hidden="true"><i /><i /><i /><em>app.crossledger.trade</em></span>
+            <img src="/portal-preview.jpg" width="1600" height="1000" loading="lazy" alt="The CrossLedger client portal: the CrossLedger seal and the question “Are you ready for the future?” above an Enter button." />
+          </a>
+        </div>
+      </section>
+
       {/* ── What it does ── */}
       <section className="section">
         <div className="container">
