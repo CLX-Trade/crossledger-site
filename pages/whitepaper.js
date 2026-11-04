@@ -450,7 +450,7 @@ export default function Whitepaper() {
 
               <h2 id="team">Team</h2>
               <p><strong>Guilherme (Gui) Di Nardo</strong>, Founder and CEO, Brisbane. Leads GDN Group&apos;s trading and advisory work across petroleum products, agricultural commodities and sovereign advisory engagements.</p>
-              <p><strong>Tom Young</strong>, Co-founder and CTO. Leads smart-contract development and platform engineering across the token, presale and verification layers.</p>
+              <p><strong>Tom Young</strong>, CTO. Leads smart-contract development and platform engineering across the token, presale and verification layers.</p>
               <p><strong>Fernando Nicola</strong>, United States commercial representative, Orlando. Commodity trading background with international energy trading houses, focused on North and Latin American markets.</p>
               <p><strong>Mathew Dunn</strong>, UAE and Gulf representative, Dubai. Leads Gulf relationships and blockchain integration for CrossLedger.</p>
               <p><strong>Marcos &quot;Kito&quot; Vianna</strong>, Brazil and South America representative, São Paulo. Over twenty years in trading, freight forwarding and port logistics.</p>
