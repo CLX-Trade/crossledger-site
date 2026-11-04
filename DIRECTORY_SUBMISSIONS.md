@@ -47,8 +47,8 @@ The CLXT utility token powers every transaction on the platform: it is required 
 - Vesting: ecosystem/liquidity reserves locked 24 months; team tokens locked 18 months post-launch
 
 **Team:**
-- Gui Di Nardo — Co-Founder & CEO, trade finance specialist
-- Tom Young — Co-Founder & CTO, blockchain infrastructure architect
+- Gui Di Nardo — Founder & CEO, trade finance specialist
+- Tom Young — CTO, blockchain infrastructure architect
 
 CrossLedger targets the $2.5 trillion global trade finance gap identified by the Asian Development Bank, with a focus on mid-market exporters in developing economies who are currently excluded from prime bank financing.
 
