@@ -37,7 +37,7 @@ export default function Guide({ slug, seoTitle, description, title, audience, re
             <div className="callout">
               <span className="badge-outline">Pilot trades</span>
               <h2 style={{ marginTop: 14 }}>Test it on a real cargo</h2>
-              <p>CrossLedger is in development and no commercial trade has settled through it yet. If you trade on our corridors (Australia to Asia, East Africa to Europe, South America to Asia), we are inviting pilot partners now.</p>
+              <p>The CrossLedger client portal is live and onboarding companies, and trade instruments open after the independent audit. If you trade on our corridors (Australia to Asia, East Africa to Europe, South America to Asia), we are inviting pilot partners now.</p>
               <div className="actions">
                 <Link href="/contact" className="btn btn-primary">Discuss a pilot trade</Link>
                 <Link href="/how-it-works" className="btn btn-outline">How it works</Link>
