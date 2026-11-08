@@ -55,7 +55,7 @@ export default function ElectronicBillsOfLading() {
       </ol>
 
       <h2>5. Where CrossLedger fits</h2>
-      <p>CrossLedger is in development and is not an eBL platform. It is building a settlement layer for physical commodity trades: trade documents are fingerprinted on a public registry so later changes are detectable, payment is held in escrow for that one trade, and release is designed to happen only when the documents check out and an independent inspector has signed off. Paper bills, eBLs from approved platforms, and inspection reports would all be inputs to that check.</p>
+      <p>CrossLedger is not an eBL platform. It is a settlement layer for physical commodity trades: trade documents are fingerprinted on a public registry so later changes are detectable, payment is held in escrow for that one trade, and release is designed to happen only when the documents check out and an independent inspector has signed off. Paper bills, eBLs from approved platforms, and inspection reports would all be inputs to that check.</p>
     </Guide>
   );
 }
