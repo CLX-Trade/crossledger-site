@@ -24,7 +24,7 @@ export default function HowItWorks() {
         <div className="container" style={{ maxWidth: 900 }}>
           <nav className="breadcrumb" aria-label="Breadcrumb"><Link href="/">crossledger.trade</Link><span>/</span><span aria-current="page">How it works</span></nav>
           <h1 className="display" style={{ marginTop: 22 }}>How a trade settles on CrossLedger.</h1>
-          <p className="lede" style={{ marginTop: 20 }}>The buyer wants documents before paying. The seller wants payment before shipping. Both are right, and many first deals stall there. CrossLedger is designed to commit the buyer&apos;s money first and release it only on proof, so neither side has to move on trust. It is in development, and we are inviting pilot partners now.</p>
+          <p className="lede" style={{ marginTop: 20 }}>The buyer wants documents before paying. The seller wants payment before shipping. Both are right, and many first deals stall there. CrossLedger is designed to commit the buyer&apos;s money first and release it only on proof, so neither side has to rely on the other&apos;s word. The client portal is live for onboarding, instruments open after the independent audit, and we are inviting pilot partners now.</p>
         </div>
       </section>
 
@@ -46,11 +46,11 @@ export default function HowItWorks() {
           <div className="section-head">
             <span className="eyebrow">Compared with a letter of credit</span>
             <h2 className="h-section">Payment committed up front, released on agreed proof.</h2>
-            <p className="lede">CrossLedger figures below are design targets for a platform still in development, not measured results.</p>
+            <p className="lede">CrossLedger figures below come from the platform&apos;s design and published fee schedule. Instruments open after the independent audit, so none has yet been measured in live use.</p>
           </div>
           <div className="table-wrap">
             <table className="data">
-              <thead><tr><th>&nbsp;</th><th>Documentary letter of credit</th><th>CrossLedger (target)</th></tr></thead>
+              <thead><tr><th>&nbsp;</th><th>Documentary letter of credit</th><th>CrossLedger (as built)</th></tr></thead>
               <tbody>
                 <tr><td>Who holds the money</td><td>Issuing bank&apos;s undertaking</td><td className="hl">Per-trade escrow; neither party alone</td></tr>
                 <tr><td>What triggers payment</td><td>Bank examination of paper documents</td><td className="hl">Registered documents plus signed inspection</td></tr>
@@ -82,8 +82,8 @@ export default function HowItWorks() {
         <div className="container" style={{ maxWidth: 900 }}>
           <div className="callout">
             <span className="badge-outline">Where this stands</span>
-            <h2>Honest status</h2>
-            <p>No commercial trade has settled through CrossLedger yet. An escrow contract is deployed on Ethereum and a document registry prototype runs on a test network; neither has completed an independent audit. The platform will handle third-party funds only after that audit.</p>
+            <h2>Where CrossLedger is today</h2>
+            <p>The client portal is live at <a href="https://app.crossledger.trade">app.crossledger.trade</a>, onboarding buyers, sellers, brokers, financiers, inspectors and arbitrators, and the deal workflow is built. Hashlock&apos;s independent audit of the token and presale contracts is under way. Comfort letters and trade instruments open once the platform contracts have been audited, and only then will the platform hold third-party funds.</p>
             <div className="actions">
               <Link href="/whitepaper" className="btn btn-primary">Read the whitepaper</Link>
               <Link href="/contact" className="btn btn-outline">Discuss a pilot trade</Link>
