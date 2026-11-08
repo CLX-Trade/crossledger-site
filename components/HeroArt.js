@@ -33,7 +33,7 @@ const DOTS = (() => {
 export default function HeroArt() {
   return (
     <figure style={{ margin: 0 }}>
-    <svg viewBox="0 0 580 440" role="img" aria-label="Illustration, not a real trade: a cargo route between continents with a registered document, an inspection attestation and an escrow release recorded along it" style={{ width: "100%", height: "auto" }}>
+    <svg viewBox="0 0 580 440" role="img" aria-label="Illustration, not a real trade: a cargo route between continents with a filed document, a signed inspection and a payment to the seller along it" style={{ width: "100%", height: "auto" }}>
       <defs>
         <linearGradient id="hg-route" x1="0" x2="1">
           <stop offset="0" stopColor="#3355ff" />
@@ -61,10 +61,10 @@ export default function HeroArt() {
       </g>
       <rect x="316" y="278" width="34" height="42" rx="6" fill="var(--primary-soft)" />
       <path d="M324 290h18M324 298h18M324 306h12" stroke="var(--primary)" strokeWidth="2.4" strokeLinecap="round" />
-      <text x="362" y="292" fontSize="13" fontWeight="700" fill="var(--text)" fontFamily="Inter, sans-serif">Bill of lading registered</text>
+      <text x="362" y="292" fontSize="13" fontWeight="700" fill="var(--text)" fontFamily="Inter, sans-serif">Bill of lading filed</text>
       <text x="362" y="311" fontSize="11.5" fill="var(--text-dim)" fontFamily="JetBrains Mono, monospace">sha256 0x9f3c…a71e</text>
       <rect x="316" y="330" width="98" height="18" rx="9" fill="var(--ok-soft)" />
-      <text x="365" y="343" fontSize="10.5" fontWeight="700" fill="var(--ok)" textAnchor="middle" fontFamily="Inter, sans-serif">UNIQUE · VERIFIED</text>
+      <text x="365" y="343" fontSize="10.5" fontWeight="700" fill="var(--ok)" textAnchor="middle" fontFamily="Inter, sans-serif">FINGERPRINTED</text>
 
       <g filter="url(#hg-shadow)">
         <rect x="40" y="250" width="226" height="86" rx="14" fill="var(--bg-raised)" stroke="var(--border)" />
@@ -82,8 +82,8 @@ export default function HeroArt() {
       <rect x="346" y="52" width="40" height="40" rx="10" fill="url(#hg-route)" />
       <path d="M359 70v-4a7 7 0 0 1 14 0" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" />
       <rect x="356" y="70" width="20" height="14" rx="3" fill="#fff" />
-      <text x="398" y="68" fontSize="13" fontWeight="700" fill="var(--text)" fontFamily="Inter, sans-serif">Escrow released</text>
-      <text x="398" y="87" fontSize="11.5" fill="var(--text-dim)" fontFamily="Inter, sans-serif">USDT to seller, on proof</text>
+      <text x="398" y="68" fontSize="13" fontWeight="700" fill="var(--text)" fontFamily="Inter, sans-serif">Seller paid</text>
+      <text x="398" y="87" fontSize="11.5" fill="var(--text-dim)" fontFamily="Inter, sans-serif">In USDT, on proof</text>
     </svg>
       <figcaption className="small muted" style={{ textAlign: "center", marginTop: 8 }}>Illustration of how a settlement would flow. Not a real trade.</figcaption>
     </figure>

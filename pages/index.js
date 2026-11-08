@@ -23,6 +23,7 @@ const PRESALE_ADDRESS = CONTRACTS.presale;
 const CHECKOUT_UNAVAILABLE = !IS_V2;
 const FORMSPREE_ENDPOINT = "https://formspree.io/f/mlgpnvbk";
 const NETWORK_NOT_SWITCHED = "The network was not switched. Switch your wallet to Ethereum and try again.";
+const PRESALE_CLOSES_AT = Date.parse("2026-11-15T12:00:00Z");
 
 // These must go through viem's parseAbi(). Human-readable strings passed straight
 // to wagmi make viem evaluate `'name' in "function ..."`, which throws and
@@ -413,11 +414,31 @@ export default function HomePage() {
 
   const walletStatus = !isConnected ? ["Not connected", "muted"] : !chainOk ? [`${shortAddr(address)} · wrong network`, "warn"] : [shortAddr(address), "success"];
 
+  // Quick amounts: the contract minimum first, then larger round figures.
+  const quickAmounts = [50, 100, 200, 500, 1000, 2500]
+    .filter((amt) => minPurchaseWei === null || BigInt(amt) * 10n ** 6n >= minPurchaseWei)
+    .slice(0, 4);
+
+  // Announced close of the presale (pinned post on @CrossLedgerCLX, 1 November 2026).
+  // Computed after mount so the static HTML never carries a stale countdown.
+  const [closeText, setCloseText] = useState(null);
+  useEffect(() => {
+    const tick = () => {
+      const ms = PRESALE_CLOSES_AT - Date.now();
+      if (ms <= 0) { setCloseText(null); return; }
+      const d = Math.floor(ms / 86_400_000), h = Math.floor((ms / 3_600_000) % 24), m = Math.floor((ms / 60_000) % 60);
+      setCloseText(d > 0 ? `${d}d ${h}h left` : `${h}h ${m}m left`);
+    };
+    tick();
+    const t = setInterval(tick, 30_000);
+    return () => clearInterval(t);
+  }, []);
+
   return (
     <Layout>
       <Seo
-        title="CrossLedger (CLXT) | Settlement Infrastructure for Commodity Trade"
-        description="CrossLedger registers trade documents on Ethereum and holds payment in escrow that releases on verified documents and independent inspection. Built by GDN Group."
+        title="CrossLedger (CLXT) | Settlement Software for Commodity Trade"
+        description="CrossLedger is settlement software for physical commodity trade: a smart contract holds the buyer's stablecoins for each trade, and the seller is paid once the documents are found compliant. The client portal is live. Built by GDN Group."
         path="/"
         jsonLd={{ "@context": "https://schema.org", "@type": "WebSite", name: "CrossLedger", url: SITE.url }}
       />
@@ -426,16 +447,16 @@ export default function HomePage() {
       <section className="hero">
         <div className="container hero-grid">
           <div>
-            <Link href="/contact" className="pill" style={{ textDecoration: "none" }}><span className="dot" style={{ background: "var(--primary)" }} />In development · now inviting pilot partners</Link>
+            <a href={SITE.portal} className="pill" style={{ textDecoration: "none" }}><span className="dot" style={{ background: "var(--primary)" }} />Client portal live · independent audit under way</a>
             <h1 className="display">Commodity trade, settled on proof.</h1>
-            <p className="lede">CrossLedger is building settlement infrastructure for physical commodity trade: documents fingerprinted on Ethereum, and payment held in escrow that releases only when the documents and an independent inspection check out. Built by GDN Group, a commodity trading house, for the trades it does every day.</p>
+            <p className="lede">CrossLedger is settlement software for physical commodity trade. A smart contract created for each trade holds the buyer&apos;s stablecoins, the documents and inspection are examined on the platform, and the seller is paid only once they comply. Built by GDN Group, a commodity trading house, for the trades it does every day, and now onboarding the companies that will use it.</p>
             <div className="hero-actions">
-              <Link href="/contact" className="btn btn-primary btn-lg">Discuss a pilot trade</Link>
-              <Link href="/whitepaper" className="btn btn-outline btn-lg">Read the whitepaper</Link>
+              <a href={SITE.portal} className="btn btn-primary btn-lg">Open the client portal</a>
+              <Link href="/contact" className="btn btn-outline btn-lg">Discuss a pilot trade</Link>
               <Link href="/how-it-works" className="btn btn-ghost btn-lg">How it works →</Link>
             </div>
             <p className="small muted" style={{ marginTop: 20 }}>
-              CLXT presale: {saleOpen ? <>open at {displayPrice} per CLXT.</> : <>{CHECKOUT_UNAVAILABLE ? "purchases paused while the presale contract is replaced." : saleStatusText}</>}{" "}
+              CLXT presale: {saleOpen ? <>open at {displayPrice} per CLXT{closeText ? <>, closing Sunday 15 November, 12:00 UTC ({closeText})</> : null}.</> : <>{CHECKOUT_UNAVAILABLE ? "purchases paused while the presale contract is replaced." : saleStatusText}</>}{" "}
               <a href="#presale"><strong>Buy CLXT →</strong></a> · <a href="#security">Security status</a>
             </p>
           </div>
@@ -450,7 +471,7 @@ export default function HomePage() {
             <div className="stat"><div className="v">US$2.5T</div><div className="l">Global trade finance gap</div><div className="s">Asian Development Bank, 2023</div></div>
             <div className="stat"><div className="v">5–14 days</div><div className="l">Typical letter of credit settlement</div><div className="s">After document presentation</div></div>
             <div className="stat"><div className="v">Up to 36</div><div className="l">Original documents per shipment</div><div className="s">ICC Digital Standards Initiative</div></div>
-            <div className="stat"><div className="v">0.2–0.4%</div><div className="l">Target platform fee</div><div className="s">Design target, not yet in operation</div></div>
+            <div className="stat"><div className="v">0.25%</div><div className="l">CrossLedger Credit fee</div><div className="s"><a href={`${SITE.portal}/fees`}>Published fee schedule</a></div></div>
           </div>
         </div>
       </section>
@@ -470,7 +491,7 @@ export default function HomePage() {
           <div className="card">
             <span className="tag">CLXT holders and followers</span>
             <h2 className="h-card">Token, presale and security status</h2>
-            <p>On-chain facts, the planned allocation, the presale contract status and every known contract issue, stated plainly.</p>
+            <p>On-chain facts, the planned allocation, the vesting locks and the live presale, each linked to the chain so you can check it yourself.</p>
             <div className="hero-actions" style={{ marginTop: 18 }}>
               <a href="#token" className="btn btn-outline">CLXT token</a>
               <a href="#presale" className="btn btn-outline">Presale status</a>
@@ -484,18 +505,19 @@ export default function HomePage() {
       <section id="portal" className="portal-band">
         <div className="container portal-grid">
           <div className="portal-copy">
-            <span className="portal-eyebrow">CrossLedger client portal</span>
+            <span className="portal-eyebrow">CrossLedger client portal · live</span>
             <h2 className="portal-title">Ready to begin?</h2>
-            <p className="portal-lede">Buyers, sellers and brokers can now open a CrossLedger account. Apply once, with your company documents, owners and trade profile, and we review it before your first trade.</p>
+            <p className="portal-lede">Buyers, sellers, brokers, financiers, inspectors and arbitrators can now apply for a CrossLedger account. Apply once, with your company documents, owners and trade profile, and we review it before your first trade.</p>
             <ul className="portal-points">
-              <li>KYC and due diligence for buyers, sellers and brokers</li>
+              <li>KYC and due diligence for every role</li>
               <li>Every applicant screened against the OFAC and UN sanctions lists</li>
+              <li>A deal room for offers, documents, inspection, examination and disputes</li>
               <li>Its own secure site, separate from this one: app.crossledger.trade</li>
             </ul>
             <div className="hero-actions">
               <a href={SITE.portal} className="btn btn-lg portal-btn">Open the client portal →</a>
             </div>
-            <p className="portal-note">Onboarding is open now. Escrow and the trade instruments are not in use yet: an independent audit is required before they handle third-party funds.</p>
+            <p className="portal-note">Onboarding is open now. Comfort letters and trade instruments open once the independent audit of the platform contracts is complete.</p>
           </div>
           <a href={SITE.portal} className="portal-shot" aria-label="Open the CrossLedger client portal">
             <span className="portal-bar" aria-hidden="true"><i /><i /><i /><em>app.crossledger.trade</em></span>
@@ -510,13 +532,13 @@ export default function HomePage() {
           <div className="section-head">
             <span className="eyebrow">What CrossLedger does</span>
             <h2 className="h-section">Four building blocks for settling physical trade.</h2>
-            <p className="lede">No new money for settlement, and no consortium to join. Trades settle in dollar stablecoins between the two parties, with a public record both can check.</p>
+            <p className="lede">No new money for settlement, and no consortium to join. Trades settle in dollar stablecoins between the two parties. The money and its movements can be checked on Ethereum, and the deal itself stays private on the platform.</p>
           </div>
           <div className="grid grid-4">
-            <Link href="/whitepaper#registry" className="card card-link"><div className="card-icon">{Icon.doc}</div><h3 className="h-card">Document registry</h3><p>Every bill of lading, invoice and certificate is fingerprinted on-chain when issued, and a second filing of the same document is flagged.</p><span className="more">Read more →</span></Link>
-            <Link href="/whitepaper#escrow" className="card card-link"><div className="card-icon">{Icon.lock}</div><h3 className="h-card">Conditional escrow</h3><p>The buyer funds a per-trade escrow up front. Neither side can pull the money alone; it moves only on the agreed conditions.</p><span className="more">Read more →</span></Link>
-            <Link href="/whitepaper#attestations" className="card card-link"><div className="card-icon">{Icon.check}</div><h3 className="h-card">Inspection attestations</h3><p>The independent inspector both parties already trust signs the quantity and quality result. That signature, not paper, releases funds.</p><span className="more">Read more →</span></Link>
-            <Link href="/whitepaper#disputes" className="card card-link"><div className="card-icon">{Icon.layers}</div><h3 className="h-card">Disputes with an exit</h3><p>A dispute freezes the escrow until a named arbitrator rules, backed by a governing-law contract that works without the platform.</p><span className="more">Read more →</span></Link>
+            <Link href="/whitepaper#registry" className="card card-link"><div className="card-icon">{Icon.doc}</div><h3 className="h-card">Trade documents</h3><p>Each bill of lading, invoice and certificate is filed on the platform, encrypted and fingerprinted, and a second filing of the same file is flagged.</p><span className="more">Read more →</span></Link>
+            <Link href="/whitepaper#escrow" className="card card-link"><div className="card-icon">{Icon.lock}</div><h3 className="h-card">Trade instruments</h3><p>The buyer funds a contract for that one trade, as a CrossLedger Credit, Standby or Escrow. Neither side can take the money alone, and it can only go to the seller or back to the buyer.</p><span className="more">Read more →</span></Link>
+            <Link href="/whitepaper#attestations" className="card card-link"><div className="card-icon">{Icon.check}</div><h3 className="h-card">Inspection attestations</h3><p>The inspector named on the deal signs the quantity and quality result with its registered wallet. CrossLedger&apos;s examiner weighs it with the other documents before payment is instructed.</p><span className="more">Read more →</span></Link>
+            <Link href="/whitepaper#disputes" className="card card-link"><div className="card-icon">{Icon.layers}</div><h3 className="h-card">Disputes with an exit</h3><p>On a deal that names an arbitrator, a dispute freezes the funds until the arbitrator rules, the parties settle or 90 days pass. Every offer names its governing law.</p><span className="more">Read more →</span></Link>
           </div>
         </div>
       </section>
@@ -526,15 +548,15 @@ export default function HomePage() {
         <div className="container">
           <div className="section-head">
             <span className="eyebrow">A trade, end to end</span>
-            <h2 className="h-section">30,000 tonnes of diesel, paid on the dip test.</h2>
-            <p className="lede">An in-tank EN590 sale at a storage terminal, the kind of trade GDN&apos;s desk handles. Five steps, no couriers, no document examination queue.</p>
+            <h2 className="h-section">30,000 tonnes of diesel, paid after the dip test.</h2>
+            <p className="lede">How an in-tank EN590 sale at a storage terminal runs on CrossLedger, the kind of trade GDN&apos;s desk handles. Five steps on one platform.</p>
           </div>
           <div className="flow">
-            <div className="flow-step"><h4>Terms fixed</h4><p>Seller sets quantity, price, documents, tolerances, deadline and arbitrator.</p></div>
-            <div className="flow-step"><h4>Escrow funded</h4><p>Buyer funds USDT into the trade&apos;s escrow. The seller can see it is committed.</p></div>
-            <div className="flow-step"><h4>Documents registered</h4><p>Tank receipt and invoice are fingerprinted. The registry confirms neither was filed before.</p></div>
-            <div className="flow-step"><h4>Inspection signed</h4><p>The inspector dips and tests the tank and signs volume and quality.</p></div>
-            <div className="flow-step"><h4>Funds released</h4><p>Conditions are met, so the escrow pays the seller in the same transaction.</p></div>
+            <div className="flow-step"><h4>Terms fixed</h4><p>Buyer and seller agree quantity, price, documents, tolerance, expiry, governing law, inspector and arbitrator.</p></div>
+            <div className="flow-step"><h4>Instrument issued</h4><p>The buyer issues a CrossLedger Credit in USDT from its own wallet. The seller can check the contract&apos;s balance on Ethereum.</p></div>
+            <div className="flow-step"><h4>Documents filed</h4><p>Tank receipt and invoice are filed and fingerprinted. A file already on the platform is flagged.</p></div>
+            <div className="flow-step"><h4>Inspection signed</h4><p>The inspector dips and tests the tank and signs volume and quality with its registered wallet.</p></div>
+            <div className="flow-step"><h4>Seller paid</h4><p>Once CrossLedger&apos;s examiner finds the documents compliant, its settlement agent instructs the contract, which pays the seller in that same transaction.</p></div>
           </div>
           <p style={{ marginTop: 28 }}><Link href="/how-it-works" className="btn btn-ghost">See how it works in detail →</Link></p>
         </div>
@@ -549,7 +571,7 @@ export default function HomePage() {
             <p className="lede">we.trade, Marco Polo, Contour and TradeLens all built trade networks on private blockchains, and all four have closed. The technology worked; asking every bank and carrier to join one private network first did not.</p>
           </div>
           <div className="grid grid-3">
-            <div className="card"><div className="card-icon">{Icon.globe}</div><h3 className="h-card">Public and neutral</h3><p>Built on Ethereum. Nobody has to be invited, and no competitor controls the record.</p></div>
+            <div className="card"><div className="card-icon">{Icon.globe}</div><h3 className="h-card">Public and checkable</h3><p>Built on Ethereum. Anyone can check a contract and the money in it without joining a private network. Companies apply to become verified members before they trade.</p></div>
             <div className="card"><div className="card-icon">{Icon.one}</div><h3 className="h-card">Useful from trade one</h3><p>Two parties and an inspector get value from a single trade. No network effect needed to start.</p></div>
             <div className="card"><div className="card-icon">{Icon.desk}</div><h3 className="h-card">Built on a trading desk</h3><p>GDN trades refined products, sugar and agricultural commodities. The platform must work there first.</p></div>
           </div>
@@ -578,7 +600,7 @@ export default function HomePage() {
             <img className="coin" src="/clxt-logo-cmc.png" width="96" height="96" alt="CLXT token logo" style={{ marginBottom: 18 }} />
             <span className="eyebrow">The CLXT token</span>
             <h2 className="h-section">A utility token with a narrow job.</h2>
-            <p className="lede">Trades settle in stablecoins. CLXT is designed to pay platform fees at a discount and, later, to bond the inspectors and verifiers whose signatures release funds. It is not a share, and pays no dividend or interest.</p>
+            <p className="lede">Trades settle in stablecoins. CLXT is designed to pay platform fees at a discount and, later, to bond the inspectors and arbitrators named on deals. It is not a share, and pays no dividend or interest.</p>
             <AddTokenButton />
           </div>
           <div className="grid grid-4" style={{ marginBottom: 40 }}>
@@ -601,10 +623,10 @@ export default function HomePage() {
             ))}
           </div>
           <div className="notice" style={{ marginTop: 32 }}>
-            {Icon.warn}
+            {Icon.lock}
             <div>
               <p><strong>60% of supply is locked on-chain.</strong> The ecosystem, team and liquidity allocations sit in non-cancelable Sablier vesting streams, and the token contract has no owner. <Link href="/token">See every holder and lock →</Link></p>
-              <p>CLXT moved to a new, standard token contract on 13 October 2026, removing the staking code and trading switch that wallet scanners flagged on the original contract. <Link href="/token#migration">What changed →</Link></p>
+              <p>CLXT is the standard OpenZeppelin ERC-20 at <a href={`https://etherscan.io/token/${CONTRACTS.clxt}`} target="_blank" rel="noopener" className="mono">{shortAddr(CONTRACTS.clxt)}</a>, with a fixed supply and verified source. Always check this address before you add or buy CLXT.</p>
             </div>
           </div>
         </div>
@@ -639,12 +661,19 @@ export default function HomePage() {
                 <tbody>{STAGES.map((s) => <tr key={s.name}><td>{s.name}</td><td className="num">{s.price}</td><td className="num">{s.rate}</td><td className="num">{s.cap} CLXT</td></tr>)}</tbody>
               </table>
             </div>
-            <p className="small muted" style={{ marginTop: 12 }}>The four published stages total 17,000,000 CLXT, compared with 20,000,000 CLXT funded into V2. The additional 3,000,000 CLXT has no allocation in the published stage plan. The contract sells at one owner-set rate; stages are a GDN commitment, not enforced in code. Stage prices are sale prices, not valuations. CrossLedger publishes no listing or target price.</p>
+            <p className="small muted" style={{ marginTop: 12 }}>The contract sells at one owner-set rate; stages are a GDN commitment, not enforced in code. Stage prices are sale prices, not valuations. CrossLedger publishes no listing or target price. <Link href="/token">Presale contract details →</Link></p>
+            <div className="card" style={{ marginTop: 28 }}>
+              <h3 className="h-card" style={{ marginTop: 0 }}>Before you buy</h3>
+              <p>You need <strong>USDT on Ethereum</strong> (ERC-20) in a self-custody wallet such as MetaMask, Coinbase Wallet, Trust Wallet or Ledger, plus a little ETH for network fees.</p>
+              <p>If your USDT is on an exchange, withdraw it to your wallet address and choose the <strong>Ethereum (ERC-20)</strong> network. USDT sent on another network will not show in the presale box. Most wallets can also buy USDT in-app.</p>
+              <p className="small muted">Questions before buying: <a href={`mailto:${SITE.email}?subject=CLXT%20presale`}>{SITE.email}</a>.</p>
+            </div>
           </div>
 
           <div id="presale" className="widget" ref={presaleRef}>
             <h3><img className="coin" src="/clxt-coin-64.png" srcSet="/clxt-coin-64.png 1x, /clxt-coin-128.png 2x" width="30" height="30" alt="" />CLXT presale</h3>
             <div className="sub">{CHECKOUT_UNAVAILABLE ? "CHECKOUT PAUSED · CONTRACT REPLACEMENT IN PROGRESS" : `CONTRACT ${shortAddr(PRESALE_ADDRESS)} · ETHEREUM`}</div>
+            {saleOpen && closeText && <div className="row"><span className="k">Presale closes</span><span className="v">15 Nov, 12:00 UTC · {closeText}</span></div>}
             <div className="row"><span className="k">Current price</span><span className="v">{displayPrice}</span></div>
             <div className="row"><span className="k">Minimum purchase</span><span className="v">{fmtUsdtExact(minPurchaseWei)}</span></div>
             <div className="row"><span className="k">CLXT available</span><span className="v">{availableClxtWei === null ? "—" : Number(formatUnits(availableClxtWei, 18)).toLocaleString("en-US", { maximumFractionDigits: 0 })}</span></div>
@@ -652,7 +681,7 @@ export default function HomePage() {
             <div className="row"><span className="k">USDT balance</span><span className="v">{isConnected && chainOk ? fmtUsdt(usdtBalance) : "—"}</span></div>
             <div className="row"><span className="k">Approved allowance</span><span className="v">{isConnected && chainOk ? fmtUsdt(usdtAllowance) : "—"}</span></div>
             <div className="pills">
-              {[200, 500, 1000, 2500].filter((amt) => minPurchaseWei === null || BigInt(amt) * 10n ** 6n >= minPurchaseWei).map((amt) => (
+              {quickAmounts.map((amt) => (
                 <button key={amt} type="button" disabled={CHECKOUT_UNAVAILABLE} onClick={() => setUsdtAmount(String(amt))}>{amt}</button>
               ))}
             </div>
@@ -684,7 +713,7 @@ export default function HomePage() {
             <div className="widget-note">
               {CHECKOUT_UNAVAILABLE
                 ? <>Purchases are paused. Questions: <a href={`mailto:${SITE.email}?subject=CLXT%20presale`}>{SITE.email}</a>.</>
-                : <>CLXT moved to a new token contract on 13 October 2026; <Link href="/token#migration">check the address</Link>. The minimum is enforced by the contract. If the rate changes before your purchase confirms so that you would receive fewer CLXT than quoted, the purchase reverts instead.</>}
+                : <>CLXT token: <a href={`https://etherscan.io/token/${CONTRACTS.clxt}`} target="_blank" rel="noopener" className="mono">{shortAddr(CONTRACTS.clxt)}</a>. Check the address before you buy. The minimum is enforced by the contract. If the rate changes before your purchase confirms so that you would receive fewer CLXT than quoted, the purchase reverts instead.</>}
             </div>
           </div>
         </div>
@@ -695,14 +724,14 @@ export default function HomePage() {
         <div className="container">
           <div className="section-head">
             <span className="eyebrow">Security and compliance</span>
-            <h2 className="h-section">What is verified, what is broken, what is next.</h2>
-            <p className="lede">A plain statement of where the contracts and the company stand today, updated when anything changes.</p>
+            <h2 className="h-section">Where the contracts and the company stand.</h2>
+            <p className="lede">A plain statement of the contracts, the audit and the company, updated when anything changes.</p>
           </div>
           <div className="grid grid-3">
-            <div className="card"><span className="tag ok">Defect · fixed</span><h3 className="h-card">Presale V1 purchase failure</h3><p>V1 could not complete a purchase because of how it called USDT. It is switched off and emptied, and replaced by V2, live since 5 October 2026 and redeployed unchanged on the new token on 13 October 2026, with source verified on Etherscan.</p><div className="card-meta"><a href={`https://etherscan.io/address/${CONTRACTS.presaleV1}#code`} target="_blank" rel="noopener">V1 (retired) ↗</a> · <a href={`https://etherscan.io/address/${CONTRACTS.presaleV2 || CONTRACTS.presaleCurrent}#code`} target="_blank" rel="noopener">V2 (live) ↗</a></div></div>
-            <div className="card"><span className="tag ok">Defect · fixed</span><h3 className="h-card">Token supply accounting</h3><p>The original token&apos;s staking code could add tokens without updating the reported supply. On 13 October 2026 CLXT moved to a standard contract with a fixed supply and no owner.</p><div className="card-meta"><Link href="/whitepaper#supply">Token migration →</Link></div></div>
-            <div className="card"><span className="tag warn">Not yet completed</span><h3 className="h-card">Independent audit</h3><p>No independent professional audit has been completed. One is required before the escrow handles any third-party funds.</p><div className="card-meta">Earlier reviews were internal and AI-assisted</div></div>
-            <div className="card"><span className="tag ok">Verified source</span><h3 className="h-card">Locks and ownership</h3><p>60% of supply is locked in non-cancelable vesting and the token contract has no owner. Source code is verified on Etherscan. The presale owner can set the sale rate, minimum purchase and treasury, pause sales and withdraw unsold tokens.</p><div className="card-meta"><Link href="/token">Token facts →</Link> · <a href={`https://etherscan.io/token/${CONTRACTS.clxt}`} target="_blank" rel="noopener">Token ↗</a></div></div>
+            <div className="card"><span className="tag">In progress</span><h3 className="h-card">Independent audit</h3><p>Hashlock, an Australian smart-contract security firm, has begun its independent audit of the CLXT token and presale contracts. The platform&apos;s trade contracts are audited before they hold any third-party funds.</p><div className="card-meta">The report will be published here when it is complete</div></div>
+            <div className="card"><span className="tag ok">Verified source</span><h3 className="h-card">Standard token contract</h3><p>CLXT is the unmodified OpenZeppelin ERC-20: a fixed supply of 1,000,000,000, no owner, no mint, no pause and no transfer fees. Its source is verified on Etherscan as an exact match.</p><div className="card-meta"><Link href="/token">Token facts →</Link> · <a href={`https://etherscan.io/token/${CONTRACTS.clxt}#code`} target="_blank" rel="noopener">Source ↗</a></div></div>
+            <div className="card"><span className="tag ok">Verified source</span><h3 className="h-card">Presale contract</h3><p>Purchases go through <code className="mono">buyWithUSDT</code>, with an on-chain guard so you never receive fewer CLXT than quoted. The owner can set the sale rate, minimum purchase and treasury, pause sales and withdraw unsold tokens.</p><div className="card-meta"><a href={`https://etherscan.io/address/${CONTRACTS.presale}#code`} target="_blank" rel="noopener">Presale source ↗</a></div></div>
+            <div className="card"><span className="tag ok">Locked on-chain</span><h3 className="h-card">Vesting locks</h3><p>60% of supply sits in three non-cancelable Sablier vesting streams: ecosystem incentives, founders and team, and exchange liquidity. Nobody, including GDN, can release them early.</p><div className="card-meta"><Link href="/token">Every holder and lock →</Link></div></div>
             <div className="card"><span className="tag ok">Advice received</span><h3 className="h-card">Australian regulatory position</h3><p>GDN Enterprise Pty Ltd is ASIC-registered and does not hold an Australian Financial Services Licence. GDN has received Australian legal advice and, on that advice, Australian residents may take part in the presale.</p><div className="card-meta">ACN {SITE.acn}</div></div>
             <div className="card"><span className="tag ok">Open</span><h3 className="h-card">Vulnerability disclosure</h3><p>Report vulnerabilities in the deployed contracts through the contact form. Reproducible findings are eligible for CLXT bounty rewards graded by severity.</p><div className="card-meta"><Link href="/contact">Report an issue →</Link></div></div>
           </div>
@@ -719,12 +748,12 @@ export default function HomePage() {
           <div className="section-head">
             <span className="eyebrow">Roadmap</span>
             <h2 className="h-section">Sequenced by readiness, not by date.</h2>
-            <p className="lede">Each phase starts when the previous one&apos;s deliverables exist and can be checked on-chain.</p>
+            <p className="lede">Each phase starts when the previous one&apos;s deliverables exist and can be checked.</p>
           </div>
           <div className="roadmap">
-            <div className="road active"><div className="phase">PHASE 1 · NOW</div><h4>Foundation</h4><ul><li>✓ Presale V2 deployed and verified</li><li>✓ 60% of supply locked in vesting</li><li>Complete independent audit</li><li>✓ Staking supply defect fixed by token migration</li><li>✓ Australian legal advice received</li></ul></div>
-            <div className="road"><div className="phase">PHASE 2</div><h4>First trades</h4><ul><li>Registry on mainnet</li><li>Audited escrow</li><li>Pilot trades on GDN&apos;s desk</li><li>Inspector attestation format</li></ul></div>
-            <div className="road"><div className="phase">PHASE 3</div><h4>Open corridors</h4><ul><li>Third-party traders</li><li>Financier registry checks</li><li>Verifier bonding in CLXT</li></ul></div>
+            <div className="road"><div className="phase">PHASE 1 · DONE</div><h4>Foundation</h4><ul><li>✓ Token and presale contracts verified on Etherscan</li><li>✓ 60% of supply locked in vesting</li><li>✓ Australian legal advice received</li><li>✓ Client portal live: onboarding, KYC and sanctions screening</li><li>✓ Deal workflow built: offers, documents, inspection, examination and disputes</li></ul></div>
+            <div className="road active"><div className="phase">PHASE 2 · NOW</div><h4>First trades</h4><ul><li>Token and presale audit by Hashlock (under way)</li><li>Platform contract audit, then deployment on Ethereum</li><li>Comfort letters and trade instruments open</li><li>Pilot trades on GDN&apos;s desk</li></ul></div>
+            <div className="road"><div className="phase">PHASE 3</div><h4>Open corridors</h4><ul><li>Third-party trades</li><li>Verifier bonding in CLXT</li></ul></div>
             <div className="road"><div className="phase">PHASE 4</div><h4>Network</h4><ul><li>Bonded arbitration panel</li><li>Enterprise integrations</li><li>Fee governance</li><li>More corridors</li></ul></div>
           </div>
         </div>
@@ -756,17 +785,19 @@ export default function HomePage() {
             <span className="eyebrow">FAQ</span>
             <h2 className="h-section">Straight answers.</h2>
           </div>
-          <details className="faq" open><summary>What is CrossLedger?</summary><div className="answer"><p>Settlement infrastructure for cross-border commodity trade: a public registry of trade document fingerprints, a per-trade escrow that releases on verified documents and a signed inspection, and a dispute path. It is built by GDN Group, an Australian trade and advisory group, and is in development.</p></div></details>
+          <details className="faq" open><summary>What is CrossLedger?</summary><div className="answer"><p>Settlement software for cross-border commodity trade. A smart contract holds the buyer&apos;s stablecoins for each trade, documents are filed and examined privately on the platform, the platform&apos;s settlement agent instructs payment, and a named arbitrator can rule on disputes. It is built by GDN Group, an Australian trade and advisory group.</p></div></details>
+          <details className="faq"><summary>Is the platform live?</summary><div className="answer"><p>Yes. The client portal at <a href={SITE.portal}>app.crossledger.trade</a> is live: companies apply, pass KYC, due diligence and sanctions screening, and are reviewed before their first trade. Comfort letters and trade instruments open once the independent audit of the platform contracts is complete.</p></div></details>
           <details className="faq"><summary>Can I buy CLXT right now?</summary><div className="answer"><p>{CHECKOUT_UNAVAILABLE ? "Not yet. The first presale contract cannot complete purchases, so the checkout is paused. A corrected contract has been tested and will go live after deployment and a live test purchase. Do not send funds directly to any contract." : "Yes, from the presale widget on this page, unless you are in a restricted jurisdiction."}</p></div></details>
-          <details className="faq"><summary>Why does my wallet show a warning on CLXT?</summary><div className="answer"><p>Wallet scanners, including the one MetaMask uses, flagged the original CLXT contract because of its staking code and trading switch. On 13 October 2026 CLXT moved to a new, standard contract with no owner and a fixed supply. Warnings you saw refer to the original address, and labels on the new address can take time to settle. Make sure you hold the current contract. <Link href="/token#migration">Full explanation →</Link></p></div></details>
-          <details className="faq"><summary>Did anyone lose money in the V1 presale?</summary><div className="answer"><p>No buyer funds can be taken by the defect. Purchase transactions revert, so the USDT never leaves the buyer&apos;s wallet; only the network fee for the failed transaction is spent.</p></div></details>
+          <details className="faq"><summary>When does the presale close?</summary><div className="answer"><p>Sunday 15 November 2026 at 12:00 UTC (10pm AEST), as announced on <a href="https://x.com/CrossLedgerCLX" target="_blank" rel="noopener">@CrossLedgerCLX</a>.</p></div></details>
+          <details className="faq"><summary>Which contract is CLXT?</summary><div className="answer"><p>CLXT is <a href={`https://etherscan.io/token/${CONTRACTS.clxt}`} target="_blank" rel="noopener" className="mono">{CONTRACTS.clxt}</a> on Ethereum, the standard OpenZeppelin ERC-20 with a fixed supply and no owner. Add it to your wallet from this page, and buy only here or through the verified presale contract. An earlier CLXT contract, {shortAddr(CONTRACTS.clxtRetired)}, is retired: do not buy it or accept it as CLXT. <Link href="/token#migration">Token facts →</Link></p></div></details>
+          <details className="faq"><summary>How do I get USDT on Ethereum?</summary><div className="answer"><p>Buy USDT on an exchange and withdraw it to your own wallet on the Ethereum (ERC-20) network, or buy it inside MetaMask, Coinbase Wallet or Trust Wallet. Keep a little ETH in the same wallet for network fees. USDT on Tron, BNB Chain or other networks will not work with the presale.</p></div></details>
           <details className="faq"><summary>What are the presale prices?</summary><div className="answer"><p>The published plan is US$0.10, US$0.20, US$0.25 and US$0.50 across four stages. The contract sells at a single owner-set rate and does not enforce stages; the plan is a commitment by GDN. These are sale prices, not valuations, and CrossLedger publishes no listing or target price.</p></div></details>
-          <details className="faq"><summary>What is the minimum purchase?</summary><div className="answer"><p>Currently 200 USDT, which buys 2,000 CLXT at Stage 1. The contract enforces the minimum on-chain, and the presale box above always shows the live figure.</p></div></details>
-          <details className="faq"><summary>Is the code audited?</summary><div className="answer"><p>No independent professional audit has been completed. Internal and AI-assisted reviews found the presale purchase defect and the staking supply-accounting issue; both were fixed by replacing the contracts, and both are documented in the whitepaper. An independent audit is required before the escrow handles third-party funds.</p></div></details>
+          <details className="faq"><summary>What is the minimum purchase?</summary><div className="answer"><p>The contract enforces the minimum on-chain{minPurchaseWei !== null ? <>, currently {fmtUsdtExact(minPurchaseWei)}</> : null}, and the presale box above always shows the live figure.</p></div></details>
+          <details className="faq"><summary>Is the code audited?</summary><div className="answer"><p>The independent audit is under way. Hashlock, an Australian smart-contract security firm, is auditing the CLXT token and presale contracts, and the report will be published on this site. Until then, treat the contracts as unaudited. The platform&apos;s trade contracts will be audited before they hold any third-party funds.</p></div></details>
           <details className="faq"><summary>What wallets work?</summary><div className="answer"><p>Any Ethereum wallet supporting WalletConnect, including MetaMask, Coinbase Wallet, Trust Wallet, Rainbow and Ledger. On mobile, open this site in your wallet&apos;s browser or scan the WalletConnect QR code.</p></div></details>
           <details className="faq"><summary>How is GDN regulated in Australia?</summary><div className="answer"><p>GDN Enterprise Pty Ltd is an Australian proprietary company registered with ASIC. It does not hold an Australian Financial Services Licence. GDN has received Australian legal advice and, on that advice, Australian residents may take part in the presale. Digital asset regulation in Australia is being reformed and the position may change.</p></div></details>
           <details className="faq"><summary>Who can take part?</summary><div className="answer"><p>CLXT is not offered to residents of the United States, Canada, China, North Korea, Iran, Syria, Cuba or other comprehensively sanctioned jurisdictions. The IP-based screen is not proof of residence, so confirming eligibility under your own law is your responsibility.</p></div></details>
-          <details className="faq"><summary>What are the main risks?</summary><div className="answer"><p>Total loss, development risk, smart-contract risk (two defects found and fixed, no independent audit yet), concentration of supply (60% is locked, but 38% sits unlocked in the owner address), regulatory change, and no guaranteed exchange listing. Read the <Link href="/whitepaper#risks">full risk factors</Link>.</p></div></details>
+          <details className="faq"><summary>What are the main risks?</summary><div className="answer"><p>Total loss, development risk, smart-contract risk (the independent audit is under way and not yet complete), concentration of supply (60% is locked, but 38% sits unlocked in the owner address), regulatory change, and no guaranteed exchange listing. Read the <Link href="/whitepaper#risks">full risk factors</Link>.</p></div></details>
         </div>
       </section>
 

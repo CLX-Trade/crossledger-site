@@ -55,7 +55,7 @@ export default function CommodityTradeFraud() {
       <p>Recording a document&apos;s fingerprint (a hash) on a blockchain shows the document hasn&apos;t changed since it was registered, and lets a registry flag the same document if it is registered twice. It does <strong>not</strong> show the document was true when it was registered. A forged certificate fingerprinted on-chain is still forged. Only checks in the physical world (inspection, confirmation with the issuer) establish that the goods exist and match the paper.</p>
 
       <h2>5. Where CrossLedger fits</h2>
-      <p>CrossLedger is in development. It is building settlement for physical commodity trade around the checks above: trade documents fingerprinted on a public registry, payment held in escrow for that one trade, and release designed to happen only when the documents check out and an independent inspector has signed off, with a dispute path if they don&apos;t. It is designed to make these checks routine and visible to every party; it can&apos;t guarantee that a document or cargo is genuine, and no system removes the need for the checks themselves.</p>
+      <p>CrossLedger builds settlement for physical commodity trade around the checks above: trade documents fingerprinted on a public registry, payment held in escrow for that one trade, and release designed to happen only when the documents check out and an independent inspector has signed off, with a dispute path if they don&apos;t. It is designed to make these checks routine and visible to every party; it can&apos;t guarantee that a document or cargo is genuine, and no system removes the need for the checks themselves.</p>
     </Guide>
   );
 }

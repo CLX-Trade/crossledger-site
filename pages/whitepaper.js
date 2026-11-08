@@ -6,8 +6,8 @@ import { CONTRACTS, SITE, lockUrl, shortAddr } from "../lib/site";
 
 // Version and status. Update the date and the "Before you read" box whenever a
 // fact below changes on-chain.
-const VERSION = "2.2";
-const UPDATED = "13 October 2026";
+const VERSION = "2.3";
+const UPDATED = "8 November 2026";
 
 const TOC = [
   { id: "abstract", title: "A settlement layer for physical commodity trade" },
@@ -32,9 +32,9 @@ const TOC = [
     { id: "token-facts", title: "On-chain facts" },
     { id: "utility", title: "Intended utility" },
     { id: "allocation", title: "Allocation" },
-    { id: "supply", title: "Token migration and supply" },
+    { id: "supply", title: "Token contract and supply" },
     { id: "presale", title: "Presale" },
-    { id: "presale-defect", title: "The V1 presale defect" },
+    { id: "presale-contracts", title: "Presale contracts" },
   ]},
   { id: "business", title: "Business model" },
   { id: "roadmap", title: "Status and roadmap" },
@@ -229,8 +229,8 @@ export default function Whitepaper() {
               <div className="callout">
                 <span className="badge-outline">Before you read</span>
                 <h2 style={{ marginTop: 14 }}>What is true today</h2>
-                <p>CrossLedger is in development. The token and a first presale contract are live on Ethereum; the trade platform described in <a href="#design">Section 3</a> is not yet processing commercial trades. This paper separates what exists from what is planned, and says which is which.</p>
-                <p><strong>CLXT moved to a new token contract on 13 October 2026</strong> (see <a href="#supply">Token migration and supply</a>). Purchases run through the presale contract <Addr a={CONTRACTS.presaleV2 || CONTRACTS.presaleCurrent} />, whose source code is verified on Etherscan. The first presale contract could not complete a purchase (see <a href="#presale-defect">The V1 presale defect</a>). Buy only through crossledger.trade or the verified V2 contract, and never send funds to any address directly.</p>
+                <p>CrossLedger has moved from paper to execution. The CLXT token and the presale are live on Ethereum, the client portal at <a href={SITE.portal}>app.crossledger.trade</a> is onboarding companies, and Hashlock&apos;s independent audit of the token and presale contracts is under way. The platform contracts are audited next, and comfort letters and trade instruments open only after that, so no commercial trade has settled yet. This paper separates what exists from what is planned, and says which is which.</p>
+                <p><strong>CLXT is <Addr a={CONTRACTS.clxt} kind="token" /></strong>, the standard OpenZeppelin ERC-20 (see <a href="#supply">Token contract and supply</a>). Purchases run through the presale contract <Addr a={CONTRACTS.presaleV2 || CONTRACTS.presaleCurrent} />, whose source code is verified on Etherscan. Buy only through crossledger.trade or the verified presale contract, and never send funds to any address directly.</p>
                 <div className="actions">
                   <Link href="/#presale" className="btn btn-primary">Check presale status →</Link>
                   <Link href="/how-it-works" className="btn btn-outline">How CrossLedger works</Link>
@@ -241,12 +241,13 @@ export default function Whitepaper() {
                     <li>Total supply corrected to 1,000,000,000 CLXT, the figure in the deployed contract (v1.0 said 980,000,000).</li>
                     <li>The &quot;US$13.50 launch target&quot; and all projected listing prices are withdrawn. CrossLedger publishes no price targets.</li>
                     <li>Presale mechanics now describe the deployed contract (instant delivery, owner-set rate), not the claim-based design v1.0 described.</li>
-                    <li>Two contract defects are disclosed: the presale purchase failure and the staking supply-accounting issue.</li>
+                    <li>Earlier token and presale contracts replaced with standard, verified code.</li>
                     <li>Version 2.1 (5 October 2026): the corrected presale contract is deployed, verified and funded, and purchases have reopened.</li>
                     <li>Regulatory section rewritten.</li>
                     <li>6 October 2026: GDN received Australian legal advice and Australian residents may now take part in the presale.</li>
                     <li>6 October 2026: 600,000,000 CLXT (60% of supply) locked in public, non-cancelable vesting; token contract ownership renounced; two retired presale contracts switched off and emptied.</li>
-                    <li>Version 2.2 (13 October 2026): CLXT moved to a new, standard token contract with a fixed supply and no owner, which removes the staking defect. The vesting locks were re-created with the same amounts and dates, and the presale moved to the new token.</li>
+                    <li>Version 2.2 (13 October 2026): CLXT moved to a new, standard token contract with a fixed supply and no owner, with the vesting locks re-created on the same amounts and dates, and the presale moved to the new token.</li>
+                    <li>Version 2.3 (8 November 2026): status updated. The client portal is live for onboarding, the deal workflow is built, and Hashlock&apos;s independent audit of the token and presale contracts is under way.</li>
                   </ul>
                 </div>
               </div>
@@ -344,7 +345,7 @@ export default function Whitepaper() {
                     <tr><td>Name / symbol</td><td>CrossLedger Token (CLXT)</td></tr>
                     <tr><td>Standard</td><td>ERC-20, 18 decimals</td></tr>
                     <tr><td>Token contract</td><td><Addr a={CONTRACTS.clxt} kind="token" /> (source verified on Etherscan; unmodified OpenZeppelin ERC-20)</td></tr>
-                    <tr><td>Retired original contract</td><td><Addr a={CONTRACTS.clxtRetired} kind="token" />, replaced on 13 October 2026 (see <a href="#supply">Token migration</a>)</td></tr>
+                    <tr><td>Earlier contract (retired)</td><td><Addr a={CONTRACTS.clxtRetired} kind="token" />, replaced on 13 October 2026 (see <a href="#supply">Token contract and supply</a>)</td></tr>
                     <tr><td>Supply</td><td>1,000,000,000 CLXT, created once at deployment and sent to the owner address. Fixed: the contract has no mint function</td></tr>
                     <tr><td>Transfers</td><td>Always enabled; no pause, blocklist or transfer fee</td></tr>
                     <tr><td>Token contract owner</td><td>None. The contract has no owner and no admin functions</td></tr>
@@ -383,9 +384,9 @@ export default function Whitepaper() {
               </div>
               <p><strong>60% of supply is locked on-chain.</strong> The ecosystem, team and liquidity allocations, 600,000,000 CLXT in total, sit in three Sablier vesting streams that cannot be cancelled by GDN or anyone else. The schedules were set on 6 October 2026, and the streams were re-created on the new token on 13 October 2026 with the same amounts and dates. They pay back to the owner address only on the schedules above. The treasury, compliance, operations and strategic allocations are held, unlocked, in the owner address. Holdings and locks are summarised on the <Link href="/token">Token facts</Link> page.</p>
 
-              <h3 id="supply">Token migration and supply</h3>
-              <p>The original CLXT contract, <Addr a={CONTRACTS.clxtRetired} kind="token" />, included a staking function that paid a 10 percent annual reward by adding newly created tokens to a holder&apos;s balance, while its <code>totalSupply()</code> returned a hard-coded 1,000,000,000 and no transfer event was emitted. Had staking been used, the real number of tokens could have risen above the reported supply. The contract also carried a trading switch controlled by its owner. Wallet security scanners flagged both. Staking was never used: the contract emitted no staking event in its lifetime.</p>
-              <p>That contract could not be upgraded, so on 13 October 2026 CLXT was reissued as a new contract, <Addr a={CONTRACTS.clxt} kind="token" />: the unmodified OpenZeppelin ERC-20, with all 1,000,000,000 tokens created once at deployment, no owner, no mint function, no staking, no pause and no fees. Its total supply is the actual supply.</p>
+              <h3 id="supply">Token contract and supply</h3>
+              <p>CLXT was first issued at <Addr a={CONTRACTS.clxtRetired} kind="token" />, a contract that also carried a staking feature and an owner-controlled trading switch. Neither is needed for CLXT&apos;s role, and staking was never used: the contract emitted no staking event in its lifetime.</p>
+              <p>Because that contract could not be changed, on 13 October 2026 CLXT was reissued as a new contract, <Addr a={CONTRACTS.clxt} kind="token" />: the unmodified OpenZeppelin ERC-20, with all 1,000,000,000 tokens created once at deployment, no owner, no mint function, no staking, no pause and no fees. Its total supply is the actual supply.</p>
               <p>How balances were handled. The three vesting locks were re-created on the new token with the same amounts and release dates (Sablier #1797, #1798 and #1799, replacing #1783, #1784 and #1785, which remain locked on the retired token). The presale moved to the same verified contract code on the new token and was funded with the same 20,000,000 CLXT. No other balances were carried over: wallets outside the owner address that held the original token, including the strategic allocation wallet, received no new CLXT, and the equivalent amount is part of the owner address&apos;s unlocked balance. No purchase was ever completed through a presale contract for the original token.</p>
               <p>Every step was rehearsed on a copy of Ethereum mainnet before it was signed, and the resulting state was checked on-chain afterwards. That was an internal review, not an independent audit.</p>
 
@@ -402,22 +403,17 @@ export default function Whitepaper() {
                   </tbody>
                 </table>
               </div>
-              <p>Be clear about what the contract enforces. It sells at a single rate set by the owner; it does not enforce stage allocations or move between stages automatically. The owner can change the rate, minimum purchase and treasury, pause the sale and withdraw unsold tokens. The website applies a 200 USDT minimum, and the V2 contract also enforces a minimum on-chain. Stage pricing is a commitment by GDN, not a property of the code. The four stages total 17,000,000 CLXT, while V2 was funded with 20,000,000 CLXT. The additional 3,000,000 CLXT has no allocation in the published stage plan. The strategic allocation (125,001,000 CLXT, now in the owner address) and the V2 funding total 145,001,000 CLXT, compared with the planned 150,000,000 CLXT strategic allocation; the allocation of the remaining 4,999,000 CLXT is not specified here.</p>
+              <p>Be clear about what the contract enforces. It sells at a single rate set by the owner; it does not enforce stage allocations or move between stages automatically. The owner can change the rate, minimum purchase and treasury, pause the sale and withdraw unsold tokens. The contract also enforces a minimum purchase on-chain, shown live on the presale page. Stage pricing is a commitment by GDN, not a property of the code. The four stages total 17,000,000 CLXT, while V2 was funded with 20,000,000 CLXT. The additional 3,000,000 CLXT has no allocation in the published stage plan. The strategic allocation (125,001,000 CLXT, now in the owner address) and the V2 funding total 145,001,000 CLXT, compared with the planned 150,000,000 CLXT strategic allocation; the allocation of the remaining 4,999,000 CLXT is not specified here.</p>
               <p>Each stage price is a sale price, not a valuation. CrossLedger publishes no listing price, target price or expected return, and nothing guarantees that CLXT will be listed on any exchange or trade at or above the price paid.</p>
 
-              <h3 id="presale-defect">The V1 presale defect</h3>
-              <p>The first presale contract, <Addr a={CONTRACTS.presaleV1} />, cannot complete a purchase. It declares USDT&apos;s <code>transferFrom</code> as returning a boolean:</p>
-              <pre><code>{`interface IUSDT {
-    function transferFrom(address from, address to, uint256 amount)
-        external returns (bool);   // mainnet USDT returns nothing
-}`}</code></pre>
-              <p>Mainnet USDT predates the final ERC-20 standard and returns no value from <code>transfer</code> or <code>transferFrom</code>. Since Solidity 0.8, a call declared to return a value reverts if the callee returns nothing. Every <code>buyWithUSDT</code> call therefore reverts, even for a buyer who holds enough USDT and has approved the contract. No buyer funds can be lost to this defect; the transaction simply fails and only gas is spent.</p>
-              <p>GDN reproduced the failure against live mainnet state on 3 October 2026, confirming the contract was active, funded and given full approval, and that the revert carries none of the contract&apos;s own error messages. The corrected contract, CLXPresaleV2, keeps the same purchase flow but makes token calls through a wrapper that accepts both standard tokens and USDT&apos;s empty return. It also adds an on-chain minimum and a buyer-set minimum output that protects a pending purchase against a rate change. In a mainnet-fork test it completed a 200 USDT purchase, paying the treasury and delivering 2,000 CLXT to the buyer, and correctly rolled back every failure case tested. V2 was deployed on 5 October 2026 at <Addr a={CONTRACTS.presaleV2 || "0x8F190E1764bfE57ddd2Daff5F55a79C64760c14F"} />, its source verified on Etherscan as an exact match, and it was funded with 20,000,000 CLXT. The website checkout now uses V2.</p>
+              <h3 id="presale-contracts">Presale contracts</h3>
+              <p>The live presale contract, CLXPresaleV2, makes its token calls through a wrapper that works with both standard tokens and mainnet USDT, which returns no value from <code>transferFrom</code>. It enforces a minimum purchase on-chain and takes a buyer-set minimum output, so a pending purchase reverts rather than fill at a worse rate if the owner changes the rate first. In a mainnet-fork test it completed a 200 USDT purchase, paying the treasury and delivering 2,000 CLXT to the buyer, and rolled back every failure case tested. Its source is verified on Etherscan as an exact match.</p>
+              <p>Earlier presale contracts, <Addr a={CONTRACTS.presaleV1} /> and <Addr a={CONTRACTS.presaleLegacy} />, were retired and emptied on 6 October 2026, and the first deployment of V2 on the earlier token, <Addr a={CONTRACTS.presaleV2Retired} />, on 13 October 2026. None of them completed a purchase or holds funds. Do not send funds to them.</p>
 
               <h2 id="business">Business model</h2>
               <p>CrossLedger earns revenue from use, not from token sales.</p>
               <ul>
-                <li><strong>Settlement fees</strong> on escrowed trade value, targeted at 0.2 to 0.4 percent.</li>
+                <li><strong>Instrument fees</strong> under the <a href={`${SITE.portal}/fees`}>published schedule</a>: CrossLedger Credit 0.25% of face value, Standby 0.50% a year of tenor, Escrow 0.15% of the amount held and Comfort Letter 0.10% of the amount locked, with a minimum of US$250 each. Nothing is charged until instruments open.</li>
                 <li><strong>Document registration</strong> fees for financiers and parties registering documents outside a CrossLedger escrow.</li>
                 <li><strong>Registry checks</strong> for banks and trade financiers who query the registry before funding a cargo.</li>
                 <li><strong>Enterprise integration</strong> for traders and terminals connecting their own systems.</li>
@@ -429,21 +425,20 @@ export default function Whitepaper() {
                 <table className="data">
                   <thead><tr><th>Component</th><th>Status at {UPDATED}</th></tr></thead>
                   <tbody>
-                    <tr><td>CLXT token</td><td>Migrated on 13 October 2026 to a new, standard contract with a fixed supply and no owner, which removes the staking defect. The original contract is retired.</td></tr>
-                    <tr><td>Presale V1</td><td>Retired. It could not complete purchases; switched off and emptied on 6 October 2026, along with an earlier unused presale contract.</td></tr>
+                    <tr><td>CLXT token</td><td>Live. Standard OpenZeppelin ERC-20 with a fixed supply and no owner, deployed on 13 October 2026. Source verified on Etherscan.</td></tr>
                     <tr><td>Token ownership and vesting</td><td>The token contract has no owner. 60% of supply is locked in non-cancelable vesting, on the schedules set on 6 October 2026.</td></tr>
-                    <tr><td>Presale V2</td><td>Live since 5 October 2026. Moved to the new token on 13 October 2026 with the same verified code; funded with 20,000,000 CLXT.</td></tr>
-                    <tr><td>Escrow contract</td><td>First version deployed to mainnet. Not audited; not in commercial use.</td></tr>
-                    <tr><td>Document registry</td><td>Prototype deployed to the Polygon Amoy test network.</td></tr>
-                    <tr><td>Trade platform and dashboard</td><td>In development.</td></tr>
-                    <tr><td>Independent security audit</td><td>Not yet completed. Required before the escrow handles third-party funds.</td></tr>
+                    <tr><td>Presale</td><td>Live at a fixed rate in USDT. Source verified on Etherscan; funded with 20,000,000 CLXT.</td></tr>
+                    <tr><td>Client portal</td><td>Live at app.crossledger.trade since 1 November 2026: applications, KYC and due diligence, sanctions screening and review for buyers, sellers, brokers, financiers, inspectors and arbitrators.</td></tr>
+                    <tr><td>Deal workflow</td><td>Built: offers and counter-offers, document filing, inspection attestations, examination, disputes, company approvals and reports.</td></tr>
+                    <tr><td>Platform contracts (Credit, Standby, Escrow, comfort letters)</td><td>Built. They open on Ethereum mainnet once they have been independently audited.</td></tr>
+                    <tr><td>Independent security audit</td><td>Under way. Hashlock is auditing the CLXT token and presale contracts; the platform contracts are audited before they hold third-party funds.</td></tr>
                   </tbody>
                 </table>
               </div>
               <div className="roadmap" style={{ marginTop: 24 }}>
-                <div className="road active"><div className="phase">PHASE 1 · NOW</div><h4>Foundation</h4><ul><li>✓ Presale V2 deployed and verified</li><li>✓ 60% of supply locked in vesting</li><li>Complete independent audit</li><li>✓ Staking supply defect fixed by token migration</li><li>✓ Australian legal advice received</li></ul></div>
-                <div className="road"><div className="phase">PHASE 2</div><h4>First trades</h4><ul><li>Registry on mainnet</li><li>Audited escrow</li><li>Pilot trades on GDN&apos;s desk</li><li>Inspector attestation format</li></ul></div>
-                <div className="road"><div className="phase">PHASE 3</div><h4>Open corridors</h4><ul><li>Third-party traders onboarded</li><li>Financier registry checks</li><li>Verifier bonding in CLXT</li></ul></div>
+                <div className="road"><div className="phase">PHASE 1 · DONE</div><h4>Foundation</h4><ul><li>✓ Token and presale contracts verified on Etherscan</li><li>✓ 60% of supply locked in vesting</li><li>✓ Australian legal advice received</li><li>✓ Client portal live: onboarding, KYC and sanctions screening</li><li>✓ Deal workflow built: offers, documents, inspection, examination and disputes</li></ul></div>
+                <div className="road active"><div className="phase">PHASE 2 · NOW</div><h4>First trades</h4><ul><li>Token and presale audit by Hashlock (under way)</li><li>Platform contract audit, then deployment on Ethereum</li><li>Comfort letters and trade instruments open</li><li>Pilot trades on GDN&apos;s desk</li></ul></div>
+                <div className="road"><div className="phase">PHASE 3</div><h4>Open corridors</h4><ul><li>Third-party traders onboarded</li><li>Verifier bonding in CLXT</li></ul></div>
                 <div className="road"><div className="phase">PHASE 4</div><h4>Network</h4><ul><li>Bonded arbitration panel</li><li>Enterprise integrations</li><li>Governance for fee schedules</li><li>Additional corridors</li></ul></div>
               </div>
               <p>Phases are sequenced by readiness, not by date. Each starts only when the previous phase&apos;s deliverables exist and can be verified.</p>
@@ -464,7 +459,7 @@ export default function Whitepaper() {
               <ul>
                 <li><strong>Total loss.</strong> CLXT may become worthless. Commit only what you can afford to lose entirely.</li>
                 <li><strong>Development risk.</strong> The platform described here may never be completed, or may work differently.</li>
-                <li><strong>Smart-contract risk.</strong> Two defects were found in earlier contracts, and both contracts have been replaced. Others may exist. No independent audit has been completed.</li>
+                <li><strong>Smart-contract risk.</strong> Contracts can contain defects that are not found before they matter. Earlier contracts were replaced with standard, verified code, and the independent audit is under way but not yet complete.</li>
                 <li><strong>Wrong-contract risk.</strong> The retired original CLXT contract still exists on-chain and can still be transferred. Only <Addr a={CONTRACTS.clxt} kind="token" /> is CLXT.</li>
                 <li><strong>Concentration and control.</strong> 60% of supply is locked in vesting, but the owner address holds 38% unlocked, and locked tokens return to the owner address over time. The presale owner can change presale terms.</li>
                 <li><strong>Regulatory risk.</strong> Laws may change or be applied in ways that restrict CLXT, the presale or the platform, including in Australia.</li>
@@ -475,7 +470,7 @@ export default function Whitepaper() {
 
               <h2 id="conclusion">Conclusion</h2>
               <p>Physical commodity trade does not need a new kind of money. It needs a shared, neutral record of which documents exist and who relied on them, and a way to commit payment that releases on proof rather than on paper arriving. Those are narrow, achievable goals, and public blockchains are now mature enough to meet them without asking an industry to join a consortium first.</p>
-              <p>CrossLedger is early. This paper tries to be precise about that: what is deployed, what is broken and being fixed, and what is still a plan. The test of the project is simple and public. Watch the registry and the escrow contracts. When real cargoes settle through them, the design is working.</p>
+              <p>CrossLedger has moved from paper to execution: the client portal is live, the deal workflow is built and the independent audit of the token and presale contracts is under way. This paper tries to be precise about what is deployed and what is still a plan. The test of the project is simple and public: when real cargoes settle through CrossLedger&apos;s contracts, the design is working.</p>
 
               <hr />
               <h2 id="notes">Notes and references</h2>
@@ -487,7 +482,7 @@ export default function Whitepaper() {
                 <li id="fn-5">we.trade ceased operations in 2022; TradeLens was discontinued in early 2023; Marco Polo entered insolvency and Contour ceased operations in 2023. <a href="#ref-5">↩</a></li>
                 <li id="fn-6">UNCITRAL Model Law on Electronic Transferable Records (2017); Electronic Trade Documents Act 2023 (UK); Electronic Transactions Act 2010 (Singapore), as amended in 2021. <a href="#ref-6">↩</a></li>
               </ol>
-              <p className="small muted">This whitepaper is general information about a project in development. It is not financial, legal or tax advice, not a prospectus or product disclosure statement, and not an offer of securities or financial products in any jurisdiction. © {new Date().getFullYear()} {SITE.entity}. Questions: <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.</p>
+              <p className="small muted">This whitepaper is general information about the CrossLedger project. It is not financial, legal or tax advice, not a prospectus or product disclosure statement, and not an offer of securities or financial products in any jurisdiction. © {new Date().getFullYear()} {SITE.entity}. Questions: <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.</p>
             </div>
           </article>
 

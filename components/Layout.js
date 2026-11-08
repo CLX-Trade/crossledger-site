@@ -111,7 +111,7 @@ export function SiteFooter() {
         <div className="foot-grid">
           <div className="foot-brand">
             <Link href="/" className="brand"><BrandMark /><span>CrossLedger</span></Link>
-            <p>Settlement infrastructure for cross-border commodity trade: a shared document registry, conditional escrow and inspection-backed release. A GDN Group product.</p>
+            <p>Settlement software for cross-border commodity trade: a smart contract for each trade, document examination, and named inspectors and arbitrators. A GDN Group product.</p>
             <p className="small">{SITE.entity} · ACN {SITE.acn}<br />{SITE.address}</p>
             <a className="partner" href="https://cryptototem.com/" target="_blank" rel="noopener">Listed on <img src="/cryptototem-logo.png" alt="CryptoTotem" /></a>
           </div>
