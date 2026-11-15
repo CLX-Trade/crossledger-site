@@ -23,7 +23,7 @@ const PRESALE_ADDRESS = CONTRACTS.presale;
 const CHECKOUT_UNAVAILABLE = !IS_V2;
 const FORMSPREE_ENDPOINT = "https://formspree.io/f/mlgpnvbk";
 const NETWORK_NOT_SWITCHED = "The network was not switched. Switch your wallet to Ethereum and try again.";
-const PRESALE_CLOSES_AT = Date.parse("2026-11-15T12:00:00Z");
+const PRESALE_CLOSES_AT = Date.parse("2026-11-22T12:00:00Z");
 
 // These must go through viem's parseAbi(). Human-readable strings passed straight
 // to wagmi make viem evaluate `'name' in "function ..."`, which throws and
@@ -419,7 +419,7 @@ export default function HomePage() {
     .filter((amt) => minPurchaseWei === null || BigInt(amt) * 10n ** 6n >= minPurchaseWei)
     .slice(0, 4);
 
-  // Announced close of the presale (pinned post on @CrossLedgerCLX, 1 November 2026).
+  // Announced close of the presale: extended on 15 November 2026 from 15 to 22 November (@CrossLedgerCLX).
   // Computed after mount so the static HTML never carries a stale countdown.
   const [closeText, setCloseText] = useState(null);
   useEffect(() => {
@@ -456,7 +456,7 @@ export default function HomePage() {
               <Link href="/how-it-works" className="btn btn-ghost btn-lg">How it works →</Link>
             </div>
             <p className="small muted" style={{ marginTop: 20 }}>
-              CLXT presale: {saleOpen ? <>open at {displayPrice} per CLXT{closeText ? <>, closing Sunday 15 November, 12:00 UTC ({closeText})</> : null}.</> : <>{CHECKOUT_UNAVAILABLE ? "purchases paused while the presale contract is replaced." : saleStatusText}</>}{" "}
+              CLXT presale: {saleOpen ? <>open at {displayPrice} per CLXT{closeText ? <>, closing Sunday 22 November, 12:00 UTC ({closeText})</> : null}.</> : <>{CHECKOUT_UNAVAILABLE ? "purchases paused while the presale contract is replaced." : saleStatusText}</>}{" "}
               <a href="#presale"><strong>Buy CLXT →</strong></a> · <a href="#security">Security status</a>
             </p>
           </div>
@@ -673,7 +673,7 @@ export default function HomePage() {
           <div id="presale" className="widget" ref={presaleRef}>
             <h3><img className="coin" src="/clxt-coin-64.png" srcSet="/clxt-coin-64.png 1x, /clxt-coin-128.png 2x" width="30" height="30" alt="" />CLXT presale</h3>
             <div className="sub">{CHECKOUT_UNAVAILABLE ? "CHECKOUT PAUSED · CONTRACT REPLACEMENT IN PROGRESS" : `CONTRACT ${shortAddr(PRESALE_ADDRESS)} · ETHEREUM`}</div>
-            {saleOpen && closeText && <div className="row"><span className="k">Presale closes</span><span className="v">15 Nov, 12:00 UTC · {closeText}</span></div>}
+            {saleOpen && closeText && <div className="row"><span className="k">Presale closes</span><span className="v">22 Nov, 12:00 UTC · {closeText}</span></div>}
             <div className="row"><span className="k">Current price</span><span className="v">{displayPrice}</span></div>
             <div className="row"><span className="k">Minimum purchase</span><span className="v">{fmtUsdtExact(minPurchaseWei)}</span></div>
             <div className="row"><span className="k">CLXT available</span><span className="v">{availableClxtWei === null ? "—" : Number(formatUnits(availableClxtWei, 18)).toLocaleString("en-US", { maximumFractionDigits: 0 })}</span></div>
@@ -788,7 +788,7 @@ export default function HomePage() {
           <details className="faq" open><summary>What is CrossLedger?</summary><div className="answer"><p>Settlement software for cross-border commodity trade. A smart contract holds the buyer&apos;s stablecoins for each trade, documents are filed and examined privately on the platform, the platform&apos;s settlement agent instructs payment, and a named arbitrator can rule on disputes. It is built by GDN Group, an Australian trade and advisory group.</p></div></details>
           <details className="faq"><summary>Is the platform live?</summary><div className="answer"><p>Yes. The client portal at <a href={SITE.portal}>app.crossledger.trade</a> is live: companies apply, pass KYC, due diligence and sanctions screening, and are reviewed before their first trade. Comfort letters and trade instruments open once the independent audit of the platform contracts is complete.</p></div></details>
           <details className="faq"><summary>Can I buy CLXT right now?</summary><div className="answer"><p>{CHECKOUT_UNAVAILABLE ? "Not yet. The first presale contract cannot complete purchases, so the checkout is paused. A corrected contract has been tested and will go live after deployment and a live test purchase. Do not send funds directly to any contract." : "Yes, from the presale widget on this page, unless you are in a restricted jurisdiction."}</p></div></details>
-          <details className="faq"><summary>When does the presale close?</summary><div className="answer"><p>Sunday 15 November 2026 at 12:00 UTC (10pm AEST), as announced on <a href="https://x.com/CrossLedgerCLX" target="_blank" rel="noopener">@CrossLedgerCLX</a>.</p></div></details>
+          <details className="faq"><summary>When does the presale close?</summary><div className="answer"><p>Sunday 22 November 2026 at 12:00 UTC (10pm AEST). The close was extended by one week from 15 November, as announced on <a href="https://x.com/CrossLedgerCLX" target="_blank" rel="noopener">@CrossLedgerCLX</a>.</p></div></details>
           <details className="faq"><summary>Which contract is CLXT?</summary><div className="answer"><p>CLXT is <a href={`https://etherscan.io/token/${CONTRACTS.clxt}`} target="_blank" rel="noopener" className="mono">{CONTRACTS.clxt}</a> on Ethereum, the standard OpenZeppelin ERC-20 with a fixed supply and no owner. Add it to your wallet from this page, and buy only here or through the verified presale contract. An earlier CLXT contract, {shortAddr(CONTRACTS.clxtRetired)}, is retired: do not buy it or accept it as CLXT. <Link href="/token#migration">Token facts →</Link></p></div></details>
           <details className="faq"><summary>How do I get USDT on Ethereum?</summary><div className="answer"><p>Buy USDT on an exchange and withdraw it to your own wallet on the Ethereum (ERC-20) network, or buy it inside MetaMask, Coinbase Wallet or Trust Wallet. Keep a little ETH in the same wallet for network fees. USDT on Tron, BNB Chain or other networks will not work with the presale.</p></div></details>
           <details className="faq"><summary>What are the presale prices?</summary><div className="answer"><p>The published plan is US$0.10, US$0.20, US$0.25 and US$0.50 across four stages. The contract sells at a single owner-set rate and does not enforce stages; the plan is a commitment by GDN. These are sale prices, not valuations, and CrossLedger publishes no listing or target price.</p></div></details>
