@@ -438,7 +438,7 @@ export default function HomePage() {
     <Layout>
       <Seo
         title="CrossLedger (CLXT) | Settlement Software for Commodity Trade"
-        description="CrossLedger is settlement software for physical commodity trade: a smart contract holds the buyer's stablecoins for each trade, and the seller is paid once the documents are found compliant. The client portal is live. Built by GDN Group."
+        description="CrossLedger is settlement software for physical commodity trade: a smart contract holds the buyer's stablecoins and pays the seller once the documents comply."
         path="/"
         jsonLd={{ "@context": "https://schema.org", "@type": "WebSite", name: "CrossLedger", url: SITE.url }}
       />
