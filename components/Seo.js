@@ -18,6 +18,8 @@ export default function Seo({ title, description, path = "/", image = "/og-card.
       <meta property="og:image" content={img} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
+      <meta property="og:image:alt" content="CrossLedger: commodity trade, settled on proof" />
+      <meta property="og:locale" content="en_AU" />
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:site" content="@CrossLedgerCLX" />
       <meta name="twitter:title" content={title} />
